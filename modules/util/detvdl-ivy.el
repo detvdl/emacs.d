@@ -4,7 +4,6 @@
 
 (use-package ivy
   :ensure t
-  :pin melpa
   :diminish ivy-mode
   :bind (("C-c C-r" . ivy-resume)
          ("C-x b" . ivy-switch-buffer)
@@ -16,13 +15,12 @@
          ("C-m" . ivy-alt-done)
          ("C-j" . ivy-done))
   :config
-  (setq ivy-use-virtual-buffers t
-        ivy-display-style 'fancy
-        ivy-height 10
-        ivy-virtual-abbreviate 'full
-        ;; swiper-include-line-number-in-search t
-        )
-  (ivy-mode 1))
+  (progn
+    (setq ivy-use-virtual-buffers t
+          ivy-display-style 'fancy
+          ivy-height 8
+          ivy-virtual-abbreviate 'full)
+    (ivy-mode 1)))
 
 (use-package counsel
   :ensure t

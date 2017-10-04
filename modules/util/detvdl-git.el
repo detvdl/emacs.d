@@ -7,29 +7,21 @@
   :defer t)
 
 (use-package fringe-helper
-  :ensure t
-  :config
-  (defconst fringe-bitmap-line
-    (fringe-helper-convert
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     "..xxx..."
-     )))
+  :ensure t)
 
 (use-package git-gutter-fringe
   :ensure t
   :init
   :config
   (progn
+    (defconst fringe-bitmap-line
+      (fringe-helper-convert
+       "..xx...."
+       ))
     (global-git-gutter-mode +1)
-    (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line)
-    (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line)
-    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line)))
+    (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
+    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))))
 
 (use-package magit
   :ensure t
