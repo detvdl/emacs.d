@@ -29,5 +29,14 @@
                           `(fringe ((t (:background "#FFFFE8"))))
                           `(linum ((t (:foreground "#b2b2b2"))))))
 
-  (provide 'detvdl-theme)
+(use-package doom-themes
+  :ensure t
+  :no-require t
+  :defer t
+  :config
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (doom-themes-org-config))
+
+(provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
