@@ -1,31 +1,56 @@
 ;;; init.el --- Fuck
-
 ;;; Commentary:
-
 ;;; Code:
 
+(defvar emacs-dir (file-name-directory load-file-name))
+(setq package-user-dir (expand-file-name "elpa" emacs-dir)
+      package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+                         ("melpa" . "https://melpa.org/packages/")
+                         ("org" . "http://orgmode.org/elpa/"))
+      package-enable-at-startup nil
+      package--init-file-ensured t)
+
+(eval-and-compile
+  (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file))))
+
+(mapc #'(lambda (add) (add-to-list 'load-path add))
+      (eval-when-compile
+        (package-initialize)
+        ;; Install use-package if not installed yet.
+        (unless (package-installed-p 'use-package)
+          (package-refresh-contents)
+          (package-install 'use-package))
+        (setq use-package-always-ensure t)
+        (let ((package-user-dir-real (file-truename package-user-dir)))
+          ;; The reverse is necessary, because outside we mapc
+          ;; add-to-list element-by-element, which reverses.
+          (nreverse (apply #'nconc
+                           ;; Only keep package.el provided loadpaths.
+                           (mapcar #'(lambda (path)
+                                       (if (string-prefix-p package-user-dir-real path)
+                                           (list path)
+                                         nil))
+                                   load-path))))))
+
+;; Explicitly use in case of byte-compiled init-file
+(use-package diminish :ensure t)
+(use-package bind-key :ensure t)
+(use-package use-package :ensure t)
+
 ;; Always load newest byte code
-
-;; Added by Package.el.  This must come before configurations of
-;; installed packages.  Don't delete this line.  If you don't want it,
-;; just comment it out by adding a semicolon to the start of the line.
-;; You may delete these explanatory comments.
-(package-initialize)
-
 (setq load-prefer-newer t)
 
-(defvar emacs-dir (file-name-directory load-file-name))
 (defvar emacs-core-dir (expand-file-name "core" emacs-dir))
 (defvar emacs-modules-lang-dir (expand-file-name "modules/lang" emacs-dir))
 (defvar emacs-modules-util-dir (expand-file-name "modules/util" emacs-dir))
-(defvar emacs-themes-dir (expand-file-name "theme"))
+(defvar emacs-themes-dir (expand-file-name "themes"))
 (defvar emacs-savefile-dir (expand-file-name "savefile" emacs-dir))
-
 
 ;; add Prelude's directories to Emacs's `load-path'
 (add-to-list 'load-path emacs-core-dir)
 (add-to-list 'load-path emacs-modules-lang-dir)
 (add-to-list 'load-path emacs-modules-util-dir)
+(add-to-list 'load-path emacs-themes-dir)
 
 ;; reduce the frequency of garbage collection
 ;; default: 0.79MB
@@ -34,39 +59,16 @@
 ;; warn when opening files bigger than 100MB
 (setq large-file-warning-threshold 100000000)
 
+;; autosave focused buffer when it loses focus
 (defvar detvdl-auto-save t)
 
-;; Always load this first, as it provides use-package functionality
-(require 'detvdl-packages)
 (require 'detvdl-editor)
 (require 'detvdl-ui)
 (require 'detvdl-lang)
 (require 'detvdl-util)
 
-;; start server, so we can connect anytime with emacsclient
-;; (unless noninteractive
-;;   (setq server-socket-dir (format "/tmp/emacs-%d-%s-%d"
-;;                                   (user-uid)
-;;                                   (format-time-string "%Y%m%d-%H%M%S")
-;;                                   (emacs-pid)))
-;;   (server-start)
-;;   (add-hook 'kill-emacs-hook #'(lambda () (delete-directory server-socket-dir t))))
+;; write custom-set-variables to a separate file
+(setq custom-file (expand-file-name "custom.el" emacs-dir))
+(load custom-file 'noerror)
 
 ;;; init.el ends here
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("2cf7f9d1d8e4d735ba53facdc3c6f3271086b6906c4165b12e4fd8e3865469a6" default)))
- '(package-selected-packages
-   (quote
-    (writeroom-mode git-gutter-fringe emacs-git-gutter-fringe markdown-mode elisp-slime-nav js2-mode rainbow-mode projectile-ripgrep company-anaconda pyenv-mode cider rainbow-delimiters drag-stuff use-package))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
