@@ -1,0 +1,11 @@
+;;; detvdl-elisp.el --- Emacs Lisp packages and configuration
+;;; Commentary:
+;;; Code:
+
+(use-package elisp-slime-nav
+  )
+
+(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
+
+(provide 'detvdl-elisp)
+;;; detvdl-elisp.el ends here

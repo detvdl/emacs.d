@@ -63,7 +63,7 @@
     ("2cf7f9d1d8e4d735ba53facdc3c6f3271086b6906c4165b12e4fd8e3865469a6" default)))
  '(package-selected-packages
    (quote
-    (rainbow-mode projectile-ripgrep company-anaconda pyenv-mode cider rainbow-delimiters drag-stuff use-package))))
+    (elisp-slime-nav js2-mode rainbow-mode projectile-ripgrep company-anaconda pyenv-mode cider rainbow-delimiters drag-stuff use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
