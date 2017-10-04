@@ -1,7 +1,5 @@
 ;;; detvdl-ui.el --- Test
-
 ;;; Commentary:
-
 ;;; Code:
 
 (when (fboundp 'tool-bar-mode)
@@ -14,7 +12,11 @@
 
 (blink-cursor-mode -1)
 
+;; Wrap long lines
 (global-visual-line-mode +1)
+
+;; Highlight current line
+(global-hl-line-mode +1)
 
 (setq ring-bell-function 'ignore)
 
@@ -30,13 +32,6 @@
 
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
-
-;; more useful frame title, that show either a file or a
-;; buffer name (if the buffer isn't visiting a file)
-(setq frame-title-format
-      '("" invocation-name " Prelude - " (:eval (if (buffer-file-name)
-                                                    (abbreviate-file-name (buffer-file-name))
-                                                  "%b"))))
 
 (defun set-font (font-str)
   "Set the default font to the FONT-STR parameter."
