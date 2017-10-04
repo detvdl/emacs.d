@@ -2,6 +2,18 @@
 ;;; Commentary:
 ;;; Code:
 
+;; avoid duplicate buffer names
+(use-package uniquify
+  ;; package is built-in
+  :ensure nil
+  :config
+  (setq uniquify-buffer-name-style 'forward
+        uniquify-separator "/"
+        ;; rename after killing uniquified
+        uniquify-after-kill-buffer-p t
+        ;; leave special buffers alone
+        uniquify-ignore-buffers-re "^\\*"))
+
 (use-package crux
   :ensure t
   :bind (([(shift return)] . crux-smart-open-line)
@@ -33,7 +45,7 @@
 
 (use-package undo-tree
   :ensure t
-  :diminish
+  :diminish undo-tree-mode
   :config
   (global-undo-tree-mode))
 
