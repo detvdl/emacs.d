@@ -6,8 +6,9 @@
   (file-name-directory (directory-file-name (file-name-directory load-file-name))))
 (setq package-user-dir (expand-file-name "elpa" emacs-dir)
       package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-                         ("melpa" . "https://melpa.org/packages/")))
-(setq package-enable-at-startup nil
+                         ("melpa" . "https://melpa.org/packages/")
+                         ("org" . "http://orgmode.org/elpa/"))
+      package-enable-at-startup nil
       package--init-file-ensured t)
 
 (eval-and-compile

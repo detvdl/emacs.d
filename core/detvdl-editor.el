@@ -8,6 +8,13 @@
 ;; delete the current selection on a keypress
 (delete-selection-mode t)
 
+;; smart tab behavior - indent or complete
+(setq tab-always-indent 'complete)
+
+;; delete all trailing whitespace every time file is saved
+(add-hook 'before-save-hook
+          (lambda () (delete-trailing-whitespace)))
+
 ;; store all backup and autosave files in the tmp dir
 (setq backup-directory-alist
       `((".*" . ,temporary-file-directory)))
@@ -34,13 +41,6 @@
                                          try-complete-lisp-symbol-partially
                                          try-complete-lisp-symbol))
 (global-set-key (kbd "M-/") 'hippie-expand)
-
-;; smart tab behavior - indent or complete
-(setq tab-always-indent 'complete)
-
-;; delete all trailing whitespace every time file is saved
-(add-hook 'before-save-hook
-          (lambda () (delete-trailing-whitespace)))
 
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
