@@ -4,6 +4,7 @@
 
 (use-package ivy
   :ensure t
+  :pin melpa
   :diminish ivy-mode
   :bind (("C-c C-r" . ivy-resume)
          ("C-x b" . ivy-switch-buffer)
