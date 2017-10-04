@@ -8,6 +8,9 @@
 (require 'detvdl-ruby)
 (require 'detvdl-lisp)
 (require 'detvdl-clojure)
+(require 'detvdl-python)
+(require 'detvdl-web)
+(require 'detvdl-c)
 
 (provide 'detvdl-lang)
 ;;; detvdl-lang.el ends here
