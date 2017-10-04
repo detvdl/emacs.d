@@ -14,6 +14,22 @@
           js-indent-level 2)
     (js2-imenu-extras-mode +1)))
 
+(use-package tern
+  :after js2-mode
+  :config
+  (add-hook 'js2-mode-hook (lambda () (tern-mode t))))
+
+(use-package company-tern
+  :after tern
+  :config
+  (add-to-list 'company-backends 'company-tern))
+
+;; browser integration environment
+;; (use-package indium)
+
+;; typescript development environment
+;; (use-package tide)
+
 (use-package json-mode
   :ensure t)
 
