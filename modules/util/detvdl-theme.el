@@ -2,14 +2,14 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package nlinum
+(use-package writeroom-mode
   :ensure t
+  :defer t
+  :bind (("C-c w" . writeroom-mode))
   :config
-  ;; (global-nlinum-mode)
-  (setq nlinum-highlight-current-line t
-        nlinum-format "%3d ")
-  (eval-after-load 'nlinum
-    '(set-face-attribute 'linum nil :height 100)))
+  (progn
+    (setq writeroom-fringes-outside-margins nil
+          writeroom-restore-window-config t)))
 
 (use-package smart-mode-line
   :ensure t

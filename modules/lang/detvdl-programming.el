@@ -33,9 +33,12 @@ This functions should be added to the hooks of major modes for programming."
                             (font-lock-comment-annotations)))
 
 ;; enable on-the-fly syntax checking
-(if (fboundp 'global-flycheck-mode)
-    (global-flycheck-mode +1)
-  (add-hook 'prog-mode-hook #'flycheck-mode))
+(use-package flycheck
+  :ensure t
+  :config
+  (if (fboundp 'global-flycheck-mode)
+      (global-flycheck-mode +1)
+    (add-hook 'prog-mode-hook #'flycheck-mode)))
 
 (provide 'detvdl-programming)
 ;;; detvdl-programming.el ends here

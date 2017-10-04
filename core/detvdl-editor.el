@@ -42,5 +42,7 @@
                                          try-complete-lisp-symbol))
 (global-set-key (kbd "M-/") 'hippie-expand)
 
+(global-set-key (kbd "C-x C-b") 'buffer-menu-other-window)
+
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
