@@ -16,10 +16,14 @@
          ("C-j" . ivy-done))
   :config
   (progn
+    ;; Fuzzy matching
+    (use-package flx :ensure t)
     (setq ivy-use-virtual-buffers t
           ivy-display-style 'fancy
           ivy-height 8
-          ivy-virtual-abbreviate 'full)
+          ivy-virtual-abbreviate 'full
+          ivy-extra-directories nil
+          ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
     (ivy-mode 1)))
 
 (use-package counsel
@@ -35,19 +39,11 @@
          ("C-h f" . counsel-describe-function)
          ("C-x 8" . counsel-unicode-char))
   :config
-  ;; Use the faster ripgrep for standard counsel-grep
+  ;; put most recent commands first in `counsel-M-x'
+  (use-package smex :ensure t)
+  ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command
         "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
-
-;; Smex puts recent commands first on counsel-M-x
-(use-package smex
-  :ensure t)
-
-;; Use flx for ivy fuzzy matching
-(use-package flx
-  :ensure t
-  :config
-  (setq ivy-re-builders-alist '((t . ivy--regex-fuzzy))))
 
 (provide 'detvdl-ivy)
 ;;; detvdl-ivy.el ends here

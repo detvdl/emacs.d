@@ -11,7 +11,7 @@
 
 (use-package git-gutter-fringe
   :ensure t
-  :init
+  :diminish git-gutter-mode
   :config
   (progn
     (defconst fringe-bitmap-line
@@ -21,7 +21,8 @@
     (global-git-gutter-mode +1)
     (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))))
+    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated)))
+  (global-git-gutter-mode +1))
 
 (use-package magit
   :ensure t
