@@ -32,8 +32,10 @@
                                            (list path)
                                          nil))
                                    load-path))))))
+;; Explicitly use in case of byte-compiled init-file
 (use-package diminish :ensure t)
 (use-package bind-key :ensure t)
+(use-package use-package :ensure t)
 
 (provide 'detvdl-packages)
 ;;; detvdl-packages.el ends here
