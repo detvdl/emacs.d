@@ -2,22 +2,39 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package diff-hl
-  :ensure t
-  :config
-  (global-diff-hl-mode +1)
-  (add-hook 'dired-mode-hook 'diff-hl-dired-mode)
-  (eval-after-load 'magit
-    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)))
-
 (use-package ediff
   :ensure t
   :defer t)
+
+(defconst fringe-bitmap-line
+  (fringe-helper-convert
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   "..xxx..."
+   ))
+
+(use-package git-gutter-fringe
+  :ensure t
+  :init
+  :config
+  (progn
+    (global-git-gutter-mode +1)
+    (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line)
+    (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line)
+    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line)
+    ))
 
 (use-package magit
   :ensure t
   :defer t
   :bind (("C-x g" . magit-status)
+         ("C-x C-g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
   :config
   (setq magit-completing-read-function 'ivy-completing-read))

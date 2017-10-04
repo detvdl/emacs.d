@@ -5,7 +5,7 @@
 (use-package nlinum
   :ensure t
   :config
-  (global-nlinum-mode)
+  ;; (global-nlinum-mode)
   (setq nlinum-highlight-current-line t
         nlinum-format "%3d ")
   (eval-after-load 'nlinum
