@@ -61,6 +61,7 @@
 
 (use-package expand-region
   :ensure t
+  :defer t
   :functions (er/expand-region)
   :bind (("C-=" . er/expand-region)))
 
