@@ -58,5 +58,11 @@
   (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
     (rvm-activate-corresponding-ruby)))
 
+(use-package rubocop
+  :ensure t
+  :defer t
+  :config
+  (add-hook 'ruby-mode-hook #'rubocop-mode))
+
 (provide 'detvdl-ruby)
 ;;; detvdl-ruby.el ends here
