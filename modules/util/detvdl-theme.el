@@ -25,9 +25,10 @@
   :init
   (load-theme 'plan9 t)
   :config
-  (custom-theme-set-faces 'plan9
-                          `(fringe ((t (:background "#FFFFE8"))))
-                          `(linum ((t (:foreground "#b2b2b2"))))))
+  (custom-theme-set-faces
+   'plan9
+   `(fringe ((t (:background "#FFFFE8"))))
+   `(linum ((t (:foreground "#b2b2b2"))))))
 
 (use-package doom-themes
   :ensure t

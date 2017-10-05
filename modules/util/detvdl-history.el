@@ -43,7 +43,7 @@
 ;; automatically save buffers associated with files on buffer switch
 ;; and on windows switch
 (defun auto-save-command ()
-  "Save the current buffer if `prelude-auto-save' is not nil."
+  "Save the current buffer if `auto-save' is not nil."
   (when (and detvdl-auto-save
              buffer-file-name
              (buffer-modified-p (current-buffer))
