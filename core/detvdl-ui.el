@@ -14,6 +14,7 @@
 
 ;; Wrap long lines
 (global-visual-line-mode +1)
+(diminish 'visual-line-mode)
 
 ;; Highlight current line
 (global-hl-line-mode +1)

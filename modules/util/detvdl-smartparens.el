@@ -4,6 +4,8 @@
 
 (use-package smartparens
   :ensure t
+  :diminish smartparens-mode
+  :functions sp-pair
   :config
   (progn
     (require 'smartparens-config)
@@ -11,7 +13,6 @@
           sp-autoskip-closing-pair 'always
           sp-hybrid-kill-entire-symbol nil)
     (sp-use-paredit-bindings)
-    (show-smartparens-global-mode +1)
     ;; define new pairs
     (sp-pair "{" nil :post-handlers
              '(((lambda (&rest _ignored)

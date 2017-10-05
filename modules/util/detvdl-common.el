@@ -80,6 +80,7 @@
 
 (use-package drag-stuff
   :ensure t
+  :diminish drag-stuff-mode
   :bind (("C-S-<up>" . drag-stuff-up)
          ("C-S-<down>" . drag-stuff-down))
   :config
