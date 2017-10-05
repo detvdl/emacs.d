@@ -10,6 +10,8 @@
 (require 'detvdl-ruby)
 (require 'detvdl-lisp)
 (require 'detvdl-elisp)
+(require 'detvdl-elixir)
+;; (require 'detvdl-haskell)
 (require 'detvdl-clojure)
 (require 'detvdl-python)
 (require 'detvdl-web)

@@ -12,6 +12,7 @@
          "\\.as[cp]x\\'"
          "\\.erb\\'"
          "\\.html?\\'"
+         "\\.eex\\'"
          "/\\(views\\|html\\|theme\\|templates\\)/.*\\.php\\'")
   :config
   (setq web-mode-enable-auto-pairing nil)
