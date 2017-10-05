@@ -4,7 +4,8 @@
 
 (use-package ediff
   :ensure t
-  :defer t)
+  :config
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (use-package fringe-helper
   :ensure t)
@@ -28,7 +29,6 @@
   :ensure t
   :defer t
   :bind (("C-x g" . magit-status)
-         ("C-x C-g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
   :config
   (setq magit-completing-read-function 'ivy-completing-read))
