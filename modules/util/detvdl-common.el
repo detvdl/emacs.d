@@ -48,7 +48,12 @@
   :ensure t
   :diminish undo-tree-mode
   :config
-  (global-undo-tree-mode))
+  (progn
+    ;; autosave the undo-tree history
+    (setq undo-tree-history-directory-alist
+          `((".*" . ,temporary-file-directory))
+          undo-tree-auto-save-history t)
+    (global-undo-tree-mode)))
 
 (use-package wgrep
   :ensure t

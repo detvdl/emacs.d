@@ -4,6 +4,7 @@
 
 ;; required for the -any-p function
 (use-package cl
+  :functions -any-p
   :ensure t)
 
 ;; Mainly taken from https://github.com/bbatsov/prelude/blob/master/core/prelude-editor.el

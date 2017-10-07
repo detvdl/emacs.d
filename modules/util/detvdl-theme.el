@@ -22,8 +22,8 @@
   :ensure t
   :no-require t
   :defer t
-  :init
-  (load-theme 'plan9 t)
+  ;; :init
+  ;; (load-theme 'plan9 t)
   :config
   (custom-theme-set-faces
    'plan9
@@ -34,10 +34,13 @@
   :ensure t
   :no-require t
   :defer t
+  :init
+  (load-theme 'doom-one t)
   :config
-  (setq doom-themes-enable-bold t
-        doom-themes-enable-italic t)
-  (doom-themes-org-config))
+  (progn
+    (setq doom-themes-enable-bold t
+          doom-themes-enable-italic t)
+    (doom-themes-org-config)))
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here

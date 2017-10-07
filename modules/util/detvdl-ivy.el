@@ -45,5 +45,17 @@
   (setq counsel-grep-base-command
         "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
+(use-package counsel-gtags
+  :ensure t
+  :bind (:map counsel-gtags-mode-map
+              ("M-t" . counsel-gtags-find-definition)
+              ("M-r" . counsel-gtags-find-reference)
+              ("M-s" . counsel-gtags-find-symbol)
+              ("M-," . counsel-gtags-go-backward))
+  :config
+  (progn
+    (add-hook 'c-mode-hook 'counsel-gtags-mode)
+    (add-hook 'c++-mode-hook 'counsel-gtags-mode)))
+
 (provide 'detvdl-ivy)
 ;;; detvdl-ivy.el ends here
