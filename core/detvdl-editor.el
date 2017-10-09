@@ -42,5 +42,10 @@
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
+;; (setq mac-command-modifier 'control)
+(setq mac-command-modifier 'control)
+(setq mac-option-modifier 'meta)
+(setq mac-control-modifier 'super)
+
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
