@@ -23,7 +23,8 @@
           ivy-height 8
           ivy-virtual-abbreviate 'full
           ivy-extra-directories nil
-          ivy-re-builders-alist '((t . ivy--regex-fuzzy)))
+          ivy-re-builders-alist '((swiper . ivy--regex-plus)
+                                  (t . ivy--regex-fuzzy)))
     (ivy-mode 1)))
 
 (use-package counsel
