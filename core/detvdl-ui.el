@@ -8,7 +8,7 @@
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
-(menu-bar-mode -1)
+;; (menu-bar-mode -1)
 
 (blink-cursor-mode -1)
 

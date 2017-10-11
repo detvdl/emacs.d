@@ -13,12 +13,12 @@
 
 (use-package smart-mode-line
   :ensure t
+  :after doom-themes
   :config
-  (with-eval-after-load 'doom-themes
-    (progn
-      (setq sml/no-confirm-load-theme t
-            sml/theme 'dark)
-      (sml/setup))))
+  (progn
+    (setq sml/no-confirm-load-theme t
+          sml/theme 'dark)
+    (sml/setup)))
 
 (use-package plan9-theme
   :ensure t

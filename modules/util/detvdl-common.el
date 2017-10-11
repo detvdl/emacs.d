@@ -35,6 +35,7 @@
 
 (use-package tramp
   :ensure t
+  :defer t
   :config
   (setq tramp-default-method "ssh"))
 
@@ -94,6 +95,7 @@
 
 (use-package drag-stuff
   :ensure t
+  :defer t
   :diminish drag-stuff-mode
   :bind (("C-S-<up>" . drag-stuff-up)
          ("C-S-<down>" . drag-stuff-down))
