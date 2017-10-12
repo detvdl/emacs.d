@@ -5,8 +5,9 @@
 (use-package notmuch
   :ensure t
   :defer t
-  :config
-  (setq notmuch-search-oldest-first nil))
+  :init
+  (setq-default notmuch-search-oldest-first nil
+                notmuch-show-all-tags-list t))
 
 (provide 'detvdl-mail)
 ;;; detvdl-mail.el ends here
