@@ -44,5 +44,7 @@
           doom-themes-enable-italic t)
     (doom-themes-org-config)))
 
+(global-display-line-numbers-mode 1)
+
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
