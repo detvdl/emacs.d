@@ -45,10 +45,11 @@
 ;; add 1/4th of current line height to line-spacing
 (setq-default line-spacing 0.25)
 
-(when (eq system-type 'darwin) ;; mac specific settings
-  (setq mac-option-modifier 'alt)
+;; mac specific key-rebindings
+(when (eq system-type 'darwin)
   (setq mac-command-modifier 'control)
   (setq mac-control-modifier 'meta)
+  (setq mac-option-modifier 'alt)
   (global-set-key [kp-delete] 'delete-char))
 
 (provide 'detvdl-editor)

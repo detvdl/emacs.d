@@ -43,9 +43,9 @@
 (defvar emacs-core-dir (expand-file-name "core" emacs-dir))
 (defvar emacs-modules-lang-dir (expand-file-name "modules/lang" emacs-dir))
 (defvar emacs-modules-util-dir (expand-file-name "modules/util" emacs-dir))
-(defvar emacs-themes-dir (expand-file-name "themes"))
+(defvar emacs-themes-dir (expand-file-name "themes" emacs-dir))
 (defvar emacs-savefile-dir (expand-file-name "savefile" emacs-dir))
-(defvar emacs-persp-dir (expand-file-name ".persp-confs/" emacs-dir))
+(defvar emacs-persp-dir (expand-file-name ".persp-confs" emacs-dir))
 
 ;; add directories to Emacs' `load-path'
 (add-to-list 'load-path emacs-core-dir)
