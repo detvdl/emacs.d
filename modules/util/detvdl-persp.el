@@ -7,7 +7,15 @@
   :init
   (setq perspeen-use-tab nil)
   :config
-  (perspeen-mode))
+  (progn
+    (perspeen-mode)
+    (defun detvdl/initial-persp ()
+      (perspeen-rename-ws "home")
+      (perspeen-create-ws)
+      (perspeen-rename-ws "mail")
+      (notmuch)
+      (perspeen-goto-last-ws))
+    (detvdl/initial-persp)))
 
 (provide 'detvdl-persp)
 ;;; detvdl-persp.el ends here
