@@ -12,10 +12,6 @@
                                       "LANGUAGE"))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
-;; ;; (setenv "LC_ALL" "en_US.UTF-8")
-
-(use-package dash-at-point
-  :ensure t)
 
 ;; avoid duplicate buffer names
 (use-package uniquify

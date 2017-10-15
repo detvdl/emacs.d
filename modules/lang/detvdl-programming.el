@@ -2,14 +2,15 @@
 ;;; Commentary:
 ;;; Code:
 
-;; not sure if we really still want this
 (use-package indent-guide
   :ensure t
+  :diminish indent-guide-mode
   :config
   (indent-guide-global-mode))
 
 (use-package aggressive-indent
   :ensure t
+  :diminish aggressive-indent-mode
   :config
   (global-aggressive-indent-mode)
   (add-to-list 'aggressive-indent-excluded-modes 'html-mode))

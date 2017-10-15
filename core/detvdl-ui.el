@@ -8,6 +8,8 @@
 (when (fboundp 'scroll-bar-mode)
   (scroll-bar-mode -1))
 
+;; turning menu-bar-mode off messes with OS X' (cocoa)
+;; native menu-bar integration
 ;; (menu-bar-mode -1)
 
 (blink-cursor-mode -1)
@@ -27,9 +29,14 @@
       scroll-preserve-screen-position 1)
 
 ;; mode line settings
+;; smart-mode-line setup in modules/util/detvdl-theme.el
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
+(diminish 'size-indication-mode)
+
+;; try out emacs-26 native line numbers
+(global-display-line-numbers-mode 1)
 
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
@@ -41,8 +48,8 @@
   (when (window-system)
     (set-frame-font font-str)))
 
-(set-font "SF Mono-12")
-;; (set-font "Fira Code Retina-12")
+;; (set-font "SF Mono-12")
+(set-font "Fira Code Retina-12")
 
 (provide 'detvdl-ui)
 ;;; detvdl-ui.el ends here
