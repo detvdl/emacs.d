@@ -9,17 +9,21 @@
   :config
   (progn
     (setq writeroom-fringes-outside-margins nil
-          writeroom-restore-window-config t)))
+          writeroom-restore-window-config t)
+    (add-hook 'writeroom-mode-hook
+              (lambda () (if (bound-and-true-p writeroom-mode)
+                             (display-line-numbers-mode -1)
+                           (display-line-numbers-mode 1))))))
 
 (use-package smart-mode-line
   :ensure t
-  :after doom-themes
   :config
   (progn
     (setq sml/no-confirm-load-theme t
           sml/theme 'dark)
     (sml/setup)))
 
+;;; THEMES
 (use-package plan9-theme
   :ensure t
   :no-require t
@@ -34,7 +38,6 @@
 
 (use-package doom-themes
   :ensure t
-  :no-require t
   :defer t
   :init
   (load-theme 'doom-one t)
@@ -43,8 +46,6 @@
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
     (doom-themes-org-config)))
-
-(global-display-line-numbers-mode 1)
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
