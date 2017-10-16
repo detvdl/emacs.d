@@ -8,7 +8,8 @@
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (use-package fringe-helper
-  :ensure t)
+  :ensure t
+  :functions fringe-helper-convert)
 
 (use-package git-gutter-fringe
   :ensure t
