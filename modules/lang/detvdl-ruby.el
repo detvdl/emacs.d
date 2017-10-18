@@ -24,7 +24,8 @@
          "Appraisals\\'")
   :interpreter "ruby"
   :config
-  (ruby-tools-mode +1)
+  ;; ruby-tools-mode already hooks into ruby-mode
+  ;; (ruby-tools-mode +1)
   (inf-ruby-minor-mode +1)
   (subword-mode +1))
 
