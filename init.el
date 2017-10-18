@@ -2,8 +2,7 @@
 ;;; Commentary:
 ;;; Code:
 
-(defvar emacs-dir (file-name-directory load-file-name))
-(setq package-user-dir (expand-file-name "elpa" emacs-dir)
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
                          ("melpa" . "https://melpa.org/packages/")
                          ("org" . "http://orgmode.org/elpa/"))
@@ -40,18 +39,18 @@
 ;; Always load newest byte code
 (setq load-prefer-newer t)
 
-(defvar emacs-core-dir (expand-file-name "core" emacs-dir))
-(defvar emacs-modules-lang-dir (expand-file-name "modules/lang" emacs-dir))
-(defvar emacs-modules-util-dir (expand-file-name "modules/util" emacs-dir))
-(defvar emacs-themes-dir (expand-file-name "themes" emacs-dir))
-(defvar emacs-savefile-dir (expand-file-name "savefile" emacs-dir))
-(defvar emacs-persp-dir (expand-file-name ".persp-confs" emacs-dir))
+(defvar emacs-core-dir (expand-file-name "core" user-emacs-directory))
+(defvar emacs-modules-lang-dir (expand-file-name "modules/lang" user-emacs-directory))
+(defvar emacs-modules-util-dir (expand-file-name "modules/util" user-emacs-directory))
+(defvar emacs-savefile-dir (expand-file-name "savefile" user-emacs-directory))
+(defvar emacs-persp-dir (expand-file-name ".persp-confs" user-emacs-directory))
+(defvar emacs-lisp-dir (expand-file-name "lisp" user-emacs-directory))
 
 ;; add directories to Emacs' `load-path'
 (add-to-list 'load-path emacs-core-dir)
 (add-to-list 'load-path emacs-modules-lang-dir)
 (add-to-list 'load-path emacs-modules-util-dir)
-(add-to-list 'load-path emacs-themes-dir)
+(add-to-list 'load-path emacs-lisp-dir)
 
 ;; reduce the frequency of garbage collection
 ;; default: 0.79MB
@@ -69,7 +68,7 @@
 (require 'detvdl-util)
 
 ;; write custom-set-variables to a separate file
-(setq custom-file (expand-file-name "custom.el" emacs-dir))
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
 
 ;;; init.el ends here
