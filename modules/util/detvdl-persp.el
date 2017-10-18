@@ -9,6 +9,8 @@
   :config
   (progn
     (perspeen-mode)
+    (set-face-attribute 'perspeen-selected-face nil
+                        :background "#51afef")
     (defun detvdl/initial-persp ()
       (perspeen-rename-ws "home")
       (perspeen-create-ws)
