@@ -2,21 +2,23 @@
 ;;; Commentary:
 ;;; Code:
 
-;; required for the -any-p function
-(use-package cl
-  :functions -any-p
-  :ensure t)
+(use-package auto-revert
+  :ensure nil
+  :diminish auto-revert-mode
+  :config
+  (progn
+    (add-hook 'dired-mode-hook 'auto-revert-mode)
+    (setq global-auto-revert-non-file-buffers t
+          auto-revert-verbose nil))
+  (global-auto-revert-mode 1))
 
 ;; Mainly taken from https://github.com/bbatsov/prelude/blob/master/core/prelude-editor.el
 (use-package savehist
   :ensure t
   :config
   (setq savehist-additional-variables
-        ;; search entries
         '(search-ring regexp-search-ring)
-        ;; save every minute
         savehist-autosave-interval 60
-        ;; keep the home clean
         savehist-file (expand-file-name "savehist" emacs-savefile-dir))
   (savehist-mode +1))
 
@@ -24,20 +26,15 @@
   :ensure t
   :commands (recentf-mode)
   :functions (recentf-load-list recentf-cleanup recentf-save-list)
+  :init
+  (setq recentf-save-file (expand-file-name "recentf" emacs-savefile-dir))
   :config
   (progn
-    (setq recentf-save-file (expand-file-name "recentf" emacs-savefile-dir)
-          recentf-max-saved-items 500
+    (setq recentf-max-saved-items 100
           recentf-max-menu-items 15
           ;; disable recentf-cleanup on Emacs start, because it can cause
           ;; problems with remote files
           recentf-auto-cleanup 'never)
-    (defun recentf-exclude-p (file)
-      "A predicate to decide whether to exclude FILE from recentf."
-      (let ((file-dir (file-truename (file-name-directory file))))
-        (-any-p (lambda (dir)
-                  (string-prefix-p dir file-dir))
-                (mapcar 'file-truename (list emacs-savefile-dir package-user-dir)))))
     (add-to-list 'recentf-exclude 'recentf-exclude-p)
     (recentf-mode +1)))
 
@@ -45,14 +42,13 @@
 ;; and on windows switch
 (defun auto-save-command ()
   "Save the current buffer if `auto-save' is not nil."
-  (when (and detvdl-auto-save
-             buffer-file-name
+  (when (and buffer-file-name
              (buffer-modified-p (current-buffer))
              (file-writable-p buffer-file-name))
     (save-buffer)))
 
 (defmacro advise-commands (advice-name commands class &rest body)
-  "Apply advice named ADVICE-NAME to multiple COMMANDS.
+  "Apply advice named ADVICE-NAME to multiple COMMANDS of CLASS.
 The body of the advice is in BODY."
   `(progn
      ,@(mapcar (lambda (command)
