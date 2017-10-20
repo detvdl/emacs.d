@@ -87,7 +87,14 @@
 
 (use-package multiple-cursors
   :ensure t
-  :defer t)
+  :defer t
+  ;; https://github.com/magnars/multiple-cursors.el/issues/105
+  :init (require 'multiple-cursors)
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-M-<" . mc/unmark-previous-like-this)
+         ("C-M->" . mc/unmark-next-like-this)
+         ("C-c >" . mc/mark-all-like-this)))
 
 (use-package expand-region
   :ensure t
