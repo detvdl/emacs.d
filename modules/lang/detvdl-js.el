@@ -15,14 +15,18 @@
     (js2-imenu-extras-mode +1)))
 
 (use-package tern
-  :after js2-mode
+  :ensure t
+  :commands tern-mode
+  :diminish tern-mode
   :config
-  (add-hook 'js2-mode-hook (lambda () (tern-mode t))))
+  (use-package company-tern
+    :ensure t
+    :init
+    (with-eval-after-load "company"
+      (add-to-list 'company-backends 'company-tern))))
 
-(use-package company-tern
-  :after tern
-  :config
-  (add-to-list 'company-backends 'company-tern))
+(add-hook 'js2-mode-hook #'tern-mode)
+
 
 ;; browser integration environment
 ;; (use-package indium)
@@ -31,7 +35,10 @@
 ;; (use-package tide)
 
 (use-package json-mode
-  :ensure t)
+  :ensure t
+  :defer t
+  :mode ("\\.json\\'"
+         "\\.js\\'"))
 
 (provide 'detvdl-js)
 ;;; detvdl-js.el ends here

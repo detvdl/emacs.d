@@ -6,12 +6,14 @@
 
 (use-package clojure-mode
   :ensure t
+  :mode "\\.clj\\'"
   :config
   (add-hook 'clojure-mode-hook #'subword-mode))
 
 (use-package cider
   :ensure t
   :defer t
+  :commands cider-jack-in
   :config
   (progn
     (setq nrepl-log-messages t)
