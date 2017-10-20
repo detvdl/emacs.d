@@ -5,6 +5,7 @@
 (use-package company
   :ensure t
   :diminish company-mode
+  :bind (("M-\\" . company-select-next))
   :config
   (setq company-idle-delay 0.5
         company-tooltip-limit 10
