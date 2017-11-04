@@ -6,5 +6,7 @@
   :ensure t
   :defer t)
 
+(add-hook 'elisp-mode-hook #'rainbow-delimiters-mode)
+
 (provide 'detvdl-elisp)
 ;;; detvdl-elisp.el ends here
