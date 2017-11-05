@@ -6,6 +6,8 @@
   :ensure t
   :diminish smartparens-mode
   :functions sp-pair
+  :init
+  (add-hook 'prog-mode-hook #'smartparens-mode)
   :config
   (progn
     (require 'smartparens-config)
@@ -19,9 +21,7 @@
                   (crux-smart-open-line-above)) "RET")))
     (sp-pair "{" nil :post-handlers
              '(("||\n[i]" "RET")
-               ("| " "SPC")))
-    (add-hook 'prog-mode-hook (lambda ()
-                                (smartparens-mode +1)))))
+               ("| " "SPC")))))
 
 (show-paren-mode 1)
 

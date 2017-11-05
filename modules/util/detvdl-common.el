@@ -50,7 +50,6 @@
 
 (use-package anzu
   :ensure t
-  :defer t
   :diminish anzu-mode
   :bind (("M-%" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp))
@@ -76,14 +75,12 @@
 
 (use-package easy-kill
   :ensure t
-  :defer t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
 (use-package iedit
   :ensure t
   :commands (iedit-mode)
-  :defer t
   :bind (("C-;" . iedit-mode)))
 
 (use-package multiple-cursors
@@ -105,7 +102,6 @@
 
 (use-package drag-stuff
   :ensure t
-  :defer t
   :diminish drag-stuff-mode
   :bind (("C-S-<up>" . drag-stuff-up)
          ("C-S-<down>" . drag-stuff-down))

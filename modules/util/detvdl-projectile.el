@@ -5,6 +5,8 @@
 (use-package projectile
   :ensure t
   :diminish projectile-mode
+  :bind (("C-c p p" . projectile-switch-project)
+         ("C-c p f" . projectile-find-file))
   :config
   (progn
     (setq projectile-completion-system 'ivy)
@@ -17,6 +19,7 @@
 
 (use-package projectile-ripgrep
   :ensure t
+  :after projectile
   :bind (:map projectile-mode-map
               ("C-c p s s" . projectile-ripgrep)))
 
