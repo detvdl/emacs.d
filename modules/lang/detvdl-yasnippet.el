@@ -4,6 +4,7 @@
 
 (use-package yasnippet
   :ensure t
+  :diminish yas-minor-mode
   :config
   (with-eval-after-load "company"
     (defvar company-mode/enable-yas t)
