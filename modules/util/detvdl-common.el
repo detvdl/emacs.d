@@ -5,14 +5,8 @@
 (use-package exec-path-from-shell
   :ensure t
   :config
-  (progn
-    ;; OS X doesn't set envvars globally
-    (exec-path-from-shell-copy-envs '("LC_ALL"
-                                      "LANG"
-                                      "LANGUAGE"))
-    (when (memq window-system '(mac ns x))
-      (exec-path-from-shell-initialize))))
-;; ;; (setenv "LC_ALL" "en_US.UTF-8")
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 (use-package dash-at-point
   :ensure t)
