@@ -20,7 +20,6 @@
 (require 'detvdl-c)
 
 (require 'detvdl-org)
-(require 'detvdl-latex)
 (require 'detvdl-markdown)
 
 (provide 'detvdl-lang)
