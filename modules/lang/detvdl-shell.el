@@ -2,32 +2,26 @@
 ;;; Commentary:
 ;;; Code:
 
-(defun set-mode (files mode)
-  "Set use-package style MODE for a list of FILES."
-  (mapcar
-   (lambda (file)
-     (cons (concat file "\\'") mode)) files))
+(use-package sh-script
+  :ensure t
+  :defer t
+  :mode (("\\.sh\\'" . shell-script-mode)
+         ("\\.zsh\\'" . shell-script-mode)
+         ("zlogin\\'" . shell-script-mode)
+         ("zlogin\\'" . shell-script-mode)
+         ("zlogout\\'" . shell-script-mode)
+         ("zpreztorc\\'" . shell-script-mode)
+         ("zprofile\\'" . shell-script-mode)
+         ("zshenv\\'" . shell-script-mode)
+         ("zshrc\\'" . shell-script-mode)))
 
 (defvar prezto-files '("zlogin" "zlogout" "zpreztorc" "zprofile" "zshenv" "zshrc"))
-
-(defvar sh-script-modes
-  (append '(("\\.sh\\'" . shell-script-mode)
-            ("\\.zsh\\'" . shell-script-mode))
-          (set-mode prezto-files 'shell-script-mode)))
 
 (add-hook 'sh-mode-hook
           (lambda ()
             (if (and buffer-file-name
                      (member (file-name-nondirectory buffer-file-name) prezto-files))
                 (sh-set-shell "zsh"))))
-
-;; Need to eval for the :mode keyword to accept dynamically created values
-(eval
- `(use-package sh-script
-    :ensure t
-    :defer t
-    :mode ,sh-script-modes
-    ))
 
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
