@@ -2,7 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package autorevert
+(use-package auto-revert
+  :ensure nil
   :diminish auto-revert-mode
   :config
   (progn
