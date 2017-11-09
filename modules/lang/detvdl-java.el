@@ -5,7 +5,6 @@
 (use-package eclim
   :ensure t
   :defer t
-  :mode "\\.java\\'"
   :init
   (setq-default eclim-eclipse-dirs '("/Applications/Eclipse.app/Contents/Eclipse")
                 eclimd-executable "/Applications/Eclipse.app/Contents/Eclipse/plugins/org.eclim_2.7.0/bin/eclimd"
@@ -13,18 +12,18 @@
   :config
   (progn
     (setq eclimd-autostart nil
-          eclimd-wait-for-process nil
-          eclim-print-debug-messages nil
+          eclim-print-debug-messages t
           ;; Show compilation errors in minibuffer
           help-at-pt-display-when-idle t
           help-at-pt-timer-delay 0.1)
     (help-at-pt-set-timer)
-    (add-hook 'java-mode-hook 'eclim-mode)
-    (add-hook 'java-mode-hook 'semantic-mode)))
+    (add-hook 'java-mode-hook (lambda ()
+                                (message "Just stop trying to make emacs work with Java.")
+                                (eclim-mode t)))))
 
 (use-package company-emacs-eclim
   :ensure t
-  :after eclim
+  :defer t
   :config
   (with-eval-after-load "company"
     (company-emacs-eclim-setup)
