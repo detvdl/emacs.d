@@ -4,10 +4,11 @@
 
 (use-package perspeen
   :ensure t
+  :init
+  (setq perspeen-use-tab nil)
   :config
   (progn
     (perspeen-mode)
-    (setq perspeen-use-tab nil)
     (set-face-attribute 'perspeen-selected-face nil
                         :background "#51afef")
     (defun detvdl/initial-persp ()

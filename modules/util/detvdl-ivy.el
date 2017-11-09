@@ -28,12 +28,6 @@
                                   (t . ivy--regex-fuzzy)))
     (ivy-mode 1)))
 
-(use-package ivy-rich
-  :ensure t
-  :after ivy
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer 'ivy-rich-switch-buffer-transformer))
-
 (use-package counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
@@ -50,7 +44,8 @@
   ;; put most recent commands first in `counsel-M-x'
   (use-package smex :ensure t)
   ;; use the faster ripgrep for standard counsel-grep
-  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+  (setq counsel-grep-base-command
+        "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
 (provide 'detvdl-ivy)
 ;;; detvdl-ivy.el ends here

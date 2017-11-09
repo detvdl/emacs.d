@@ -4,6 +4,7 @@
 
 (use-package writeroom-mode
   :ensure t
+  :defer t
   :bind (("C-c w" . writeroom-mode))
   :config
   (progn
@@ -19,14 +20,16 @@
   :config
   (progn
     (setq sml/no-confirm-load-theme t
-          sml/theme 'respectful)
+          sml/theme 'dark)
     (sml/setup)))
 
 ;;; THEMES
 (use-package plan9-theme
-  :disabled t
   :ensure t
+  :no-require t
   :defer t
+  ;; :init
+  ;; (load-theme 'plan9 t)
   :config
   (custom-theme-set-faces
    'plan9
