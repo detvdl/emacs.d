@@ -42,12 +42,10 @@
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
-(when (eq system-type 'darwin) ;; mac specific settings
-  (setq mac-option-modifier 'alt)
-  (setq mac-command-modifier 'control)
-  (setq mac-control-modifier 'meta)
-  (global-set-key [kp-delete] 'delete-char))
-(setq insert-directory-program (executable-find "gls"))
+;; (setq mac-command-modifier 'control)
+(setq mac-command-modifier 'control)
+(setq mac-option-modifier 'meta)
+(setq mac-control-modifier 'super)
 
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
