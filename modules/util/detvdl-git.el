@@ -12,7 +12,6 @@
 
 (use-package git-gutter-fringe
   :ensure t
-  :after fringe-helper
   :diminish git-gutter-mode
   :config
   (progn

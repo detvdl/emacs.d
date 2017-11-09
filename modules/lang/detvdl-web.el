@@ -29,17 +29,14 @@
 
 (use-package css-mode
   :ensure t
-  :defer t
-  :mode ("\\.[s]?css\\'")
   :config
-  (setq css-indent-offset 2))
-
-;; Pretty colours for css-mode
-(use-package rainbow-mode
-  :ensure t
-  :after css-mode
-  :config
-  (add-hook 'css-mode-hook #'rainbow-mode))
+  (progn
+    ;; Pretty colours for css-mode
+    (use-package rainbow-mode
+      :ensure t
+      :defer t)
+    (setq css-indent-offset 2)
+    (add-hook 'css-mode-hook #'rainbow-mode)))
 
 (provide 'detvdl-web)
 ;;; detvdl-web.el ends here

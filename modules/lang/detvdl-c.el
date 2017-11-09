@@ -5,7 +5,7 @@
 (defun c-mode-common-defaults ()
   (setq c-default-style "k&r"
         c-basic-offset 4)
-  (c-set-offset 'substatement-open 0))
+  (c-set-offset 'substatement-mode 0))
 
 (add-hook 'c-mode-common-hook #'c-mode-common-defaults)
 
