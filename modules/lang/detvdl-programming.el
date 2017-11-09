@@ -10,7 +10,9 @@
 
 (use-package rainbow-delimiters
   :ensure t
-  :commands rainbow-delimiters-mode)
+  :commands rainbow-delimiters-mode
+  :init
+  (add-hook 'prog-mode-hook (lambda () (rainbow-delimiters-mode t))))
 
 (use-package aggressive-indent
   :ensure t

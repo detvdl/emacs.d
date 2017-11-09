@@ -8,8 +8,7 @@
   :ensure t
   :mode "\\.clj\\'"
   :config
-  (add-hook 'clojure-mode-hook #'subword-mode)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+  (add-hook 'clojure-mode-hook #'subword-mode))
 
 (use-package cider
   :ensure t
