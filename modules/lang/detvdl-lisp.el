@@ -2,6 +2,10 @@
 ;;; Commentary:
 ;;; Code:
 
+(use-package rainbow-delimiters
+  :ensure t
+  :defer t)
+
 (defun wrap-with (s)
   `(lambda (&optional arg)
      (interactive "P")
