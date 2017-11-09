@@ -6,11 +6,10 @@
   :ensure t
   :config
   (progn
-    (setq exec-path-from-shell-arguments ())
     ;; OS X doesn't set envvars globally
-    (append exec-path-from-shell-variables '("LC_ALL"
-                                             "LANG"
-                                             "LANGUAGE"))
+    (exec-path-from-shell-copy-envs '("LC_ALL"
+                                      "LANG"
+                                      "LANGUAGE"))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
