@@ -21,13 +21,13 @@
                      (member (file-name-nondirectory buffer-file-name) prezto-files))
                 (sh-set-shell "zsh"))))
 
-;; get around dynamically created values in macros
-;; by wrapping the macro-call in an eval-block
+;; Need to eval for the :mode keyword to accept dynamically created values
 (eval
  `(use-package sh-script
     :ensure t
     :defer t
-    :mode ,sh-script-modes))
+    :mode ,sh-script-modes
+    ))
 
 (add-hook 'after-save-hook
           'executable-make-buffer-file-executable-if-script-p)
