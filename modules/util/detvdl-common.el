@@ -2,15 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package exec-path-from-shell
-  :ensure t
-  :config
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
-
-(use-package dash-at-point
-  :ensure t)
-
 ;; avoid duplicate buffer names
 (use-package uniquify
   ;; package is built-in
