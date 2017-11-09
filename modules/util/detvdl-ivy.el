@@ -19,7 +19,6 @@
     ;; Fuzzy matching
     (use-package flx :ensure t)
     (setq ivy-use-virtual-buffers t
-          enable-recursive-minibuffers t
           ivy-display-style 'fancy
           ivy-height 8
           ivy-virtual-abbreviate 'full
