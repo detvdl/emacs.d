@@ -10,8 +10,7 @@
   (setq company-idle-delay 0.5
         company-tooltip-limit 10
         company-minimum-prefix-length 2
-        company-tooltip-flip-when-above t
-        company-tooltip-align-annotations t)
+        company-tooltip-flip-when-above t)
   (global-company-mode 1))
 
 (use-package pos-tip
