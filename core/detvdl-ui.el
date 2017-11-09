@@ -5,7 +5,8 @@
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
 
-(when (fboundp 'scroll-bar-mode)
+(when (or (fboundp 'scroll-bar-mode)
+          (window-system))
   (scroll-bar-mode -1))
 
 ;; turning menu-bar-mode off messes with OS X' (cocoa)
@@ -43,10 +44,10 @@
 
 (defun set-font (font-str)
   "Set the default font to the FONT-STR parameter."
-  (add-to-list 'default-frame-alist '(font-str))
+  (add-to-list 'default-frame-alist '(`(font . ,font-str)))
   (set-face-attribute 'default t :font font-str)
   (when (window-system)
-    (set-frame-font font-str)))
+    (set-frame-font `(,font-str))))
 
 ;; (set-font "SF Mono-12")
 (set-font "Fira Code Retina-12")

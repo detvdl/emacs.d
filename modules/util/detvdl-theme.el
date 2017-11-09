@@ -29,25 +29,43 @@
 
 ;;; THEMES
 (use-package plan9-theme
-  :disabled t
   :ensure t
-  :defer t
-  :config
-  (custom-theme-set-faces
-   'plan9
-   `(fringe ((t (:background "#FFFFE8"))))
-   `(linum ((t (:foreground "#b2b2b2"))))))
+  :init
+  (progn
+    (load-theme 'plan9 t)
+    (custom-theme-set-faces
+     'plan9
+     `(fringe ((t (:background "#FFFFE8")))))))
 
 (use-package doom-themes
   :ensure t
+  :disabled t
   :defer t
-  :init
-  (load-theme 'doom-one t)
   :config
   (progn
     (setq doom-themes-enable-bold t
           doom-themes-enable-italic t)
     (doom-themes-org-config)))
+
+(defun my/load-theme (frame)
+  (select-frame frame)
+  (load-theme 'plan9 t)
+  (custom-theme-set-faces
+   'plan9
+   `(fringe ((t (:background "#FFFFE8")))))
+  (sml/setup))
+
+(if (daemonp)
+    (add-hook 'after-make-frame-functions #'my/load-theme)
+  (my/load-theme (selected-frame)))
+
+;; Other nice themes include
+;; nord-theme.el
+;; hc-zenburn.el
+;; zenburn.el
+;; ample-theme.el
+;; solarized-theme.el
+;; apropospriate-theme.el
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
