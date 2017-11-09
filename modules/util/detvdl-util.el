@@ -10,7 +10,6 @@
 (require 'detvdl-persp)
 (require 'detvdl-history)
 (require 'detvdl-theme)
-(require 'detvdl-modeline)
 
 (provide 'detvdl-util)
 ;;; detvdl-util.el ends here
