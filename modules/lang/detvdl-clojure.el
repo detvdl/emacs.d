@@ -12,7 +12,6 @@
 
 (use-package cider
   :ensure t
-  :defer t
   :config
   (progn
     (setq nrepl-log-messages t)
