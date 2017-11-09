@@ -24,7 +24,10 @@
          "Appraisals\\'")
   :interpreter "ruby"
   :config
-  (add-hook 'ruby-mode-hook #'subword-mode))
+  ;; ruby-tools-mode already hooks into ruby-mode
+  ;; (ruby-tools-mode +1)
+  (inf-ruby-minor-mode +1)
+  (subword-mode +1))
 
 (use-package yari
   :ensure t
@@ -32,9 +35,7 @@
 
 (use-package inf-ruby
   :ensure t
-  :defer t
-  :config
-  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
+  :defer t)
 
 (use-package ruby-tools
   :ensure t

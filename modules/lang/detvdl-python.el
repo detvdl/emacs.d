@@ -4,7 +4,6 @@
 
 (use-package anaconda-mode
   :ensure t
-  :mode "\\.py\\'"
   :config
   (add-hook 'python-mode-hook #'anaconda-mode)
   (add-hook 'python-mode-hook #'anaconda-eldoc-mode))
@@ -17,7 +16,6 @@
 
 (use-package pyenv-mode
   :ensure t
-  :mode "\\.py\\'"
   :config
   (progn
     (defun projectile-pyenv-mode-set ()
