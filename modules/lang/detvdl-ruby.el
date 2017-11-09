@@ -24,11 +24,7 @@
          "Appraisals\\'")
   :interpreter "ruby"
   :config
-  (add-hook 'ruby-mode-hook #'subword-mode)
-  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode)
-  (add-hook 'ruby-mode-hook #'ruby-tools-mode)
-  (add-hook 'ruby-mode-hook #'robe-mode)
-  (add-hook 'ruby-mode-hook #'rubocop-mode))
+  (add-hook 'ruby-mode-hook #'subword-mode))
 
 (use-package yari
   :ensure t
@@ -36,31 +32,37 @@
 
 (use-package inf-ruby
   :ensure t
-  :commands inf-ruby-minor-mode)
+  :defer t
+  :config
+  (add-hook 'ruby-mode-hook #'inf-ruby-minor-mode))
 
 (use-package ruby-tools
   :ensure t
-  :commands ruby-tools-mode
+  :defer t
   :bind (:map ruby-tools-mode-map
               ("C-;" . iedit-mode)))
 
-(use-package rbenv
+(use-package rvm
   :ensure t
   :defer t
   :config
-  (global-rbenv-mode)
-  (rbenv-use-corresponding))
+  (rvm-use-default))
 
 (use-package robe
   :ensure t
-  :commands robe-mode
+  :defer t
   :config
-  (with-eval-after-load "company"
-    (add-to-list 'company-backends 'company-robe)))
+  (add-hook 'ruby-mode-hook 'robe-mode)
+  (eval-after-load 'company
+    '(push 'company-robe company-backends))
+  (defadvice inf-ruby-console-auto (before activate-rvm-for-robe activate)
+    (rvm-activate-corresponding-ruby)))
 
 (use-package rubocop
   :ensure t
-  :commands rubocop-mode)
+  :defer t
+  :config
+  (add-hook 'ruby-mode-hook #'rubocop-mode))
 
 (provide 'detvdl-ruby)
 ;;; detvdl-ruby.el ends here
