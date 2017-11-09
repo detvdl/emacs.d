@@ -4,9 +4,9 @@
 
 ;; not sure if we really still want this
 (use-package indent-guide
-  :ensure t
-  :config
-  (indent-guide-global-mode))
+  :ensure t)
+  ;; :config
+  ;; (indent-guide-global-mode))
 
 (use-package aggressive-indent
   :ensure t
