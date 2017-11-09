@@ -35,9 +35,7 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read))
 
-(setq vc-follow-symlinks t
-      ;; we're using magit for git
-      vc-handled-backends nil)
+(setq vc-follow-symlinks t)
 
 (provide 'detvdl-git)
 ;;; detvdl-git.el ends here
