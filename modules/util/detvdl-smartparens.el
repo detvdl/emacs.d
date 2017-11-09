@@ -23,7 +23,5 @@
     (add-hook 'prog-mode-hook (lambda ()
                                 (smartparens-mode +1)))))
 
-(show-paren-mode 1)
-
 (provide 'detvdl-smartparens)
 ;;; detvdl-smartparens.el ends here
