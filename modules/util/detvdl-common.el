@@ -62,9 +62,9 @@
   :config
   (progn
     ;; autosave the undo-tree history
-    ;; (setq undo-tree-history-directory-alist
-    ;; `((".*" . ,temporary-file-directory))
-    ;; undo-tree-auto-save-history t)
+    (setq undo-tree-history-directory-alist
+          `((".*" . ,temporary-file-directory))
+          undo-tree-auto-save-history t)
     (global-undo-tree-mode)))
 
 (use-package wgrep
