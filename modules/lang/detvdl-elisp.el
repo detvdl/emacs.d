@@ -3,8 +3,9 @@
 ;;; Code:
 
 (use-package elisp-slime-nav
-  :ensure t
-  :defer t)
+  )
+
+(add-hook 'emacs-lisp-mode-hook #'rainbow-delimiters-mode)
 
 (provide 'detvdl-elisp)
 ;;; detvdl-elisp.el ends here

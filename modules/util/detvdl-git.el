@@ -4,7 +4,7 @@
 
 (use-package ediff
   :ensure t
-  :init
+  :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (use-package fringe-helper

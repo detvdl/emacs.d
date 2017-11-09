@@ -8,6 +8,7 @@
 
 (use-package cc-mode
   :ensure t
+  :defer t
   :mode (("\\.h\\(h?\\|xx\\|pp\\)\\'" . c++-mode)
          ("\\.m\\'" . c-mode)
          ("\\.mm\\'" . c++-mode)
@@ -26,10 +27,10 @@
     (setq indent-tabs-mode t))
   (lambda ()
     (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
-      (ggtags-mode 1))))
-
-(add-hook 'c-mode-common-hook #'c-mode-common-defaults)
-(add-hook 'makefile-mode-hook #'makefile-mode-defaults)
+      (ggtags-mode 1)))
+  :config
+  (add-hook 'c-mode-common-hook #'c-mode-common-defaults)
+  (add-hook 'makefile-mode-hook #'makefile-mode-defaults))
 
 (provide 'detvdl-c)
 ;;; detvdl-c.el ends here
