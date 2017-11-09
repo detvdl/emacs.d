@@ -47,6 +47,7 @@
   (setq mac-command-modifier 'control)
   (setq mac-control-modifier 'meta)
   (global-set-key [kp-delete] 'delete-char))
+(setq insert-directory-program (executable-find "gls"))
 
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
