@@ -4,7 +4,7 @@
 
 (setq-default indent-tabs-mode nil)  ;; tabs are bad, hmmkay
 (setq-default tab-width 4)
-
+n
 ;; delete the current selection on a keypress
 (delete-selection-mode t)
 
@@ -41,6 +41,9 @@
 
 ;; add 1/4th of current line height to line-spacing
 (setq-default line-spacing 0.25)
+
+;; always highlight the matching paren
+(show-paren-mode 1)
 
 ;; mac specific key-rebindings
 (when (eq system-type 'darwin)

@@ -4,12 +4,9 @@
 
 (use-package ediff
   :ensure t
-  :init
+  :commands ediff
+  :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
-
-(use-package fringe-helper
-  :ensure t
-  :functions fringe-helper-convert)
 
 (use-package git-gutter-fringe
   :ensure t
@@ -17,15 +14,17 @@
   :diminish git-gutter-mode
   :config
   (progn
+    (use-package fringe-helper
+      :ensure t
+      :functions fringe-helper-convert)
     (defconst fringe-bitmap-line
       (fringe-helper-convert
        "..xx...."
        ))
-    (global-git-gutter-mode +1)
     (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated)))
-  (global-git-gutter-mode +1))
+    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))
+    (global-git-gutter-mode +1)))
 
 (use-package magit
   :ensure t

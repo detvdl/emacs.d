@@ -23,7 +23,5 @@
              '(("||\n[i]" "RET")
                ("| " "SPC")))))
 
-(show-paren-mode 1)
-
 (provide 'detvdl-smartparens)
 ;;; detvdl-smartparens.el ends here
