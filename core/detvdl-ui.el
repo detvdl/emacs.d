@@ -37,7 +37,7 @@
 (diminish 'size-indication-mode)
 
 ;; try out emacs-26 native line numbers
-(global-display-line-numbers-mode 1)
+(global-display-line-numbers-mode -1)
 
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)

@@ -4,6 +4,8 @@
 
 (use-package perspeen
   :ensure t
+  :disabled t
+  :commands perspeen-mode
   :config
   (progn
     (perspeen-mode)
