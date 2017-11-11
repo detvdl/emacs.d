@@ -4,7 +4,7 @@
 
 (setq-default indent-tabs-mode nil)  ;; tabs are bad, hmmkay
 (setq-default tab-width 4)
-n
+
 ;; delete the current selection on a keypress
 (delete-selection-mode t)
 
