@@ -44,7 +44,7 @@
 
 (defun set-font (font-str)
   "Set the default font to the FONT-STR parameter."
-  (add-to-list 'default-frame-alist '(`(font . ,font-str)))
+  (add-to-list 'default-frame-alist `((font . ,font-str)))
   (set-face-attribute 'default t :font font-str)
   (when (window-system)
     (set-frame-font `(,font-str))))
