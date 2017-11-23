@@ -11,7 +11,8 @@
 
 (add-hook 'java-mode-hook (lambda ()
                             (meghanada-mode t)
-                            (semantic-mode t)))
+                            (semantic-mode t)
+                            (setq c-basic-offset 4)))
 
 (provide 'detvdl-java)
 ;;; detvdl-java.el ends here
