@@ -14,6 +14,13 @@
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
+(use-package shackle
+  :ensure t
+  :config
+  (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
+                        (cargo-process-mode :noselect t :align 'below :size 0.35 :other t))
+        shackle-default-rule '(:select t)))
+
 ;; avoid duplicate buffer names
 (use-package uniquify
   ;; package is built-in
