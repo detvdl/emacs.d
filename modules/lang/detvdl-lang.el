@@ -21,6 +21,8 @@
 (require 'detvdl-c)
 ;; (require 'detvdl-c++)
 
+(require 'detvdl-ess)
+
 (require 'detvdl-org)
 (require 'detvdl-latex)
 (require 'detvdl-markdown)
