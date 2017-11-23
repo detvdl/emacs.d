@@ -20,7 +20,8 @@
   (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
   (add-to-list
    'aggressive-indent-dont-indent-if
-   '(and (derived-mode-p 'c-mode)
+   '(and (or (derived-mode-p 'c-mode)
+             (major-mode 'rust-mode))
          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                              (thing-at-point 'line)))))
   )
