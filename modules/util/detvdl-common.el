@@ -3,6 +3,7 @@
 ;;; Code:
 
 (use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
   :ensure t
   :config
   (progn
@@ -10,16 +11,23 @@
     ;; OS X doesn't set envvars globally
     (append exec-path-from-shell-variables '("LC_ALL"
                                              "LANG"
-                                             "LANGUAGE"))
+                                             "LANGUAGE"
+                                             "PAGER"))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
 (use-package shackle
-  :ensure t
+  :ensur et
+  :init (shackle-mode t)
   :config
   (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
-                        (cargo-process-mode :noselect t :align 'below :size 0.35 :other t))
+                        (cargo-process-mode :noselect t :align 'below :size 0.25 :other t)
+                        ("\\'\\*Cargo Run.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
         shackle-default-rule '(:select t)))
+
+(use-package eyebrowse
+  :ensure t
+  :defer t)
 
 ;; avoid duplicate buffer names
 (use-package uniquify
