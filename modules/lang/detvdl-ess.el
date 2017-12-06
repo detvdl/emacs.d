@@ -4,6 +4,7 @@
 
 (use-package ess
   :ensure t
+  :mode ("\\.R\\'" . R-mode)
   :config
   (setq ess-indent-with-fancy-comments nil))
 
