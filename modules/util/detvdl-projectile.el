@@ -5,6 +5,8 @@
 (use-package projectile
   :ensure t
   :diminish projectile-mode
+  :bind (("C-c p p" . projectile-switch-project)
+         ("C-c p f" . projectile-find-file))
   :config
   (progn
     (setq projectile-completion-system 'ivy)
@@ -14,11 +16,6 @@
       (ivy-set-actions 'projectile-switch-project
                        '(("g" magit-status "magit status"))))
     (projectile-mode)))
-
-(use-package projectile-ripgrep
-  :ensure t
-  :bind (:map projectile-mode-map
-              ("C-c p s s" . projectile-ripgrep)))
 
 (provide 'detvdl-projectile)
 ;;; detvdl-projectile.el ends here

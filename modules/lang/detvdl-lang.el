@@ -6,7 +6,7 @@
 (require 'detvdl-company)
 (require 'detvdl-yasnippet)
 
-(require 'detvdl-shell)
+(require 'detvdl-shell-mode)
 (require 'detvdl-ruby)
 (require 'detvdl-lisp)
 (require 'detvdl-elisp)
@@ -18,6 +18,8 @@
 (require 'detvdl-web)
 (require 'detvdl-js)
 (require 'detvdl-c)
+
+(require 'detvdl-ess)
 
 (require 'detvdl-org)
 (require 'detvdl-markdown)

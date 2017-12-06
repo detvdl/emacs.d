@@ -12,7 +12,14 @@
   :ensure t
   :config
   (global-aggressive-indent-mode)
-  (add-to-list 'aggressive-indent-excluded-modes 'html-mode))
+  (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
+  (add-to-list
+   'aggressive-indent-dont-indent-if
+   '(and (or (derived-mode-p 'c-mode)
+             (eq major-mode 'rust-mode))
+         (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+                             (thing-at-point 'line)))))
+  )
 
 (use-package which-func
   :ensure t

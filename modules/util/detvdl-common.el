@@ -2,6 +2,33 @@
 ;;; Commentary:
 ;;; Code:
 
+(use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
+  :ensure t
+  :config
+  (progn
+    (setq exec-path-from-shell-arguments ())
+    ;; OS X doesn't set envvars globally
+    (append exec-path-from-shell-variables '("LC_ALL"
+                                             "LANG"
+                                             "LANGUAGE"
+                                             "PAGER"))
+    (when (memq window-system '(mac ns x))
+      (exec-path-from-shell-initialize))))
+
+(use-package shackle
+  :ensur et
+  :init (shackle-mode t)
+  :config
+  (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
+                        (cargo-process-mode :noselect t :align 'below :size 0.25 :other t)
+                        ("\\'\\*Cargo Run.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
+        shackle-default-rule '(:select t)))
+
+(use-package eyebrowse
+  :ensure t
+  :defer t)
+
 ;; avoid duplicate buffer names
 (use-package uniquify
   ;; package is built-in
@@ -26,6 +53,7 @@
 
 (use-package tramp
   :ensure t
+  :defer t
   :config
   (setq tramp-default-method "ssh"))
 
@@ -37,7 +65,6 @@
 
 (use-package anzu
   :ensure t
-  :defer t
   :diminish anzu-mode
   :bind (("M-%" . anzu-query-replace)
          ("C-M-%" . anzu-query-replace-regexp))
@@ -50,9 +77,9 @@
   :config
   (progn
     ;; autosave the undo-tree history
-    (setq undo-tree-history-directory-alist
-          `((".*" . ,temporary-file-directory))
-          undo-tree-auto-save-history t)
+    ;; (setq undo-tree-history-directory-alist
+    ;; `((".*" . ,temporary-file-directory))
+    ;; undo-tree-auto-save-history t)
     (global-undo-tree-mode)))
 
 (use-package wgrep
@@ -63,19 +90,24 @@
 
 (use-package easy-kill
   :ensure t
-  :defer t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
 (use-package iedit
   :ensure t
   :commands (iedit-mode)
-  :defer t
   :bind (("C-;" . iedit-mode)))
 
 (use-package multiple-cursors
   :ensure t
-  :defer t)
+  :defer t
+  ;; https://github.com/magnars/multiple-cursors.el/issues/105
+  :init (require 'multiple-cursors)
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-M-<" . mc/unmark-previous-like-this)
+         ("C-M->" . mc/unmark-next-like-this)
+         ("C-c >" . mc/mark-all-like-this)))
 
 (use-package expand-region
   :ensure t

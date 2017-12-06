@@ -4,34 +4,37 @@
 
 (use-package ediff
   :ensure t
+  :commands ediff
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
-
-(use-package fringe-helper
-  :ensure t)
 
 (use-package git-gutter-fringe
   :ensure t
   :diminish git-gutter-mode
   :config
   (progn
+    (use-package fringe-helper
+      :ensure t
+      :functions fringe-helper-convert)
     (defconst fringe-bitmap-line
       (fringe-helper-convert
        "..xx...."
        ))
-    (global-git-gutter-mode +1)
     (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
-    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated)))
-  (global-git-gutter-mode +1))
+    (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))
+    (global-git-gutter-mode +1)))
 
 (use-package magit
   :ensure t
-  :defer t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
   :config
   (setq magit-completing-read-function 'ivy-completing-read))
+
+(setq vc-follow-symlinks t)
+;; smart modeline uses vc to show relevant info
+;; (setq vc-handled-backends nil)
 
 (provide 'detvdl-git)
 ;;; detvdl-git.el ends here

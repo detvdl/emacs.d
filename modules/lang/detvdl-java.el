@@ -2,14 +2,17 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package jdee
+(use-package java-snippets
+  :ensure t)
+
+(use-package meghanada
   :ensure t
-  :init
-  (use-package memoize :ensure t)
-  :config
-  (progn
-    (setq jdee-server-dir (expand-file-name "jdee-server" emacs-dir))
-    (add-hook 'java-mode-hook #'jdee-mode)))
+  :commands meghanada-mode)
+
+(add-hook 'java-mode-hook (lambda ()
+                            (meghanada-mode t)
+                            (semantic-mode t)
+                            (setq c-basic-offset 4)))
 
 (provide 'detvdl-java)
 ;;; detvdl-java.el ends here

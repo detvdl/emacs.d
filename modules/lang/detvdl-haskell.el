@@ -4,7 +4,7 @@
 
 (use-package haskell-mode
   :ensure t
-  :defer t)
+  :commands haskell-mode)
 
 (provide 'detvdl-haskell)
 ;;; detvdl-haskell.el ends here

@@ -5,10 +5,17 @@
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
 
-(when (fboundp 'scroll-bar-mode)
+(when (or (fboundp 'scroll-bar-mode)
+          (window-system))
   (scroll-bar-mode -1))
 
-(menu-bar-mode -1)
+(setq inhibit-splash-screen t
+      initial-scratch-message nil
+      initial-major-mode 'org-mode)
+
+;; turning menu-bar-mode off messes with OS X' (cocoa)
+;; native menu-bar integration
+;; (menu-bar-mode -1)
 
 (blink-cursor-mode -1)
 
@@ -27,18 +34,27 @@
       scroll-preserve-screen-position 1)
 
 ;; mode line settings
+;; smart-mode-line setup in modules/util/detvdl-theme.el
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
+(diminish 'size-indication-mode)
+
+;; try out emacs-26 native line numbers
+(global-display-line-numbers-mode -1)
 
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
 (defun set-font (font-str)
   "Set the default font to the FONT-STR parameter."
-  (add-to-list 'default-frame-alist '(font-str))
-  (set-face-attribute 'default t :font font-str))
-(set-font "Pragmata Pro Mono 12")
+  (add-to-list 'default-frame-alist `(font . ,font-str))
+  (set-face-attribute 'default t :font font-str)
+  (when (window-system)
+    (set-frame-font font-str)))
+
+(set-font "Fira Code Retina-12")
+;; (set-font "unscii-14")
 
 (provide 'detvdl-ui)
 ;;; detvdl-ui.el ends here
