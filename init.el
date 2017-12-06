@@ -43,7 +43,6 @@
 (defvar emacs-modules-lang-dir (expand-file-name "modules/lang" user-emacs-directory))
 (defvar emacs-modules-util-dir (expand-file-name "modules/util" user-emacs-directory))
 (defvar emacs-savefile-dir (expand-file-name "savefile" user-emacs-directory))
-(defvar emacs-persp-dir (expand-file-name ".persp-confs" user-emacs-directory))
 (defvar emacs-lisp-dir (expand-file-name "lisp" user-emacs-directory))
 
 ;; add directories to Emacs' `load-path'
@@ -61,6 +60,7 @@
 
 (require 'detvdl-editor)
 (require 'detvdl-ui)
+(require 'detvdl-shell)
 (require 'detvdl-lang)
 (require 'detvdl-util)
 

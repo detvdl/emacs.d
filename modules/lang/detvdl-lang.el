@@ -6,7 +6,7 @@
 (require 'detvdl-company)
 (require 'detvdl-yasnippet)
 
-(require 'detvdl-shell)
+(require 'detvdl-shell-mode)
 (require 'detvdl-ruby)
 (require 'detvdl-lisp)
 (require 'detvdl-elisp)
