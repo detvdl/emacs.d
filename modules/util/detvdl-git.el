@@ -10,7 +10,6 @@
 
 (use-package git-gutter-fringe
   :ensure t
-  :after fringe-helper
   :diminish git-gutter-mode
   :config
   (progn
@@ -33,9 +32,9 @@
   :config
   (setq magit-completing-read-function 'ivy-completing-read))
 
-(setq vc-follow-symlinks t
-      ;; we're using magit for git
-      vc-handled-backends nil)
+(setq vc-follow-symlinks t)
+;; smart modeline uses vc to show relevant info
+;; (setq vc-handled-backends nil)
 
 (provide 'detvdl-git)
 ;;; detvdl-git.el ends here

@@ -7,7 +7,9 @@
   :diminish smartparens-mode
   :functions sp-pair
   :init
-  (add-hook 'prog-mode-hook #'smartparens-mode)
+  (progn
+    (add-hook 'prog-mode-hook #'smartparens-mode)
+    (add-hook 'ess-mode-hook #'smartparens-mode))
   :config
   (progn
     (require 'smartparens-config)
