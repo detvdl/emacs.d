@@ -5,11 +5,11 @@
 (setq-default indent-tabs-mode nil)  ;; tabs are bad, hmmkay
 (setq-default tab-width 4)
 
-;; delete the current selection on a keypress
-(delete-selection-mode t)
-
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
+
+;; delete the current selection on a keypress
+(delete-selection-mode t)
 
 ;; delete all trailing whitespace every time file is saved
 (add-hook 'before-save-hook
@@ -22,16 +22,17 @@
       `((".*" ,temporary-file-directory t)))
 
 ;; hippie expand is dabbrev expand on steroids
-(setq hippie-expand-try-functions-list '(try-expand-dabbrev
-                                         try-expand-dabbrev-all-buffers
-                                         try-expand-dabbrev-from-kill
-                                         try-complete-file-name-partially
-                                         try-complete-file-name
-                                         try-expand-all-abbrevs
-                                         try-expand-list
-                                         try-expand-line
-                                         try-complete-lisp-symbol-partially
-                                         try-complete-lisp-symbol))
+(setq hippie-expand-try-functions-list
+      '(try-expand-dabbrev
+        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-from-kill
+        try-complete-file-name-partially
+        try-complete-file-name
+        try-expand-all-abbrevs
+        try-expand-list
+        try-expand-line
+        try-complete-lisp-symbol-partially
+        try-complete-lisp-symbol))
 (global-set-key (kbd "M-/") 'hippie-expand)
 
 (global-set-key (kbd "C-x C-b") 'buffer-menu-other-window)
