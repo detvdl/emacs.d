@@ -9,6 +9,10 @@
           (window-system))
   (scroll-bar-mode -1))
 
+(setq inhibit-splash-screen t
+      initial-scratch-message nil
+      initial-major-mode 'org-mode)
+
 ;; turning menu-bar-mode off messes with OS X' (cocoa)
 ;; native menu-bar integration
 ;; (menu-bar-mode -1)
@@ -44,13 +48,13 @@
 
 (defun set-font (font-str)
   "Set the default font to the FONT-STR parameter."
-  (add-to-list 'default-frame-alist `((font . ,font-str)))
+  (add-to-list 'default-frame-alist `(font . ,font-str))
   (set-face-attribute 'default t :font font-str)
   (when (window-system)
-    (set-frame-font `(,font-str))))
+    (set-frame-font font-str)))
 
-;; (set-font "SF Mono-12")
 (set-font "Fira Code Retina-12")
+;; (set-font "unscii-14")
 
 (provide 'detvdl-ui)
 ;;; detvdl-ui.el ends here
