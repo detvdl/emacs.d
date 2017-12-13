@@ -12,6 +12,8 @@
     (with-eval-after-load "company"
       (add-to-list 'company-backends '(company-anaconda :with company-capf)))))
 
+(remove-hook 'anaconda-mode-response-read-fail-hook
+             'anaconda-mode-show-unreadable-response)
 (add-hook 'python-mode-hook #'anaconda-mode)
 (add-hook 'python-mode-hook #'anaconda-eldoc-mode)
 

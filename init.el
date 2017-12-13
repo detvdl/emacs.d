@@ -39,6 +39,9 @@
 ;; Always load newest byte code
 (setq load-prefer-newer t)
 
+(setq url-proxy-services
+      '(("no_proxy" . "^\\(localhost\\|127.0.0.1\\)")))
+
 (defvar emacs-core-dir (expand-file-name "core" user-emacs-directory))
 (defvar emacs-modules-lang-dir (expand-file-name "modules/lang" user-emacs-directory))
 (defvar emacs-modules-util-dir (expand-file-name "modules/util" user-emacs-directory))
