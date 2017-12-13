@@ -17,7 +17,7 @@
       (exec-path-from-shell-initialize))))
 
 (use-package shackle
-  :ensur et
+  :ensure t
   :init (shackle-mode t)
   :config
   (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
@@ -107,7 +107,9 @@
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
          ("C-M->" . mc/unmark-next-like-this)
-         ("C-c >" . mc/mark-all-like-this)))
+         ("C-c >" . mc/mark-all-like-this))
+  :config
+  (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
 
 (use-package expand-region
   :ensure t
