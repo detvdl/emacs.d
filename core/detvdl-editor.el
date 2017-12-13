@@ -22,6 +22,7 @@
       `((".*" ,temporary-file-directory t)))
 
 ;; hippie expand is dabbrev expand on steroids
+(setq abbrev-file-name (expand-file-name "abbrev_defs" emacs-savefile-dir))
 (setq hippie-expand-try-functions-list
       '(try-expand-dabbrev
         try-expand-dabbrev-all-buffers
