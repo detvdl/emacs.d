@@ -2,13 +2,13 @@
 ;;; Commentary:
 ;;; Code:
 
+;; MacOS does not set its PATH and environment variables globally (outside of shell)
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
   :ensure t
   :config
   (progn
     (setq exec-path-from-shell-arguments ())
-    ;; OS X doesn't set envvars globally
     (append exec-path-from-shell-variables '("LC_ALL"
                                              "LANG"
                                              "LANGUAGE"
@@ -16,6 +16,7 @@
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
+;; TODO: add some more rules
 (use-package shackle
   :ensure t
   :init (shackle-mode t)
@@ -29,10 +30,14 @@
   :ensure t
   :defer t)
 
+(use-package adaptive-wrap
+  :ensure t
+  :config
+  (add-hook 'org-mode-hook #'adaptive-wrap-prefix-mode))
+
 ;; avoid duplicate buffer names
 (use-package uniquify
-  ;; package is built-in
-  :ensure nil
+  :ensure nil  ;; package is built-in
   :config
   (setq uniquify-buffer-name-style 'forward
         uniquify-separator "/"
@@ -107,6 +112,8 @@
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
          ("C-M->" . mc/unmark-next-like-this)
+         ("C-c C->" . mc/skip-to-next-like-this)
+         ("C-c C-<" . mc/skip-to-previous-like-this)
          ("C-c >" . mc/mark-all-like-this))
   :config
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
