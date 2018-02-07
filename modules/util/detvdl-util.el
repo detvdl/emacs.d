@@ -11,6 +11,7 @@
 (require 'detvdl-history)
 (require 'detvdl-theme)
 (require 'detvdl-erc)
+(require 'detvdl-rest)
 
 (provide 'detvdl-util)
 ;;; detvdl-util.el ends here
