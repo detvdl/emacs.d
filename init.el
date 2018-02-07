@@ -61,6 +61,11 @@
 ;; warn when opening files bigger than 100MB
 (setq large-file-warning-threshold 100000000)
 
+;; use the auth-source API to resolve secrets and passwords from
+;; (possibly GPG encrypted) files
+(require 'auth-source)
+(setq auth-sources '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))
+
 (require 'detvdl-editor)
 (require 'detvdl-ui)
 (require 'detvdl-shell)
