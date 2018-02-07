@@ -2,8 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package org-plus-contrib
-  :pin org)
+;; (use-package org-plus-contrib
+;; :pin org)
 
 ;; (package-refresh-contents)
 

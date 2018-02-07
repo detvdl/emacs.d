@@ -17,7 +17,7 @@
           sp-autoskip-closing-pair 'always
           sp-hybrid-kill-entire-symbol nil)
     (sp-use-paredit-bindings)
-    ;; define new pairs
+    ;; TODO: add and fix pairs for Clojure-specific constructs
     (sp-pair "{" nil :post-handlers
              '(((lambda (&rest _ignored)
                   (crux-smart-open-line-above)) "RET")))
