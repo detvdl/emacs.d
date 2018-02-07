@@ -2,6 +2,8 @@
 ;;; Commentary:
 ;;; Code:
 
+(require 'detvdl-lisp)
+
 (use-package elisp-slime-nav
   :ensure t
   :defer t)
