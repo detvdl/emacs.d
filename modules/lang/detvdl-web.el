@@ -27,6 +27,14 @@
     (sp-local-tag "=" "<%= " " %>")
     (sp-local-tag "#" "<%# " " %>")))
 
+(use-package emmet-mode
+  :ensure t
+  :bind ("TAB" . emmet-expand-line)
+  :config
+  (progn
+    (add-hook 'sgml-mode-hook #'emmet-mode)
+    (add-hook 'css-mode-hook #'emmet-mode)))
+
 (use-package css-mode
   :ensure t
   :defer t
