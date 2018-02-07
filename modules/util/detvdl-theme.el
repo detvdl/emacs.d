@@ -6,9 +6,10 @@
   :ensure t
   :bind (("C-c w" . writeroom-mode))
   :config
-  (progn
-    (setq writeroom-fringes-outside-margins nil
-          writeroom-restore-window-config t)))
+  (setq writeroom-fringes-outside-margins nil
+        writeroom-restore-window-config t
+        writeroom-global-effects
+        (delq 'writeroom-set-fullscreen writeroom-global-effects)))
 
 (use-package smart-mode-line
   :ensure t
@@ -28,10 +29,11 @@
   :disabled t
   :config
   (progn
-    (load-theme 'plan9 t)
-    (custom-theme-set-faces
-     'plan9
-     `(fringe ((t (:background "#FFFFE8")))))))
+    (load-theme 'plan9 t)))
+
+(use-package challenger-deep-theme
+  :ensure t
+  :defer t)
 
 (use-package gruvbox-theme
   :ensure t
@@ -50,29 +52,24 @@
                       :foreground (face-foreground 'default)
                       :weight 'bold))
 
-(defun load-gruvbox-setup ()
-  "Set all the faces that are prepared for both light and dark themes."
-  (set-face-foreground 'git-gutter:modified "#fabd2f")
-  (set-face-foreground 'git-gutter:added    "#b8bb26")
-  (set-face-foreground 'git-gutter:deleted  "#fb4933")
-  (set-face-attribute 'font-lock-doc-face nil :inherit 'shadow)
-  (set-fringe-equal-bg))
+(defun modeline-extras ()
+  "Make a thicker modeline and make sure which-func is readable."
+  (let ((active-bg (face-attribute 'mode-line :background nil 'default))
+        (inactive-bg (face-attribute 'mode-line-inactive :background nil 'default)))
+    (set-face-attribute 'mode-line nil
+                        :box `(:line-width 5 :color ,active-bg))
+    (set-face-attribute 'mode-line-inactive nil
+                        :box `(:line-width 5 :color ,inactive-bg))
+    (set-face-attribute 'which-func nil
+                        :foreground (face-foreground 'default))))
 
 (defun load-dark-theme (&optional frame)
   (interactive)
   (when frame
     (select-frame frame))
-  (load-theme 'gruvbox-dark-medium t)
-  (load-gruvbox-setup)
-  (gruvbox-dark-modeline))
-
-(defun load-light-theme (&optional frame)
-  (interactive)
-  (when frame
-    (select-frame frame))
-  (load-theme 'gruvbox-light-hard t)
-  (load-gruvbox-setup)
-  (gruvbox-light-modeline))
+  (load-theme 'challenger-deep t)
+  (set-fringe-and-linum)
+  (modeline-extras))
 
 (if (daemonp)
     (add-hook 'after-make-frame-functions #'load-dark-theme)
