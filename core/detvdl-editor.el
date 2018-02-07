@@ -44,6 +44,12 @@
 ;; add 1/4th of current line height to line-spacing
 (setq-default line-spacing 0.25)
 
+;; native line-numbers since emacs-26
+(setq-default display-line-numbers t
+              display-line-numbers-current-absolute t
+              display-line-numbers-widen t
+              display-line-numbers-width 3)
+
 ;; always highlight the matching paren
 (show-paren-mode 1)
 

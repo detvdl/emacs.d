@@ -37,27 +37,18 @@
   :ensure t
   :defer t)
 
-(defun set-fringe-equal-bg ()
+(defun set-fringe-and-linum ()
   "Force the fringe to have the same color as the background."
   (set-face-attribute 'fringe nil
                       :foreground (face-foreground 'default)
-                      :background (face-background 'default)))
-
-(defun gruvbox-dark-modeline ()
-  (set-face-foreground 'shadow "#a89984")
-  (set-face-attribute 'which-func nil :foreground "#83a598")
-  (set-face-attribute 'mode-line nil
-					  :box '(:line-width 5 :color "#665c54"))
-  (set-face-attribute 'mode-line-inactive nil
-					  :box '(:line-width 5 :color "#3c3836")))
-
-(defun gruvbox-light-modeline ()
-  (set-face-foreground 'shadow "#7c6f64")
-  (set-face-attribute 'which-func nil :foreground "#421e1e")
-  (set-face-attribute 'mode-line nil
-					  :box '(:line-width 5 :color "#bdae93"))
-  (set-face-attribute 'mode-line-inactive nil
-					  :box '(:line-width 5 :color "#ebdbb2")))
+                      :background (face-background 'default))
+  (set-face-attribute 'line-number nil
+                      :background (face-background 'default)
+                      :foreground (face-foreground 'font-lock-comment-face))
+  (set-face-attribute 'line-number-current-line nil
+                      :background (face-background 'default)
+                      :foreground (face-foreground 'default)
+                      :weight 'bold))
 
 (defun load-gruvbox-setup ()
   "Set all the faces that are prepared for both light and dark themes."
