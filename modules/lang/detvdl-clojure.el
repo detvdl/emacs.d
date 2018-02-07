@@ -6,10 +6,13 @@
 
 (use-package clojure-mode
   :ensure t
-  :mode "\\.clj\\'"
+  :mode ("\\.clj[xc]?\\'"
+         "build\\.boot\\'")
   :config
   (add-hook 'clojure-mode-hook #'subword-mode)
   (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+
+(add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojurescript-mode))
 
 (use-package cider
   :ensure t
@@ -20,7 +23,12 @@
     (setq nrepl-log-messages t)
     (add-hook 'cider-mode-hook #'subword-mode)
     (add-hook 'cider-mode-hook #'eldoc-mode)
+    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
     (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
+
+(use-package clojure-snippets
+  :ensure t)
 
 (provide 'detvdl-clojure)
 ;;; detvdl-clojure.el ends here
