@@ -6,10 +6,12 @@
   :ensure t
   :bind (("C-c w" . writeroom-mode))
   :config
-  (setq writeroom-fringes-outside-margins nil
-        writeroom-restore-window-config t
-        writeroom-global-effects
-        (delq 'writeroom-set-fullscreen writeroom-global-effects)))
+  (progn
+    (setq writeroom-fringes-outside-margins nil
+          writeroom-restore-window-config t
+          writeroom-global-effects
+          (delq 'writeroom-set-fullscreen writeroom-global-effects))
+    (add-hook 'writeroom-mode-hook (lambda () (display-line-numbers-mode)))))
 
 (use-package smart-mode-line
   :ensure t
@@ -20,8 +22,11 @@
           sml/shorten-modes t
           sml/name-width 40
           sml/mode-width 'full
-          sml/theme 'respectful)
+          sml/theme nil)
     (sml/setup)))
+
+(use-package color-identifiers-mode
+  :ensure t)
 
 ;;; THEMES
 (use-package plan9-theme
@@ -33,11 +38,12 @@
 
 (use-package challenger-deep-theme
   :ensure t
-  :defer t)
+  :disabled t)
 
-(use-package gruvbox-theme
+(use-package base16-theme
   :ensure t
   :defer t)
+
 
 (defun set-fringe-and-linum ()
   "Force the fringe to have the same color as the background."
@@ -67,7 +73,8 @@
   (interactive)
   (when frame
     (select-frame frame))
-  (load-theme 'challenger-deep t)
+  ;; (load-theme 'challenger-deep t)
+  (load-theme 'base16-brewer)
   (set-fringe-and-linum)
   (modeline-extras))
 
