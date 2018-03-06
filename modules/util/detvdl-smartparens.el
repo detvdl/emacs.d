@@ -6,10 +6,7 @@
   :ensure t
   :diminish smartparens-mode
   :functions sp-pair
-  :init
-  (progn
-    (add-hook 'prog-mode-hook #'smartparens-mode)
-    (add-hook 'ess-mode-hook #'smartparens-mode))
+  :hook ((prog-mode ess-mode) . smartparens-mode)
   :config
   (progn
     (require 'smartparens-config)
@@ -25,5 +22,5 @@
              '(("||\n[i]" "RET")
                ("| " "SPC")))))
 
-(provide 'detvdl-smartparens)
+  (provide 'detvdl-smartparens)
 ;;; detvdl-smartparens.el ends here

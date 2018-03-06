@@ -9,8 +9,7 @@
   :mode ("\\.clj[xc]?\\'"
          "build\\.boot\\'")
   :config
-  (add-hook 'clojure-mode-hook #'subword-mode)
-  (add-hook 'clojure-mode-hook #'rainbow-delimiters-mode))
+  (add-hook 'clojure-mode-hook #'subword-mode))
 
 (add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojurescript-mode))
 

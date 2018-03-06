@@ -29,11 +29,9 @@
 
 (use-package emmet-mode
   :ensure t
-  :bind ("TAB" . emmet-expand-line)
-  :config
-  (progn
-    (add-hook 'sgml-mode-hook #'emmet-mode)
-    (add-hook 'css-mode-hook #'emmet-mode)))
+  :bind (:map emmet-mode-keymap
+              ("TAB" . emmet-expand-line))
+  :hook (sgml-mode css-mode))
 
 (use-package css-mode
   :ensure t
@@ -46,8 +44,7 @@
 (use-package rainbow-mode
   :ensure t
   :after css-mode
-  :config
-  (add-hook 'css-mode-hook #'rainbow-mode))
+  :hook css-mode)
 
 (provide 'detvdl-web)
 ;;; detvdl-web.el ends here

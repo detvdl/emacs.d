@@ -10,14 +10,14 @@
 
 (use-package rainbow-delimiters
   :ensure t
-  :commands rainbow-delimiters-mode)
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode) . rainbow-delimiters-mode))
 
 (use-package aggressive-indent
   :ensure t
   :diminish aggressive-indent-mode
   :config
   (global-aggressive-indent-mode)
-  (add-to-list 'aggressive-indent-excluded-modes 'html-mode)
+  (add-to-list 'aggressive-indent-excluded-modes 'html-mode 'ruby-mode)
   (add-to-list
    'aggressive-indent-dont-indent-if
    '(and (or (derived-mode-p 'c-mode)
@@ -47,7 +47,7 @@
   "Highlight a bunch of well known comment annotations.
 This functions should be added to the hooks of major modes for programming."
   (font-lock-add-keywords
-   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\):\\)"
+   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\|NOTE\\):\\)"
           1 font-lock-warning-face t))))
 
 (add-hook 'prog-mode-hook (lambda ()

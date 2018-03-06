@@ -23,7 +23,8 @@
   :config
   (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
                         (cargo-process-mode :noselect t :align 'below :size 0.25 :other t)
-                        ("\\'\\*Cargo Run.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
+                        ("\\`\\*HTTP Response.*?\\*\\'" :noselect t :regexp t :other t )
+                        ("\\`\\*Cargo.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
         shackle-default-rule '(:select t)))
 
 (use-package eyebrowse
@@ -32,8 +33,10 @@
 
 (use-package adaptive-wrap
   :ensure t
+  :hook (org-mode . adaptive-wrap-prefix-mode)
   :config
-  (add-hook 'org-mode-hook #'adaptive-wrap-prefix-mode))
+  (progn
+    (setq-default adaptive-wrap-extra-indent 2)))
 
 ;; avoid duplicate buffer names
 (use-package uniquify

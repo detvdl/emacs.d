@@ -18,14 +18,13 @@
   :ensure t
   :commands tern-mode
   :diminish tern-mode
+  :hook js2-mode
   :config
   (use-package company-tern
     :ensure t
     :init
     (with-eval-after-load "company"
       (add-to-list 'company-backends 'company-tern))))
-
-(add-hook 'js2-mode-hook #'tern-mode)
 
 
 ;; browser integration environment

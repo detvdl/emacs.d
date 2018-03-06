@@ -29,9 +29,9 @@
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
+  :hook (magit-post-refresh . git-gutter:update-all-windows)
   :config
-  (setq magit-completing-read-function 'ivy-completing-read)
-  (add-hook 'magit-post-refresh-hook #'git-gutter:update-all-windows))
+  (setq magit-completing-read-function 'ivy-completing-read))
 
 (setq vc-follow-symlinks t)
 ;; smart modeline uses vc to show relevant info

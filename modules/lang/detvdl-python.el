@@ -4,7 +4,8 @@
 
 (use-package anaconda-mode
   :ensure t
-  :commands (anaconda-mode anaconda-eldoc-mode)
+  :hook ((python-mode . anaconda-mode)
+         (python-mode . anaconda-eldoc-mode))
   :config
   (use-package company-anaconda
     :ensure t
@@ -14,12 +15,10 @@
 
 (remove-hook 'anaconda-mode-response-read-fail-hook
              'anaconda-mode-show-unreadable-response)
-(add-hook 'python-mode-hook #'anaconda-mode)
-(add-hook 'python-mode-hook #'anaconda-eldoc-mode)
 
 (use-package pyenv-mode
   :ensure t
-  :commands pyenv-mode
+  :hook python-mode
   :config
   (progn
     (defun projectile-pyenv-mode-set ()
@@ -29,8 +28,6 @@
             (pyenv-mode-set project)
           (pyenv-mode-unset))))
     (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)))
-
-(add-hook 'python-mode-hook #'pyenv-mode)
 
 (provide 'detvdl-python)
 ;;; detvdl-python.el ends here
