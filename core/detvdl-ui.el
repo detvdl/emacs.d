@@ -40,9 +40,6 @@
 (size-indication-mode t)
 (diminish 'size-indication-mode)
 
-;; try out emacs-26 native line numbers
-(global-display-line-numbers-mode -1)
-
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -54,7 +51,6 @@
     (set-frame-font font-str)))
 
 (set-font "Fira Code Retina-12")
-;; (set-font "unscii-14")
 
 (provide 'detvdl-ui)
 ;;; detvdl-ui.el ends here

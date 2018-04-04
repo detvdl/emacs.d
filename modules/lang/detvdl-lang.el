@@ -24,7 +24,7 @@
 
 (require 'detvdl-org)
 (require 'detvdl-latex)
-(require 'detvdl-markdown)
+(require 'detvdl-markup)
 
 (provide 'detvdl-lang)
 ;;; detvdl-lang.el ends here

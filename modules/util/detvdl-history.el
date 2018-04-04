@@ -4,7 +4,7 @@
 
 (use-package autorevert
   :diminish auto-revert-mode
-  :hook dired-mode
+  :hook (dired-mode . auto-revert-mode)
   :config
   (progn
     (setq global-auto-revert-non-file-buffers t

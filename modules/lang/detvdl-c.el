@@ -21,6 +21,10 @@
     ;; make the underscore part of a word in C and C++ modes
     (modify-syntax-entry ?_ "w" c++-mode-syntax-table)
     (modify-syntax-entry ?_ "w" c-mode-syntax-table))
+  (defun c-mode-alt-defaults ()
+    (interactive)
+    (setq c-default-style "gnu"
+          c-basic-offset 4))
   (defun makefile-mode-defaults ()
     (whitespace-toggle-options '(tabs))
     (setq indent-tabs-mode t))

@@ -12,7 +12,8 @@
     (append exec-path-from-shell-variables '("LC_ALL"
                                              "LANG"
                                              "LANGUAGE"
-                                             "PAGER"))
+                                             "PAGER"
+                                             "TERM"))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
@@ -26,6 +27,23 @@
                         ("\\`\\*HTTP Response.*?\\*\\'" :noselect t :regexp t :other t )
                         ("\\`\\*Cargo.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
         shackle-default-rule '(:select t)))
+
+(use-package ace-window
+  :ensure t
+  :bind ("M-o" . ace-window)
+  :config
+  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)))
+
+(use-package imenu-list
+  :ensure t
+  :bind ("C-'" . imenu-list-smart-toggle)
+  :config
+  (progn
+    (setq imenu-list-position 'right
+          imenu-list-after-jump-hook nil
+          imenu-list-focus-after-activation t
+          imenu-list-auto-resize nil)
+    (add-hook 'imenu-list-after-jump-hook #'recenter-top-bottom)))
 
 (use-package eyebrowse
   :ensure t

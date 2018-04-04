@@ -16,7 +16,6 @@
 
 (use-package tern
   :ensure t
-  :commands tern-mode
   :diminish tern-mode
   :hook js2-mode
   :config
@@ -24,7 +23,8 @@
     :ensure t
     :init
     (with-eval-after-load "company"
-      (add-to-list 'company-backends 'company-tern))))
+      (add-to-list 'company-backends 'company-tern)))
+  )
 
 
 ;; browser integration environment

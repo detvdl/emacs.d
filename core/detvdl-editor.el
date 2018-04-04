@@ -49,6 +49,7 @@
               display-line-numbers-current-absolute t
               display-line-numbers-widen t
               display-line-numbers-width 3)
+(global-display-line-numbers-mode -1)
 
 ;; always highlight the matching paren
 (show-paren-mode 1)

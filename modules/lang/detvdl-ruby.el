@@ -32,11 +32,13 @@
 
 (use-package inf-ruby
   :ensure t
+  :bind (:map inf-ruby-minor-mode-map
+              ("C-x C-e" . ruby-send-last-sexp))
   :hook (ruby-mode . inf-ruby-minor-mode))
 
 (use-package ruby-tools
   :ensure t
-  :hook ruby-mode
+  :hook (ruby-mode . ruby-tools-mode)
   :bind (:map ruby-tools-mode-map
               ("C-;" . iedit-mode)))
 
@@ -49,14 +51,18 @@
 
 (use-package robe
   :ensure t
-  :hook ruby-mode
+  ;; :hook (ruby-mode . robe-mode)
   :config
   (with-eval-after-load "company"
     (add-to-list 'company-backends 'company-robe)))
 
 (use-package rubocop
   :ensure t
-  :hook ruby-mode)
+  :hook (ruby-mode . rubocop-mode))
+
+(use-package feature-mode
+  :ensure t
+  :mode (("\.feature$" . feature-mode)))
 
 (provide 'detvdl-ruby)
 ;;; detvdl-ruby.el ends here

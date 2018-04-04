@@ -46,13 +46,13 @@
 (defvar emacs-modules-lang-dir (expand-file-name "modules/lang" user-emacs-directory))
 (defvar emacs-modules-util-dir (expand-file-name "modules/util" user-emacs-directory))
 (defvar emacs-savefile-dir (expand-file-name "savefile" user-emacs-directory))
-(defvar emacs-lisp-dir (expand-file-name "lisp" user-emacs-directory))
+(defvar emacs-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
 ;; add directories to Emacs' `load-path'
 (add-to-list 'load-path emacs-core-dir)
+(add-to-list 'load-path emacs-lisp-dir)
 (add-to-list 'load-path emacs-modules-lang-dir)
 (add-to-list 'load-path emacs-modules-util-dir)
-(add-to-list 'load-path emacs-lisp-dir)
 
 ;; reduce the frequency of garbage collection
 ;; default: 0.79MB
@@ -76,4 +76,10 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
 
+(defvar open-at-start '())
+(setq open-at-start '("~/Documents/TODO.org"))
+;; (dolist (f open-at-start)
+  ;; (find-file f))
+
 ;;; init.el ends here
+
