@@ -9,10 +9,9 @@
   (progn
     (setq writeroom-fringes-outside-margins nil
           writeroom-restore-window-config t
-          writeroom-width 120
+          writeroom-width 80
           writeroom-global-effects
-          (delq 'writeroom-set-fullscreen writeroom-global-effects))
-    (add-hook 'writeroom-mode-hook (lambda () (display-line-numbers-mode)))))
+          (delq 'writeroom-set-fullscreen writeroom-global-effects))))
 
 (use-package smart-mode-line
   :ensure t
@@ -77,8 +76,7 @@
       ('dark (progn (load-theme personal-dark-theme t)
                     (setq sml/theme nil))))
     (sml/setup)
-    (set-fringe-and-linum)
-    (modeline-extras)))
+    (set-fringe-and-linum)))
 
 (defun load-dark-theme (&optional frame)
   "Load the chosen dark theme into the current FRAME."
@@ -88,18 +86,11 @@
 (defun load-light-theme (&optional frame)
   "Load the chosen light theme into the current FRAME."
   (interactive)
-  (load-personal-theme frame 'light)
-  ;; (custom-theme-set-faces
-  ;;  'tango-plus
-  ;;  '(font-lock-comment-face ((t (:foreground "#75507b"))))
-  ;;  '(font-lock-builtin-face ((t (:foreground "#5c3566"))))
-  ;;  '(markdown-comment-face ((t (:foreground "dim gray"))))
-  ;;  '(sml/filename ((t :foreground "#204a87"))))
-  )
+  (load-personal-theme frame 'light))
 
 (if (daemonp)
-    (add-hook 'after-make-frame-functions #'load-dark-theme)
-  (load-dark-theme))
+    (add-hook 'after-make-frame-functions #'load-light-theme)
+  (load-light-theme))
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
