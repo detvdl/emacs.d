@@ -12,7 +12,7 @@
       :hook rust-mode
       :config
       (setq racer-cmd "~/.cargo/bin/racer"
-            racer-rust-src-path "/Users/detlev/Git/rust/src"))
+            racer-rust-src-path "/Users/detlev/Workspaces/Git/rust/src"))
 
     (use-package cargo
       :ensure t
