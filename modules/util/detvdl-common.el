@@ -32,29 +32,18 @@
   :ensure t
   :bind ("M-o" . ace-window)
   :config
-  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)))
+  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
+        aw-dispatch-always nil))
 
-(use-package imenu-list
+(use-package avy
   :ensure t
-  :bind ("C-'" . imenu-list-smart-toggle)
-  :config
-  (progn
-    (setq imenu-list-position 'right
-          imenu-list-after-jump-hook nil
-          imenu-list-focus-after-activation t
-          imenu-list-auto-resize nil)
-    (add-hook 'imenu-list-after-jump-hook #'recenter-top-bottom)))
+  :bind (("M-g f" . avy-goto-line)
+         ("M-g g" . avy-goto-line)
+         ("M-g c" . avy-goto-char-2)))
 
-(use-package eyebrowse
+(use-package imenu-anywhere
   :ensure t
-  :defer t)
-
-(use-package adaptive-wrap
-  :ensure t
-  :hook (org-mode . adaptive-wrap-prefix-mode)
-  :config
-  (progn
-    (setq-default adaptive-wrap-extra-indent 2)))
+  :bind (("M-I" . ivy-imenu-anywhere)))
 
 ;; avoid duplicate buffer names
 (use-package uniquify
@@ -138,20 +127,6 @@
          ("C-c >" . mc/mark-all-like-this))
   :config
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
-
-(use-package expand-region
-  :ensure t
-  :defer t
-  :functions (er/expand-region)
-  :bind (("C-=" . er/expand-region)))
-
-(use-package drag-stuff
-  :ensure t
-  :diminish drag-stuff-mode
-  :bind (("C-S-<up>" . drag-stuff-up)
-         ("C-S-<down>" . drag-stuff-down))
-  :config
-  (drag-stuff-global-mode 1))
 
 (provide 'detvdl-common)
 ;;; detvdl-common.el ends here

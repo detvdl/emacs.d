@@ -37,10 +37,9 @@
 (use-package counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
+         ("M-i" . counsel-imenu)
          ("C-x C-f" . counsel-find-file)
          ("C-x y" . counsel-yank-pop)
-         ;; ("C-c g" . counsel-git)
-         ;; ("C-c j" . counsel-git-grep)
          ("C-c k" . counsel-rg)
          ("C-x l" . counsel-locate)
          ("C-h v" . counsel-describe-variable)
