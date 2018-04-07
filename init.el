@@ -19,7 +19,8 @@
         (unless (package-installed-p 'use-package)
           (package-refresh-contents)
           (package-install 'use-package))
-        (setq use-package-always-ensure t)
+        (setq  use-package-enable-imenu-support t
+               use-package-always-ensure t)
         (let ((package-user-dir-real (file-truename package-user-dir)))
           ;; The reverse is necessary, because outside we mapc
           ;; add-to-list element-by-element, which reverses.
@@ -49,10 +50,13 @@
 (defvar emacs-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 
 ;; add directories to Emacs' `load-path'
-(add-to-list 'load-path emacs-core-dir)
-(add-to-list 'load-path emacs-lisp-dir)
-(add-to-list 'load-path emacs-modules-lang-dir)
-(add-to-list 'load-path emacs-modules-util-dir)
+(defvar emacs-directories '(emacs-core-dir
+                            emacs-modules-lang-dir
+                            emacs-modules-util-dir
+                            emacs-savefile-dir
+                            emacs-lisp-dir))
+(dolist (path emacs-directories)
+  (add-to-list 'load-path (symbol-value path)))
 
 ;; reduce the frequency of garbage collection
 ;; default: 0.79MB
@@ -76,10 +80,8 @@
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (load custom-file 'noerror)
 
-(defvar open-at-start '())
-(setq open-at-start '("~/Documents/TODO.org"))
+(defvar open-at-start '("~/.emacs.d/org/gtd.org"))
 ;; (dolist (f open-at-start)
-  ;; (find-file f))
+;; (find-file f))
 
 ;;; init.el ends here
-
