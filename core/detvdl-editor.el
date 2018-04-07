@@ -45,10 +45,10 @@
 (setq-default line-spacing 0.25)
 
 ;; native line-numbers since emacs-26
-(setq-default display-line-numbers t
-              display-line-numbers-current-absolute t
-              display-line-numbers-widen t
-              display-line-numbers-width 3)
+;; (setq-default display-line-numbers t
+;;               display-line-numbers-current-absolute t
+;;               display-line-numbers-widen t
+;;               display-line-numbers-width 3)
 (global-display-line-numbers-mode -1)
 
 ;; always highlight the matching paren
