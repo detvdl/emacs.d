@@ -51,7 +51,7 @@
 
 (use-package robe
   :ensure t
-  ;; :hook (ruby-mode . robe-mode)
+  :hook (ruby-mode . robe-mode)
   :config
   (with-eval-after-load "company"
     (add-to-list 'company-backends 'company-robe)))

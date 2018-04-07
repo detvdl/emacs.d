@@ -27,14 +27,21 @@
    '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
    ))
 
-(use-package org-bullets
+(use-package adaptive-wrap
   :ensure t
-  :defer t
-  ;; :hook (org-mode . org-bullets-mode)
-  )
+  :hook (org-mode . adaptive-wrap-prefix-mode)
+  :config
+  (progn
+    (setq-default adaptive-wrap-extra-indent 2)))
 
 (use-package ox-gfm
-  :ensure t)
+  :ensure t
+  :after org)
+
+(defun gtd ()
+  "Instantly switch to my GTD buffer."
+  (interactive)
+  (find-file (expand-file-name "org/gtd.org" user-emacs-directory)))
 
 (provide 'detvdl-org)
 ;;; detvdl-org.el ends here

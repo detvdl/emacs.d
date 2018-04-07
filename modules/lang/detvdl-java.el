@@ -3,15 +3,18 @@
 ;;; Code:
 
 (use-package java-snippets
-  :ensure t)
+  :ensure t
+  :defer t)
 
 (use-package meghanada
   :ensure t
   :commands meghanada-mode)
 
 (add-hook 'java-mode-hook (lambda ()
-                            (meghanada-mode t)
+                            ;; (meghanada-mode t)
                             (semantic-mode t)
+                            (with-eval-after-load 'yasnippet
+                              (java-snippets-initialize))
                             (setq c-basic-offset 4)))
 
 (provide 'detvdl-java)

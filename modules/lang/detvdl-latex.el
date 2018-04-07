@@ -4,14 +4,16 @@
 
 (use-package company-auctex
   :ensure t
-  :config
-  (company-auctex-init))
+  :defer t)
 
 (use-package company-math
-  :ensure t)
+  :ensure t
+  :after company-auctex)
+
 
 ;; local configuration for TeX modes
 (defun my-latex-mode-setup ()
+  (company-auctex-init)
   (setq-local company-backends
               (append '((company-math-symbols-latex company-latex-commands))
                       company-backends)))

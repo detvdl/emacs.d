@@ -27,7 +27,11 @@
     (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
 
 (use-package clojure-snippets
-  :ensure t)
+  :ensure t
+  :after clojure-mode
+  :config
+  (with-eval-after-load 'yasnippet
+    (clojure-snippets-initialize)))
 
 (provide 'detvdl-clojure)
 ;;; detvdl-clojure.el ends here
