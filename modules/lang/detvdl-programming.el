@@ -15,10 +15,13 @@
 (use-package aggressive-indent
   :ensure t
   :diminish aggressive-indent-mode
-  ;; :hook (prog-mode . aggressive-indent-mode)
+  :hook (prog-mode . aggressive-indent-mode)
   :config
-  ;; (global-aggressive-indent-mode)
-  (add-to-list 'aggressive-indent-excluded-modes 'html-mode 'ruby-mode)
+  (defvar aggressive-indent/excluded '())
+  (setq aggressive-indent/excluded '(html-mode ruby-mode python-mode yaml-mode))
+  (dolist (i aggressive-indent/excluded)
+    (add-to-list 'aggressive-indent-excluded-modes i))
+  ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode 'ruby-mode 'python-mode 'yaml-mode)
   (add-to-list
    'aggressive-indent-dont-indent-if
    '(and (or (derived-mode-p 'c-mode)
