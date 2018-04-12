@@ -15,7 +15,7 @@
 (use-package aggressive-indent
   :ensure t
   :diminish aggressive-indent-mode
-  :hook (prog-mode . aggressive-indent-mode)
+  ;; :hook (prog-mode . aggressive-indent-mode)
   :config
   ;; (global-aggressive-indent-mode)
   (add-to-list 'aggressive-indent-excluded-modes 'html-mode 'ruby-mode)
