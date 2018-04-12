@@ -20,6 +20,7 @@
 (require 'detvdl-c)
 ;; (require 'detvdl-c++)
 
+(require 'detvdl-debugger)
 (require 'detvdl-ess)
 
 (require 'detvdl-org)
