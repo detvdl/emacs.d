@@ -15,7 +15,8 @@
          "\\.eex\\'"
          "/\\(views\\|html\\|theme\\|templates\\)/.*\\.php\\'")
   :config
-  (setq web-mode-enable-auto-pairing nil)
+  (setq web-mode-enable-auto-pairing nil
+        web-mode-enable-current-element-highlight t)
   (sp-with-modes '(web-mode)
     (sp-local-pair "%" "%"
                    :unless '(sp-in-string-p)
