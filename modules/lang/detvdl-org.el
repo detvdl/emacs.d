@@ -2,11 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-;; (use-package org-plus-contrib
-;; :pin org)
-
-;; (package-refresh-contents)
-
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -16,16 +11,41 @@
          ("C-c b" . org-iswitchb))
   :config
   (setq org-log-done t
-        org-startup-indented nil)
-  ;; I *don't* like distinctive header sizes
-  ;; I *do* like different font colors for each header level
+        org-startup-indented t
+        org-hidden-keywords '()
+        ;; LaTeX preview size is a bit too small for comfort
+        org-format-latex-options (plist-put org-format-latex-options :scale 2.0)
+        org-highlight-latex-and-related '(latex))
+  ;; I *kinda* like distinctive header sizes
   (custom-set-faces
+   '(org-document-title ((t (:inherit outline-1 :height 1.40 :underline t))))
+   '(org-document-info ((t (:inherit outline-1 :height 1.20))))
+   '(org-document-info-keyword ((t (:inherit outline-1 :height 1.20))))
+   '(org-warning ((t (:weight bold :foreground "#CC9393" :height 1.20))))
+
    '(org-level-1 ((t (:inherit outline-1 :height 1.10))))
    '(org-level-2 ((t (:inherit outline-2 :height 1.00))))
    '(org-level-3 ((t (:inherit outline-3 :height 1.00))))
    '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
    '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
    ))
+
+(use-package alert
+  :ensure t
+  :config
+  (setq alert-default-style 'osx-notifier))
+
+(use-package org-alert
+  :ensure t
+  :after alert)
+
+(use-package org-bullets
+  :ensure t
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :config
+  (setq org-bullets-bullet-list '("◉"
+                                  "○")))
 
 (use-package adaptive-wrap
   :ensure t
