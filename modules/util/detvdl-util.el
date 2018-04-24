@@ -7,7 +7,6 @@
 (require 'detvdl-projectile)
 (require 'detvdl-git)
 (require 'detvdl-history)
-(require 'detvdl-theme)
 (require 'detvdl-erc)
 (require 'detvdl-rest)
 

@@ -70,11 +70,17 @@
 (require 'auth-source)
 (setq auth-sources '("~/.authinfo.gpg" "~/.authinfo" "~/.netrc"))
 
+;; Use GNUs to keep track of emacs issues
+
+(setq gnus-select-method '(nntp "GNUS"
+                                (nntp-address "news.gnus.org")))
+
 (require 'detvdl-editor)
 (require 'detvdl-ui)
 (require 'detvdl-shell)
 (require 'detvdl-lang)
 (require 'detvdl-util)
+(require 'detvdl-theme)
 
 ;; write custom-set-variables to a separate file
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
