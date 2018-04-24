@@ -3,14 +3,17 @@
 ;;; Code:
 
 (use-package indent-guide
-  :ensure t
-  :diminish indent-guide-mode
-  :config
-  (indent-guide-global-mode))
+  :ensure nil
+  :defer t)
 
 (use-package rainbow-delimiters
   :ensure t
-  :hook ((lisp-mode emacs-lisp-mode clojure-mode) . rainbow-delimiters-mode))
+  ;; :hook ((lisp-mode emacs-lisp-mode clojure-mode) . rainbow-delimiters-mode)
+  )
+
+(use-package idle-highlight-mode
+  :ensure t
+  :hook (prog-mode . idle-highlight-mode))
 
 (use-package aggressive-indent
   :ensure t
@@ -51,7 +54,7 @@
   "Highlight a bunch of well known comment annotations.
 This functions should be added to the hooks of major modes for programming."
   (font-lock-add-keywords
-   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\|NOTE\\):\\)"
+   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\|NOTE\\|WARNING\\):\\)"
           1 font-lock-warning-face t))))
 
 (add-hook 'prog-mode-hook (lambda ()
