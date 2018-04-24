@@ -32,7 +32,7 @@
   :ensure t
   :bind (:map emmet-mode-keymap
               ("TAB" . emmet-expand-line))
-  :hook (sgml-mode css-mode))
+  :hook ((web-mode sgml-mode css-mode) . emmet-mode))
 
 (use-package css-mode
   :ensure t
