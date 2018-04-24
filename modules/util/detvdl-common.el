@@ -8,12 +8,14 @@
   :ensure t
   :config
   (progn
-    (setq exec-path-from-shell-arguments ())
-    (append exec-path-from-shell-variables '("LC_ALL"
-                                             "LANG"
-                                             "LANGUAGE"
-                                             "PAGER"
-                                             "TERM"))
+    (setq exec-path-from-shell-arguments ()
+          exec-path-from-shell-variables (append
+                                          exec-path-from-shell-variables
+                                          '("LC_ALL"
+                                            "LANG"
+                                            "LANGUAGE"
+                                            "PAGER"
+                                            "TERM")))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
@@ -70,7 +72,9 @@
   :ensure t
   :defer t
   :config
-  (setq tramp-default-method "ssh"))
+  (setq tramp-default-method "ssh"
+        tramp-auto-save-directory emacs-savefile-dir
+        ))
 
 (use-package which-key
   :ensure t
@@ -88,6 +92,7 @@
 
 (use-package undo-tree
   :ensure t
+  :defer t
   :diminish undo-tree-mode
   :config
   (progn
