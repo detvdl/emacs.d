@@ -29,7 +29,7 @@
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
-  :demand t
+  ;; :demand t
   :hook (magit-post-refresh . git-gutter:update-all-windows)
   :config
   (setq magit-completing-read-function 'ivy-completing-read))

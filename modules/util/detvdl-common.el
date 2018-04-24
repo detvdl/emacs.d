@@ -122,7 +122,7 @@
   :ensure t
   :defer t
   ;; https://github.com/magnars/multiple-cursors.el/issues/105
-  :init (require 'multiple-cursors)
+  ;; :init (require 'multiple-cursors)
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
