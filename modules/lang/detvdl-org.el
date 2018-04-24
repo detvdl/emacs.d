@@ -32,12 +32,13 @@
 
 (use-package alert
   :ensure t
+  :defer t
   :config
   (setq alert-default-style 'osx-notifier))
 
 (use-package org-alert
   :ensure t
-  :after alert)
+  :after org)
 
 (use-package org-bullets
   :ensure t
