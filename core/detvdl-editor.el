@@ -15,12 +15,6 @@
 (add-hook 'before-save-hook
           (lambda () (delete-trailing-whitespace)))
 
-;; store all backup and autosave files in the tmp dir
-(setq backup-directory-alist
-      `((".*" . ,temporary-file-directory)))
-(setq auto-save-file-name-transforms
-      `((".*" ,temporary-file-directory t)))
-
 ;; hippie expand is dabbrev expand on steroids
 (setq abbrev-file-name (expand-file-name "abbrev_defs" emacs-savefile-dir))
 (setq hippie-expand-try-functions-list
@@ -45,11 +39,12 @@
 (setq-default line-spacing 0.25)
 
 ;; native line-numbers since emacs-26
-;; (setq-default display-line-numbers t
-;;               display-line-numbers-current-absolute t
-;;               display-line-numbers-widen t
-;;               display-line-numbers-width 3)
-(global-display-line-numbers-mode -1)
+(setq-default display-line-numbers t
+              display-line-numbers-current-absolute t
+              display-line-numbers-widen t
+              display-line-numbers-width 3
+              display-lin)
+(global-display-line-numbers-mode t)
 
 ;; always highlight the matching paren
 (show-paren-mode 1)
