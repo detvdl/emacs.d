@@ -15,7 +15,9 @@
                                             "LANG"
                                             "LANGUAGE"
                                             "PAGER"
-                                            "TERM")))
+                                            "TERM"
+                                            "SSH_AUTH_SOCK"
+                                            "GPG_TTY")))
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
