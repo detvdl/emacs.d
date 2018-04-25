@@ -26,7 +26,7 @@
   (defun after-load-farmhouse ()
     (custom-theme-set-faces
      'farmhouse-light
-     '(font-lock-warning-face ((t (:weight bold))))
+     '(font-lock-warning-face ((t (:foreground "#ec3691" :weight bold))))
      '(font-lock-constant-face ((t (:foreground "#84BA11"))))
      '(magit-section-highlight ((t (:background "#f6f2f3"))))
      `(indent-guide-face ((t (:foreground
