@@ -17,13 +17,43 @@
       :ensure t
       :functions fringe-helper-convert)
     (defconst fringe-bitmap-line
-      (fringe-helper-convert
-       "..xx...."
-       ))
+      (fringe-helper-convert "..xx...."))
+    (set-face-attribute 'git-gutter:modified nil :foreground "slateblue3")
+    (set-face-attribute 'git-gutter:added nil :foreground "chartreuse4")
+    (set-face-attribute 'git-gutter:deleted nil :foreground "firebrick3")
+
     (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))
-    (global-git-gutter-mode +1)))
+    (global-git-gutter-mode +1)
+    (defhydra hydra-git-gutter (:body-pre (git-gutter-mode 1)
+                                          :hint nil)
+      "
+Git gutter:
+  _n_: next hunk        _s_tage hunk     _q_uit
+  _p_: previous hunk    _r_evert hunk    _Q_uit and deactivate git-gutter
+  ^ ^                   _g_popup hunk
+  _<_: first hunk
+  _>_: last hunk        set start _R_evision
+"
+      ("n" git-gutter:next-hunk)
+      ("p" git-gutter:previous-hunk)
+      ("<" (progn (goto-char (point-min))
+                  (git-gutter:next-hunk 1)))
+      (">" (progn (goto-char (point-min))
+                  (git-gutter:previous-hunk 1)))
+      ("s" git-gutter:stage-hunk)
+      ("r" git-gutter:revert-hunk)
+      ("g" git-gutter:popup-hunk)
+      ("R" git-gutter:set-start-revision)
+      ("q" nil :color blue)
+      ("Q" (progn (git-gutter-mode -1)
+                  ;; git-gutter-fringe doesn't seem to
+                  ;; clear the markup right away
+                  (sit-for 0.1)
+                  (git-gutter:clear))
+       :color blue))
+    (define-key global-map (kbd "C-c g") 'hydra-git-gutter/body)))
 
 (use-package magit
   :ensure t
