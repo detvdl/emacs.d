@@ -19,6 +19,7 @@
     ;; Fuzzy matching
     (use-package flx :ensure t)
     (setq ivy-use-virtual-buffers t
+          ivy-use-selectable-prompt t
           enable-recursive-minibuffers t
           ivy-display-style 'fancy
           ivy-height 8
@@ -39,7 +40,7 @@
   :bind (("M-x" . counsel-M-x)
          ("M-i" . counsel-imenu)
          ("C-x C-f" . counsel-find-file)
-         ("C-x y" . counsel-yank-pop)
+         ("C-c y" . counsel-yank-pop)
          ("C-c k" . counsel-rg)
          ("C-x l" . counsel-locate)
          ("C-h v" . counsel-describe-variable)
