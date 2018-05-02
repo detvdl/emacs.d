@@ -56,5 +56,9 @@
   (setq mac-option-modifier 'alt)
   (global-set-key [kp-delete] 'delete-char))
 
+(defun start-emacs ()
+  (interactive)
+  (start-process "Emacs" nil (executable-find "emacs")))
+
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
