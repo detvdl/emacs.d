@@ -28,14 +28,6 @@
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 
-;; Window-dividers
-(window-divider-mode t)
-(setq window-divider-default-right-width 2)
-(let ((wd--fg (face-attribute 'mode-line-inactive :background)))
-  (set-face-attribute 'window-divider nil :foreground wd--fg)
-  (set-face-attribute 'window-divider-first-pixel nil :foreground wd--fg)
-  (set-face-attribute 'window-divider-last-pixel nil :foreground wd--fg))
-
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
@@ -54,6 +46,8 @@
           (set-frame-position frame
                               (/ (- swidth fwidth) 2)
                               (/ (- sheight fheight) 2)))))))
+(add-hook 'after-make-frame-functions #'detvdl:scale-and-center-frame)
+(detvdl:scale-and-center-frame)
 ;; Font settings
 (defun detvdl:set-font (font-str)
   "Set the default font to the FONT-STR parameter."
@@ -62,8 +56,6 @@
   (when (window-system)
     (set-frame-font font-str)))
 
-;; Call utility functions here
-(detvdl:scale-and-center-frame)
 (detvdl:set-font "Fira Code Retina-12")
 
 (provide 'detvdl-ui)

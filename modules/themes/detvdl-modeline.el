@@ -38,7 +38,7 @@
     face mode-line-buffer-id)
   "Formats the current directory.")
 
-(defun my:set-modeline ()
+(defun detvdl:set-modeline ()
   (with-eval-after-load 'which-func
     (setq-default mode-line-format
                   `(" "
@@ -58,7 +58,8 @@
                     which-func-format)))
 
   (set-face-attribute 'mode-line nil
-                      :box `(:line-width 5 :color ,(face-attribute 'mode-line :background))
+                      :background (face-attribute 'default :background)
+                      :box `(:line-width 5 :color ,(face-attribute 'default :background))
                       :overline nil
                       :underline nil)
   (set-face-attribute 'mode-line-inactive nil

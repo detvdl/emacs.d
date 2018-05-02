@@ -2,23 +2,31 @@
 ;;; Commentary:
 ;;; Code:
 
-;; (require 'detvdl-zenburn)
 (require 'detvdl-modeline)
 (require 'ligatures-font)
 
-(use-package writeroom-mode
+(use-package olivetti
   :ensure t
-  :bind (("C-c w" . writeroom-mode))
+  :bind (("C-c w" . olivetti-mode))
   :config
   (progn
-    (setq writeroom-fringes-outside-margins nil
-          writeroom-restore-window-config t
-          writeroom-width 80
-          writeroom-global-effects
-          (delq 'writeroom-set-fullscreen writeroom-global-effects))))
+    (setq-default olivetti-body-width 0.75
+                  olivetti-body-minimum-width 60
+                  olivetti-hide-mode-line t)
+    (add-hook 'olivetti-mode-hook
+              (lambda () (if (bound-and-true-p olivetti-mode)
+                        (progn (display-line-numbers-mode -1)
+                               (git-gutter-mode -1))
+                      (progn (display-line-numbers-mode t)
+                             (git-gutter-mode t)))))))
 
 ;;; THEMES
 ;; Other nice themes to keep in mind: challenger-deep
+
+(defvar detvdl:after-theme-fns '())
+
+;; (require 'detvdl-zenburn)
+
 (use-package farmhouse-theme
   :ensure t
   :defer t
@@ -31,11 +39,21 @@
      '(magit-section-highlight ((t (:background "#f6f2f3"))))
      `(indent-guide-face ((t (:foreground
                               ,(face-attribute 'font-lock-comment-face :foreground)))))
-     '(iedit-occurrence ((t (:background "purple" :foreground "white")))))))
+     '(iedit-occurrence ((t (:background "purple" :foreground "white"))))
+     '(anzu-replace-to ((t (:foreground "purple"))))
+     '(org-code ((t (:foreground "blue" :weight bold))))))
+  (add-to-list 'detvdl:after-theme-fns '(farmhouse-light . after-load-farmhouse)))
 
 (use-package arjen-grey-theme
   :ensure t
-  :defer t)
+  :defer t
+  :init
+  (defun after-load-arjen ()
+    (custom-theme-set-faces
+     'arjen-grey
+     `(which-func ((t (:foreground ,(face-attribute font-lock-function-name-face :foreground)))))
+     '(hl-line ((t (:background "gray13"))))))
+  (add-to-list 'detvdl:after-theme-fns '(arjen-grey . after-load-arjen)))
 
 (use-package tango-plus-theme
   :ensure t
@@ -50,7 +68,8 @@
      '(show-paren-match ((t (:background "#e9b96e"))))
      '(sml/filename ((t :foreground "#204a87")))
      )
-    (set-cursor-color "#000000")))
+    (set-cursor-color "#000000"))
+  (add-to-list 'detvdl:after-theme-fns '(tango-plus . after-load-tango)))
 
 
 (defun set-fringe-and-linum ()
@@ -66,12 +85,26 @@
                       :foreground (face-foreground 'default)
                       :weight 'bold))
 
+;; Window-dividers
+(window-divider-mode t)
+(setq window-divider-default-right-width 1
+      window-divider-default-bottom-width 2)
+(defun detvdl:set-window-dividers ()
+  (let ((wd--fg (face-attribute 'mode-line-inactive :background)))
+    (set-face-attribute 'window-divider nil :foreground wd--fg)
+    (set-face-attribute 'window-divider-first-pixel nil :foreground wd--fg)
+    (set-face-attribute 'window-divider-last-pixel nil :foreground wd--fg)))
+
 (use-package all-the-icons
   :ensure t
   :demand)
 
 (defvar detvdl:themes (list :light 'farmhouse-light
                             :dark 'arjen-grey))
+(defvar detvdl:current-theme nil)
+(defvar detvdl:default-after-theme-fns '(set-fringe-and-linum
+                                         detvdl:set-modeline
+                                         detvdl:set-window-dividers))
 
 (defun disable-active-themes ()
   "Disable all currently active themes."
@@ -80,49 +113,51 @@
 
 (defun detvdl:load-theme (&optional frame type &rest after-fns)
   "Load the chosen theme of type TYPE into the current FRAME."
-  (let ((type (or type :light))
-        (frame (or frame (selected-frame))))
+  (let* ((type (or type :light))
+         (frame (or frame (selected-frame)))
+         (theme (plist-get detvdl:themes type))
+         (after-theme-fns (alist-get theme detvdl:after-theme-fns))
+         (after-fns (append after-fns detvdl:default-after-theme-fns
+                            (if (seqp after-theme-fns)
+                                after-theme-fns
+                              `(,after-theme-fns)))))
     (select-frame frame)
     (disable-active-themes)
-    (load-theme (plist-get detvdl:themes type) t)
-    (with-eval-after-load 'all-the-icons (my:set-modeline)))
-  (when after-fns
-    (mapc (lambda (fn) (when fn (funcall fn))) after-fns)))
-
-(defun load-personal-theme (&optional frame type &rest after-fns)
-  "Load the chose theme of type TYPE into the current FRAME."
-  (let ((type (or type :light)))
-    (when frame (select-frame frame))
-    (disable-active-themes)
-    (pcase type
-      (:light (progn (load-theme personal-light-theme t)))
-      (:dark (progn (load-theme personal-dark-theme t))))
-    (with-eval-after-load 'all-the-icons (my:set-modeline))
-    ))
+    (load-theme theme t)
+    (when after-fns
+      (mapc (lambda (fn) (when fn (funcall fn))) after-fns))))
 
 (defun load-dark-theme (&optional frame)
   "Load the chosen dark theme into the current FRAME."
   (interactive)
-  (let ((after-fn (pcase (plist-get detvdl:themes :dark)
-                    ('zenburn 'after-load-zenburn)
-                    ('sanityinc-tomorrow-bright 'after-load-bright))))
-    (detvdl:load-theme frame :dark after-fn 'set-fringe-and-linum)))
+  (setq detvdl:current-theme 'dark)
+  (detvdl:load-theme frame :dark))
 
 (defun load-light-theme (&optional frame)
   "Load the chosen light theme into the current FRAME."
   (interactive)
-  (let ((after-fn (pcase (plist-get detvdl:themes :light)
-                    ('tango-plus 'after-load-tango)
-                    ('farmhouse-light 'after-load-farmhouse))))
-    (detvdl:load-theme frame :light after-fn 'set-fringe-and-linum)))
+  (setq detvdl:current-theme 'light)
+  (detvdl:load-theme frame :light))
 
 (if (daemonp)
     (add-hook 'after-make-frame-functions #'load-light-theme)
-  (load-light-theme))
+  (if (display-graphic-p)
+      (load-light-theme)
+    (load-dark-theme)))
 
 (add-hook 'prog-mode-hook (lambda () (progn
                                   (my:ligatures-fira-code-setup)
                                   (prettify-symbols-mode 1))))
+
+(defun detvdl:toggle-theme ()
+  "Toggle between light and dark theme."
+  (interactive)
+  (if (eq detvdl:current-theme 'light)
+      (load-dark-theme)
+    (load-light-theme)))
+
+(global-set-key (kbd "C-, t") 'detvdl:toggle-theme)
+(global-set-key (kbd "C-, C-t") 'detvdl:toggle-theme)
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here

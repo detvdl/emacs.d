@@ -71,7 +71,7 @@
   :ensure t
   :defer t
   :config
-  (after-load-zenburn))
+  (add-to-list 'detvdl:after-theme-fns '(zenburn . after-load-zenburn)))
 
 (provide 'detvdl-zenburn)
 ;;; detvdl-zenburn.el ends here
