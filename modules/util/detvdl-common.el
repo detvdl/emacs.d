@@ -2,6 +2,16 @@
 ;;; Commentary:
 ;;; Code:
 
+(defvar detvdl:cheatsheet-directory "~/Documents/Cheatsheets/")
+
+(defun detvdl:cheatsheet (arg)
+  (interactive "P")
+  (cond
+   ((not arg) (counsel-find-file detvdl:cheatsheet-directory))
+   ((= 4 (car arg)) (dired detvdl:cheatsheet-directory))))
+
+(bind-key "C-, s" #'detvdl:cheatsheet global-map)
+
 ;; MacOS does not set its PATH and environment variables globally (outside of shell)
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -26,11 +36,19 @@
   :ensure t
   :init (shackle-mode t)
   :config
-  (setq shackle-rules '((compilation-mode :noselect t :align 'below :size 0.35 :other t)
+  (setq shackle-rules '((compilation-mode :select t :align 'below :size 0.35 :other t)
                         (cargo-process-mode :noselect t :align 'below :size 0.25 :other t)
                         ("\\`\\*HTTP Response.*?\\*\\'" :noselect t :regexp t :other t )
                         ("\\`\\*Cargo.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
         shackle-default-rule '(:select t)))
+
+(use-package hydra
+  :ensure t
+  :defer t)
+
+(use-package expand-region
+  :ensure t
+  :bind (("C-=" . er/expand-region)))
 
 (use-package ace-window
   :ensure t
@@ -41,9 +59,9 @@
 
 (use-package avy
   :ensure t
-  :bind (("M-g f" . avy-goto-line)
-         ("M-g g" . avy-goto-line)
-         ("M-g c" . avy-goto-char-2)))
+  :bind (("C-. f" . avy-goto-line)
+         ("C-. g" . avy-goto-line)
+         ("C-. c" . avy-goto-char-2)))
 
 (use-package imenu-anywhere
   :ensure t
@@ -75,8 +93,7 @@
   :defer t
   :config
   (setq tramp-default-method "ssh"
-        tramp-auto-save-directory emacs-savefile-dir
-        ))
+        tramp-auto-save-directory emacs-savefile-dir))
 
 (use-package which-key
   :ensure t
@@ -94,7 +111,6 @@
 
 (use-package undo-tree
   :ensure t
-  :defer t
   :diminish undo-tree-mode
   :config
   (progn
@@ -129,9 +145,9 @@
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
          ("C-M->" . mc/unmark-next-like-this)
-         ("C-c C->" . mc/skip-to-next-like-this)
-         ("C-c C-<" . mc/skip-to-previous-like-this)
-         ("C-c >" . mc/mark-all-like-this))
+         ("C-. C->" . mc/skip-to-next-like-this)
+         ("C-. C-<" . mc/skip-to-previous-like-this)
+         ("C-. >" . mc/mark-all-like-this))
   :config
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
 
