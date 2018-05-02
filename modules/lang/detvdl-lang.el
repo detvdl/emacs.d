@@ -8,6 +8,7 @@
 
 (require 'detvdl-shell-mode)
 (require 'detvdl-ruby)
+(require 'detvdl-common-lisp)
 (require 'detvdl-elisp)
 ;; (require 'detvdl-elixir)
 ;; (require 'detvdl-haskell)

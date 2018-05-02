@@ -2,23 +2,19 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package indent-guide
-  :ensure nil
-  :defer t)
-
 (use-package rainbow-delimiters
   :ensure t
-  ;; :hook ((lisp-mode emacs-lisp-mode clojure-mode) . rainbow-delimiters-mode)
-  )
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
 
 (use-package idle-highlight-mode
   :ensure t
+  :diminish idle-highlight-mode
   :hook (prog-mode . idle-highlight-mode))
 
 (use-package aggressive-indent
   :ensure t
   :diminish aggressive-indent-mode
-  :hook (prog-mode . aggressive-indent-mode)
+  :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode clojure-mode) . aggressive-indent-mode)
   :config
   (defvar aggressive-indent/excluded '())
   (setq aggressive-indent/excluded '(html-mode ruby-mode python-mode yaml-mode))
@@ -30,8 +26,7 @@
    '(and (or (derived-mode-p 'c-mode)
              (eq major-mode 'rust-mode))
          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
-                             (thing-at-point 'line)))))
-  )
+                             (thing-at-point 'line))))))
 
 (use-package which-func
   :ensure t
@@ -41,11 +36,8 @@
 ;; enable on-the-fly syntax checking
 (use-package flycheck
   :ensure t
-  :diminish fly-check-mode
-  :config
-  (if (fboundp 'global-flycheck-mode)
-      (global-flycheck-mode +1)
-    (add-hook 'prog-mode-hook #'flycheck-mode)))
+  :hook (prog-mode . flycheck-mode)
+  :diminish fly-check-mode)
 
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))

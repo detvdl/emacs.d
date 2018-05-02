@@ -2,18 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-(use-package slime
-  :ensure t
-  :defer t
-  :config
-  (progn
-    (setq inferior-lisp-program "/usr/local/bin/sbcl"
-          slime-contribs '(slime-fancy))
-    ;; Load quicklisp's slime-helper file
-    (load (expand-file-name "~/quicklisp/slime-helper.el"))))
-
-
-
 (defun wrap-with (s)
   `(lambda (&optional arg)
      (interactive "P")
