@@ -14,8 +14,8 @@
          ("\\.java\\'" . java-mode))
   :init
   (defun c-mode-common-defaults ()
-    (setq c-default-style "linux"
-          c-basic-offset 8
+    (setq c-default-style "gnu"
+          c-basic-offset 4
           c-tab-always-indent t)
     (c-set-offset 'substatement-open 0)
     ;; make the underscore part of a word in C and C++ modes
