@@ -6,7 +6,7 @@
   :ensure t
   :diminish smartparens-mode
   :functions sp-pair
-  :hook ((prog-mode ess-mode) . smartparens-mode)
+  :hook ((prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
   :config
   (progn
     (require 'smartparens-config)
