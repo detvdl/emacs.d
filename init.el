@@ -13,7 +13,7 @@
   (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file)))
   (mapc #'(lambda (add) (add-to-list 'load-path add))
         (eval-when-compile
-          (package-initialize)
+          ;; (package-initialize)
           ;; Install use-package if not installed yet.
           (unless (package-installed-p 'use-package)
             (package-refresh-contents)
