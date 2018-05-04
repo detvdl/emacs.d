@@ -2,6 +2,20 @@
 ;;; Commentary:
 ;;; Code:
 
+(use-package ggtags
+  :ensure t
+  :bind (:map ggtags-mode-map
+              ("C-, f" . ggtags-find-definition)
+              ("C-, ." . ggtags-find-tag-dwim)
+              ("C-, ," . ggtags-find-reference))
+  :config
+  (progn
+    (customize-set-variable 'ggtags-mode-prefix-key (kbd "C-c t"))
+    (setq ggtags-auto-jump-to-match nil
+          ggtags-sort-by-nearness t
+          ggtags-global-ignore-case t
+          ggtags-enable-navigation-keys nil)))
+
 (use-package rainbow-delimiters
   :ensure t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
