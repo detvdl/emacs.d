@@ -15,10 +15,10 @@
                   olivetti-hide-mode-line t)
     (add-hook 'olivetti-mode-hook
               (lambda () (if (bound-and-true-p olivetti-mode)
-                        (progn (display-line-numbers-mode -1)
-                               (git-gutter-mode -1))
-                      (progn (display-line-numbers-mode t)
-                             (git-gutter-mode t)))))))
+                             (progn (display-line-numbers-mode -1)
+                                    (git-gutter-mode -1))
+                           (progn (display-line-numbers-mode t)
+                                  (git-gutter-mode t)))))))
 
 ;;; THEMES
 ;; Other nice themes to keep in mind: challenger-deep
@@ -34,14 +34,30 @@
   (defun after-load-farmhouse ()
     (custom-theme-set-faces
      'farmhouse-light
+     '(cursor ((t (:background "grey40"))))
      '(font-lock-warning-face ((t (:foreground "#ec3691" :weight bold))))
      '(font-lock-constant-face ((t (:foreground "#84BA11"))))
-     '(magit-section-highlight ((t (:background "#f6f2f3"))))
+     ;; Magit faces (badly supported by theme at the moment)
+     '(magit-section-highlight ((t (:background "gray80"))))
+     '(magit-diff-file-heading-highlight ((t (:background "gray90"))))
+     '(magit-section-heading ((t (:foreground "darkgoldenrod"))))
+     '(magit-diff-hunk-heading-highlight ((t (:background "gray80" :foreground "black"))))
+     '(magit-diff-hunk-heading ((t (:background "gray80" :foreground "black"))))
+     '(magit-diff-context-highlight ((t (:background "gray90"))))
+     '(magit-diff-removed-highlight ((t (:background "#eecccc" :foreground "firebrick"))))
+     '(magit-diff-added-highlight ((t (:background "#cceecc" :foreground "green4"))))
+     '(magit-diff-removed ((t (:background "#eecccc" :foreground "firebrick"))))
+     '(magit-diff-added ((t (:background "#cceecc" :foreground "green4"))))
+     '(magit-branch-local ((t (:foreground "deepskyblue3" :background nil))))
+     '(magit-branch-remote ((t (:foreground "seagreen"))))
+
      `(indent-guide-face ((t (:foreground
                               ,(face-attribute 'font-lock-comment-face :foreground)))))
+     ;; '(highlight ((t (:foreground nil :background "#f8f2f3"))))
+     '(hl-line ((t (:foreground nil :background "#f8f2f3"))))
      '(iedit-occurrence ((t (:background "purple" :foreground "white"))))
      '(anzu-replace-to ((t (:foreground "purple"))))
-     '(org-code ((t (:foreground "blue" :weight bold))))))
+     '(org-code ((t (:foreground "purple" :weight bold))))))
   (add-to-list 'detvdl:after-theme-fns '(farmhouse-light . after-load-farmhouse)))
 
 (use-package arjen-grey-theme
@@ -157,7 +173,6 @@
     (load-light-theme)))
 
 (global-set-key (kbd "C-, t") 'detvdl:toggle-theme)
-(global-set-key (kbd "C-, C-t") 'detvdl:toggle-theme)
 
 (provide 'detvdl-theme)
 ;;; detvdl-theme.el ends here
