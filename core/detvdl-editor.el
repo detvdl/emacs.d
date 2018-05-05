@@ -58,7 +58,7 @@
 
 (defun start-emacs ()
   (interactive)
-  (start-process "Emacs" nil (executable-find "emacs")))
+  (call-process (executable-find "emacs") nil 0 nil))
 
 (provide 'detvdl-editor)
 ;;; detvdl-editor.el ends here
