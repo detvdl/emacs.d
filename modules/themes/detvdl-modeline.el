@@ -2,20 +2,6 @@
 ;;; Commentary:
 ;;; Code:
 
-;; Old SML config
-;; (use-package smart-mode-line
-;;   :ensure t
-;;   :defer t
-;;   :config
-;;   (progn
-;;     (setq sml/no-confirm-load-theme t
-;;           sml/shorten-directory t
-;;           sml/shorten-modes t
-;;           sml/name-width 40
-;;           sml/mode-width 'full
-;;           sml/theme nil)
-;;     (sml/setup)))
-
 (line-number-mode t)
 (column-number-mode t)
 (size-indication-mode t)
