@@ -3,14 +3,14 @@
 ;;; Code:
 
 (defvar detvdl:cheatsheet-directory "~/Documents/Cheatsheets/")
-
 (defun detvdl:cheatsheet (arg)
+  "Open my cheatsheet directory with `counsel-find-file'.
+If the universal ARG is supplied, open in dired."
   (interactive "P")
   (cond
    ((not arg) (counsel-find-file detvdl:cheatsheet-directory))
    ((= 4 (car arg)) (dired detvdl:cheatsheet-directory))))
-
-(bind-key "C-, s" #'detvdl:cheatsheet global-map)
+(bind-key "C-, c" #'detvdl:cheatsheet global-map)
 
 ;; MacOS does not set its PATH and environment variables globally (outside of shell)
 (use-package exec-path-from-shell
@@ -36,11 +36,14 @@
   :ensure t
   :init (shackle-mode t)
   :config
-  (setq shackle-rules '((compilation-mode :select t :align 'below :size 0.35 :other t)
-                        (cargo-process-mode :noselect t :align 'below :size 0.25 :other t)
-                        ("\\`\\*HTTP Response.*?\\*\\'" :noselect t :regexp t :other t )
-                        ("\\`\\*Cargo.*?\\*\\'" :regexp t :align 'below :size 0.25 :other t))
-        shackle-default-rule '(:select t)))
+  (setq shackle-default-size 0.33
+        shackle-default-rule '(:noselect t)
+        shackle-rules '((compilation-mode           :select t             :align below           :other t)
+                        (cargo-process-mode                               :align below           :other t)
+                        ("\\*HTTP Response.*\\*\\'"             :regexp t :align right :size 0.5 :other t)
+                        ("\\*Cargo.*\\*\\'"         :select t   :regexp t :align below           :other t)
+                        ("*ggtags-global*"          :select t             :align below           :other t)
+                        ("*eshell*"                 :select t             :align below           :other t))))
 
 (use-package hydra
   :ensure t
@@ -48,7 +51,8 @@
 
 (use-package expand-region
   :ensure t
-  :bind (("C-=" . er/expand-region)))
+  :bind (("C-=" . er/expand-region)
+         ("C-. e" . er/expand-region)))
 
 (use-package ace-window
   :ensure t
@@ -56,16 +60,6 @@
   :config
   (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
         aw-dispatch-always nil))
-
-(use-package avy
-  :ensure t
-  :bind (("C-. f" . avy-goto-line)
-         ("C-. g" . avy-goto-line)
-         ("C-. c" . avy-goto-char-2)))
-
-(use-package imenu-anywhere
-  :ensure t
-  :bind (("M-I" . ivy-imenu-anywhere)))
 
 ;; avoid duplicate buffer names
 (use-package uniquify
@@ -104,8 +98,8 @@
 (use-package anzu
   :ensure t
   :diminish anzu-mode
-  :bind (("M-%" . anzu-query-replace)
-         ("C-M-%" . anzu-query-replace-regexp))
+  :bind (("C-, r" . anzu-query-replace)
+         ("C-, C-r" . anzu-query-replace-regexp))
   :config
   (global-anzu-mode))
 
@@ -134,7 +128,8 @@
 (use-package iedit
   :ensure t
   :commands (iedit-mode)
-  :bind (("C-;" . iedit-mode)))
+  :bind (("C-;" . iedit-mode)
+         ("C-. i" . iedit-mode)))
 
 (use-package multiple-cursors
   :ensure t
