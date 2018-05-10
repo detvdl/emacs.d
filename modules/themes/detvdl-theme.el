@@ -36,7 +36,7 @@
      'farmhouse-light
      '(cursor ((t (:background "grey40"))))
      '(font-lock-warning-face ((t (:foreground "#ec3691" :weight bold))))
-     '(font-lock-constant-face ((t (:foreground "#84BA11"))))
+     '(font-lock-constant-face ((t (:foreground "#7750BA"))))
      ;; Magit faces (badly supported by theme at the moment)
      '(magit-section-highlight ((t (:background "gray80"))))
      '(magit-diff-file-heading-highlight ((t (:background "gray90"))))
@@ -51,13 +51,24 @@
      '(magit-branch-local ((t (:foreground "deepskyblue3" :background nil))))
      '(magit-branch-remote ((t (:foreground "seagreen"))))
 
+     `(org-block-begin-line ((t (:underline "#A7A6AA" :foreground "#555555" :background "#E2E1D5"))))
+     `(org-block-end-line ((t (:overline "#A7A6AA" :foreground "#555555" :background "#E2E1D5"))))
+     '(org-block ((t (:background "gray90"))))
+     '(org-code ((t (:foreground "purple" :weight bold))))
+
+     '(cider-result-overlay-face ((t (:background "gray90"))))
+     '(cider-deprecated-face ((t (:background "#FFAF5E"))))
+
+     '(web-mode-current-element-highlight-face ((t (:background "gray85"))))
+     '(web-mode-doctype-face ((t (:foreground "gray40"))))
+     '(web-mode-html-attr-name-face ((t (:foreground "darkolivegreen"))))
+     '(web-mode-html-attr-value-face ((t (:foreground "seagreen"))))
+
      `(indent-guide-face ((t (:foreground
                               ,(face-attribute 'font-lock-comment-face :foreground)))))
-     ;; '(highlight ((t (:foreground nil :background "#f8f2f3"))))
-     '(hl-line ((t (:foreground nil :background "#f8f2f3"))))
+     '(hl-line ((t (:foreground nil :background "#F5F0ED"))))
      '(iedit-occurrence ((t (:background "purple" :foreground "white"))))
-     '(anzu-replace-to ((t (:foreground "purple"))))
-     '(org-code ((t (:foreground "purple" :weight bold))))))
+     '(anzu-replace-to ((t (:foreground "purple"))))))
   (add-to-list 'detvdl:after-theme-fns '(farmhouse-light . after-load-farmhouse)))
 
 (use-package arjen-grey-theme
