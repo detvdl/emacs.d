@@ -4,17 +4,24 @@
 
 (use-package ggtags
   :ensure t
+  :hook ((prog-mode slime-repl-mode) . ggtags-mode)
   :bind (:map ggtags-mode-map
               ("C-, f" . ggtags-find-definition)
               ("C-, ." . ggtags-find-tag-dwim)
-              ("C-, ," . ggtags-find-reference))
+              ("C-, ," . ggtags-find-reference)
+              :map ggtags-mode-prefix-map
+              ("." . ggtags-find-tag-dwim)
+              ("," . ggtags-find-reference)
+              ("d" . ggtags-find-definition))
   :config
   (progn
     (customize-set-variable 'ggtags-mode-prefix-key (kbd "C-c t"))
     (setq ggtags-auto-jump-to-match nil
           ggtags-sort-by-nearness t
           ggtags-global-ignore-case t
-          ggtags-enable-navigation-keys nil)))
+          ggtags-enable-navigation-keys nil
+          ggtags-completing-read-function 'ivy-completing-read
+          ggtags-global-window-height nil)))
 
 (use-package rainbow-delimiters
   :ensure t
