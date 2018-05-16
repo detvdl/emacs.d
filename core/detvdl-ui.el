@@ -31,23 +31,26 @@
 ;; enable y/n answers
 (fset 'yes-or-no-p 'y-or-n-p)
 
+;; Don't really use the right fringe currently
+(fringe-mode '(8 . 0))
+
 ;; Frame settings (position, size)
 (defvar detvdl:default-frame-size '(1720 1060))
-(defvar detvdl:default-screen-size '(1900 1194))
+(defvar detvdl:default-screen-size '(1910 1200))
 
 (defun detvdl:scale-and-center-frame (&optional frame)
   "Scale FRAME according to `detvdl:default-frame-size' and center it."
   (let ((frame (or frame (selected-frame))))
     (when window-system
-      (pcase-let* ((`(,fwidth ,fheight) detvdl:default-frame-size)
-                   (`(,swidth ,sheight) detvdl:default-screen-size))
+      (pcase-let ((`(,fwidth ,fheight) detvdl:default-frame-size)
+                  (`(,swidth ,sheight) detvdl:default-screen-size))
         (progn
           (set-frame-size frame fwidth fheight t)
           (set-frame-position frame
                               (/ (- swidth fwidth) 2)
                               (/ (- sheight fheight) 2)))))))
 (add-hook 'after-make-frame-functions #'detvdl:scale-and-center-frame)
-(detvdl:scale-and-center-frame)
+
 ;; Font settings
 (defun detvdl:set-font (font-str)
   "Set the default font to the FONT-STR parameter."
@@ -56,7 +59,23 @@
   (when (window-system)
     (set-frame-font font-str)))
 
-(detvdl:set-font "Fira Code Retina-12")
+(defconst detvdl:fonts
+  '(("Fira Code" . "Fira Code Retina-12")
+    ("IBM Plex" . "IBM Plex Mono-12")))
+
+(defun detvdl:change-font ()
+  (interactive)
+  (let* ((choice (completing-read "Choose: " (mapcar 'car detvdl:fonts) nil t))
+         (font (cdr (assoc choice detvdl:fonts))))
+    (detvdl:set-font font)))
+(global-set-key (kbd "C-. f") 'detvdl:change-font)
+
+;; (detvdl:set-font "Fira Code Retina-12")
+(detvdl:set-font "IBM Plex Mono 12")
+
+;; Certain fonts such as IBM Plex Mono mess with frame scaling
+;; so we delay this until after setting the font
+(detvdl:scale-and-center-frame)
 
 (provide 'detvdl-ui)
 ;;; detvdl-ui.el ends here
