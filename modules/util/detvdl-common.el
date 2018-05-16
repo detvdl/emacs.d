@@ -142,7 +142,9 @@ If the universal ARG is supplied, open in dired."
          ("C-M->" . mc/unmark-next-like-this)
          ("C-. C->" . mc/skip-to-next-like-this)
          ("C-. C-<" . mc/skip-to-previous-like-this)
-         ("C-. >" . mc/mark-all-like-this))
+         ("C-. >" . mc/mark-all-like-this)
+         :map global-map
+         ("C-S-<mouse-1>" . mc/add-cursor-on-click))
   :config
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
 
