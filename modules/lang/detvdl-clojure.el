@@ -19,7 +19,11 @@
   :commands cider-jack-in
   :config
   (progn
-    (setq nrepl-log-messages t)
+    (setq nrepl-log-messages t
+          ;; cider-boot-parameters "dev"
+          cider-eldoc-display-context-dependent-info t
+          cider-eldoc-display-for-symbol-at-point t
+          cider-dynamic-indentation nil)
     (add-hook 'cider-mode-hook #'subword-mode)
     (add-hook 'cider-mode-hook #'eldoc-mode)
     (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
