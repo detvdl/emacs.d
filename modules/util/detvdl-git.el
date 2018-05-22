@@ -17,11 +17,19 @@
       :ensure t
       :functions fringe-helper-convert)
     (defconst fringe-bitmap-line
-      (fringe-helper-convert "..xx...."))
-    (set-face-attribute 'git-gutter:modified nil :foreground "slateblue3")
-    (set-face-attribute 'git-gutter:added nil :foreground "chartreuse4")
-    (set-face-attribute 'git-gutter:deleted nil :foreground "firebrick3")
-
+      (fringe-helper-convert "...xx..."))
+    (set-face-attribute 'git-gutter:modified nil
+                        :foreground "slateblue3"
+                        :background nil
+                        :inherit 'fringe)
+    (set-face-attribute 'git-gutter:added nil
+                        :foreground "chartreuse4"
+                        :background nil
+                        :inherit 'fringe)
+    (set-face-attribute 'git-gutter:deleted nil
+                        :foreground "firebrick3"
+                        :background nil
+                        :inherit 'fringe)
     (define-fringe-bitmap 'git-gutter-fr:added fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:modified fringe-bitmap-line nil nil '(center repeated))
     (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))
