@@ -13,7 +13,7 @@
   (setq use-package-verbose (not (bound-and-true-p byte-compile-current-file)))
   (mapc #'(lambda (add) (add-to-list 'load-path add))
         (eval-when-compile
-          ;; (package-initialize)
+          (package-initialize)
           ;; Install use-package if not installed yet.
           (unless (package-installed-p 'use-package)
             (package-refresh-contents)
@@ -41,29 +41,27 @@
 (setq url-proxy-services
       '(("no_proxy" . "^\\(localhost\\|127.0.0.1\\)")))
 
-(setq backup-directory-alist `((".*" . ,temporary-file-directory))
-      auto-save-file-name-transforms `((".*" ,temporary-file-directory t)))
+(defvar detvdl:load-paths
+  (mapcar (lambda (p) (concat user-emacs-directory p))
+          '("core"
+            "modules/lang"
+            "modules/util"
+            "modules/themes"
+            "site-lisp")))
+(mapc (apply-partially 'add-to-list 'load-path) detvdl:load-paths)
 
-(defvar emacs-core-dir (expand-file-name "core" user-emacs-directory))
-(defvar emacs-modules-lang-dir (expand-file-name "modules/lang" user-emacs-directory))
-(defvar emacs-modules-util-dir (expand-file-name "modules/util" user-emacs-directory))
-(defvar emacs-themes-dir (expand-file-name "modules/themes" user-emacs-directory))
-(defvar emacs-lisp-dir (expand-file-name "site-lisp" user-emacs-directory))
 (defvar emacs-savefile-dir (expand-file-name "savefile" user-emacs-directory))
 
-;; add directories to Emacs' `load-path'
-(defvar emacs-directories '(emacs-core-dir
-                            emacs-modules-lang-dir
-                            emacs-themes-dir
-                            emacs-modules-util-dir
-                            emacs-savefile-dir
-                            emacs-lisp-dir))
-(dolist (path emacs-directories)
-  (add-to-list 'load-path (symbol-value path)))
+(add-to-list 'custom-theme-load-path (expand-file-name "modules/themes/custom-themes" user-emacs-directory))
+
+(setq backup-directory-alist `((".*" . ,(expand-file-name "auto-save-list" emacs-savefile-dir)))
+      auto-save-file-name-transforms `((".*" ,(expand-file-name "auto-save-list" emacs-savefile-dir))))
+
+(setq nsm-settings-file (expand-file-name "network-security.data" emacs-savefile-dir))
 
 ;; reduce the frequency of garbage collection
 ;; default: 0.79MB
-(setq gc-cons-threshold 5000000)
+(setq gc-cons-threshold (* 200 1024 1024))
 
 ;; warn when opening files bigger than 100MB
 (setq large-file-warning-threshold 100000000)
@@ -78,19 +76,14 @@
 (setq gnus-select-method '(nntp "GNUS"
                                 (nntp-address "news.gnus.org")))
 
-(require 'detvdl-editor)
-(require 'detvdl-ui)
-(require 'detvdl-shell)
+(require 'detvdl-core)
 (require 'detvdl-lang)
 (require 'detvdl-util)
 (require 'detvdl-theme)
 
 ;; write custom-set-variables to a separate file
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(setq custom-file (expand-file-name "custom.el" emacs-savefile-dir))
 (load custom-file 'noerror)
 
-(defvar open-at-start '("~/.emacs.d/org/gtd.org"))
-;; (dolist (f open-at-start)
-;; (find-file f))
-
 ;;; init.el ends here
+(put 'downcase-region 'disabled nil)

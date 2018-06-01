@@ -5,6 +5,8 @@
 (require 'comint)
 (require 'protbuf)
 
+(setq eshell-directory-name (expand-file-name "eshell" emacs-savefile-dir))
+
 (setq comint-scroll-to-bottom-on-input t  ; always insert at the bottom
       comint-scroll-to-bottom-on-output nil ; always add output at the bottom
       comint-scroll-show-maximum-output t ; scroll to show max possible output
@@ -19,7 +21,7 @@
       protect-buffer-bury-p nil)
 
 ;; don't kill buffers accidentally
-(add-hook 'shell-mode-hook 'protect-process-buffer-from-kill-mode)
+;; (add-hook 'shell-mode-hook 'protect-process-buffer-from-kill-mode)
 
 ;; truncate buffers continuously
 (add-hook 'comint-output-filter-functions 'comint-truncate-buffer)

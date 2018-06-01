@@ -5,6 +5,16 @@
 (setq-default indent-tabs-mode nil)  ;; tabs are bad, hmmkay
 (setq-default tab-width 4)
 
+;; Wrap long lines
+(global-visual-line-mode +1)
+(diminish 'visual-line-mode)
+
+;; Highlight current line
+(global-hl-line-mode +1)
+
+;; enable y/n answers
+(fset 'yes-or-no-p 'y-or-n-p)
+
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
@@ -35,16 +45,15 @@
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
-;; add 1/4th of current line height to line-spacing
-(setq-default line-spacing 0.25)
+;; add 1/5th of current line height to line-spacing
+(setq-default line-spacing 0.20)
 
 ;; native line-numbers since emacs-26
-(setq-default display-line-numbers t
+(setq-default display-line-numbers nil
               display-line-numbers-current-absolute t
               display-line-numbers-widen t
-              display-line-numbers-width 3
-              display-lin)
-(global-display-line-numbers-mode t)
+              display-line-numbers-width 3)
+(global-display-line-numbers-mode -1)
 
 ;; always highlight the matching paren
 (show-paren-mode 1)
