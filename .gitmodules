@@ -1,0 +1,3 @@
+[submodule "modules/themes/custom-themes/emacs-farmhouse-theme"]
+	path = modules/themes/custom-themes/emacs-farmhouse-theme
+	url = git@github.com:detvdl/emacs-farmhouse-theme.git
