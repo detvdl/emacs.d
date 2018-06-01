@@ -44,12 +44,11 @@
                     which-func-format)))
 
   (set-face-attribute 'mode-line nil
-                      :background (face-attribute 'default :background)
-                      :box `(:line-width 5 :color ,(face-attribute 'default :background))
+                      :box `(:line-width 2 :color ,(face-attribute 'mode-line :background))
                       :overline nil
                       :underline nil)
   (set-face-attribute 'mode-line-inactive nil
-                      :box `(:line-width 5 :color ,(face-attribute 'mode-line-inactive :background))
+                      :box `(:line-width 2 :color ,(face-attribute 'mode-line-inactive :background))
                       :overline nil
                       :underline nil))
 

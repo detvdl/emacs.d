@@ -50,8 +50,7 @@ sequentially."
   "Add Fira Code ligatures to `prettify-symbols-alist'."
   (setq prettify-symbols-alist (append (ligatures-make-alist
                                         ligatures-fira-code-list
-                                        ligatures-fira-code-start)
-                                       prettify-symbols-alist)))
+                                        ligatures-fira-code-start))))
 (provide 'ligatures-font)
 
 ;;; init-font.el ends here
