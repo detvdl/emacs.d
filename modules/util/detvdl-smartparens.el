@@ -6,7 +6,9 @@
   :ensure t
   :diminish smartparens-mode
   :functions sp-pair
-  :hook ((prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :hook ((prolog-mode prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :bind (("C-. )" . sp-rewrap-sexp)
+         ("C-. (" . sp-rewrap-sexp))
   :config
   (progn
     (require 'smartparens-config)
@@ -20,7 +22,13 @@
                   (crux-smart-open-line-above)) "RET")))
     (sp-pair "{" nil :post-handlers
              '(("||\n[i]" "RET")
+               ("| " "SPC")))
+    (sp-pair "[" nil :post-handlers
+             '(((lambda (&rest _ignored)
+                  (crux-smart-open-line-above)) "RET")))
+    (sp-pair "[" nil :post-handlers
+             '(("||\n[i]" "RET")
                ("| " "SPC")))))
 
-  (provide 'detvdl-smartparens)
+(provide 'detvdl-smartparens)
 ;;; detvdl-smartparens.el ends here

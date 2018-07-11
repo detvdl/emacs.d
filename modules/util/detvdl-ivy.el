@@ -48,7 +48,10 @@
          ("C-x 8" . counsel-unicode-char))
   :config
   ;; put most recent commands first in `counsel-M-x'
-  (use-package smex :ensure t)
+  (use-package smex
+    :ensure t
+    :config
+    (setq smex-save-file (expand-file-name "smex-items" emacs-savefile-dir)))
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 

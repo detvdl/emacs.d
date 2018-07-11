@@ -6,13 +6,13 @@
   :ensure t
   :hook ((prog-mode slime-repl-mode) . ggtags-mode)
   :bind (:map ggtags-mode-map
-              ("C-, f" . ggtags-find-definition)
-              ("C-, ." . ggtags-find-tag-dwim)
-              ("C-, ," . ggtags-find-reference)
-              :map ggtags-mode-prefix-map
-              ("." . ggtags-find-tag-dwim)
-              ("," . ggtags-find-reference)
-              ("d" . ggtags-find-definition))
+         ("C-, f" . ggtags-find-definition)
+         ("C-, ." . ggtags-find-tag-dwim)
+         ("C-, ," . ggtags-find-reference)
+         :map ggtags-mode-prefix-map
+         ("." . ggtags-find-tag-dwim)
+         ("," . ggtags-find-reference)
+         ("d" . ggtags-find-definition))
   :config
   (progn
     (customize-set-variable 'ggtags-mode-prefix-key (kbd "C-c t"))
@@ -27,11 +27,6 @@
   :ensure t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
 
-(use-package idle-highlight-mode
-  :ensure t
-  :diminish idle-highlight-mode
-  :hook (prog-mode . idle-highlight-mode))
-
 (use-package aggressive-indent
   :ensure t
   :diminish aggressive-indent-mode
@@ -41,7 +36,6 @@
   (setq aggressive-indent/excluded '(html-mode ruby-mode python-mode yaml-mode))
   (dolist (i aggressive-indent/excluded)
     (add-to-list 'aggressive-indent-excluded-modes i))
-  ;; (add-to-list 'aggressive-indent-excluded-modes 'html-mode 'ruby-mode 'python-mode 'yaml-mode)
   (add-to-list
    'aggressive-indent-dont-indent-if
    '(and (or (derived-mode-p 'c-mode)

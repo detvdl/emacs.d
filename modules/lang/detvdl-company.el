@@ -14,15 +14,15 @@
         company-tooltip-flip-when-above t
         company-tooltip-align-annotations t))
 
-(use-package pos-tip
-  :ensure t)
-
 (use-package company-quickhelp
   :ensure t
   :after company
+  :init
+  (use-package pos-tip :ensure t)
   :config
   (company-quickhelp-mode 1)
-  (setq company-quickhelp-delay 0.5))
+  (setq company-quickhelp-delay 0.5
+        company-quickhelp-use-propertized-text t))
 
 (provide 'detvdl-company)
 ;;; detvdl-company.el ends here

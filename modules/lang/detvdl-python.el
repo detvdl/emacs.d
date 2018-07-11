@@ -7,6 +7,7 @@
   :hook ((python-mode . anaconda-mode)
          (python-mode . anaconda-eldoc-mode))
   :config
+  (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-savefile-dir))
   (use-package company-anaconda
     :ensure t
     :config
