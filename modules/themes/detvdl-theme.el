@@ -26,9 +26,12 @@
   (defun after-load-base16-tomorrow-black ()
     (custom-theme-set-faces
      'base16-tomorrow-black
+     '(default ((nil (:background "#0b0c0c" :foreground "#d0d0d0"))))
+     '(line-number ((t (:background "#0b0b0c" :foreground "#3b3b3b"))))
+     '(line-number-current-line ((t (:background "#2b2b2b" :foreground "#d0d0d0"))))
      '(highlight ((((class color) (min-colors 88) (background dark)) (:background "#111111"))))
      '(region ((nil (:background "#464740"))))
-     '(hl-line ((nil (:background "#222222"))))
+     '(hl-line ((nil (:background "#202020"))))
      '(yas-field-highlight-face ((nil (:background "#333399"))))
      '(js2-function-param-face ((t (:foreground "LightGoldenrod"))))
      '(font-lock-warning-face ((nil (:foreground "#ff6666"))))
@@ -45,21 +48,6 @@
   (add-to-list 'detvdl:after-theme-fns '(base16-tomorrow-black . after-load-base16-tomorrow-black))
   )
 
-(use-package doom-themes
-  :ensure t
-  :preface (defvar region-fg nil)
-  :defer t
-  :init
-  (defun after-load-doom-tomorrow-night ()
-    (custom-theme-set-faces
-     'doom-tomorrow-night
-     '(fringe ((t (:background "#2D2E32"))))
-     '(window-divider ((t (:foreground "grey50"))))
-     ;; Ivy minibuffer match faces
-     '(ivy-modified-buffer ((t (:foreground "grey75" :inherit bold))))
-     ))
-  (add-to-list 'detvdl:after-theme-fns '(doom-tomorrow-night . after-load-doom-tomorrow-night)))
-
 (use-package farmhouse-theme
   :load-path "modules/themes/custom-themes/emacs-farmhouse-theme"
   ;; :ensure t
@@ -68,27 +56,9 @@
   (defun after-load-farmhouse ()
     (custom-theme-set-faces
      'farmhouse-light
-     '(cursor ((t (:background "grey40"))))
+     ;; '(cursor ((t (:background "grey40"))))
      '(font-lock-warning-face ((t (:foreground "#ec3691" :weight bold))))
-     '(font-lock-constant-face ((t (:foreground "#7750BA"))))
-     ;; Magit faces (badly supported by theme at the moment)
-     '(magit-section-highlight ((t (:background "gray80"))))
-     '(magit-diff-file-heading-highlight ((t (:background "gray90"))))
-     '(magit-section-heading ((t (:foreground "darkgoldenrod"))))
-     '(magit-diff-hunk-heading-highlight ((t (:background "gray80" :foreground "black"))))
-     '(magit-diff-hunk-heading ((t (:background "gray80" :foreground "black"))))
-     '(magit-diff-context-highlight ((t (:background "gray90"))))
-     '(magit-diff-removed-highlight ((t (:background "#eecccc" :foreground "firebrick"))))
-     '(magit-diff-added-highlight ((t (:background "#cceecc" :foreground "green4"))))
-     '(magit-diff-removed ((t (:background "#eecccc" :foreground "firebrick"))))
-     '(magit-diff-added ((t (:background "#cceecc" :foreground "green4"))))
-     '(magit-branch-local ((t (:foreground "deepskyblue3" :background nil))))
-     '(magit-branch-remote ((t (:foreground "seagreen"))))
-
-     `(org-block-begin-line ((t (:underline "#A7A6AA" :foreground "#555555" :background "#E2E1D5"))))
-     `(org-block-end-line ((t (:overline "#A7A6AA" :foreground "#555555" :background "#E2E1D5"))))
-     '(org-block ((t (:background "gray90"))))
-     '(org-code ((t (:foreground "purple" :weight bold))))
+     ;; '(font-lock-constant-face ((t (:foreground "#7750BA"))))
 
      '(font-latex-sectioning-5-face ((t (:inherit variable-pitch :foreground "purple" :weight bold))))
      '(font-latex-math-face ((t (:foreground "#A6825B"))))
@@ -98,21 +68,17 @@
      '(cider-result-overlay-face ((t (:background "gray90"))))
      '(cider-deprecated-face ((t (:background "#FFAF5E"))))
 
-     '(web-mode-current-element-highlight-face ((t (:background "gray85"))))
-     '(web-mode-doctype-face ((t (:foreground "gray40"))))
-     '(web-mode-html-attr-name-face ((t (:foreground "darkolivegreen"))))
-     '(web-mode-html-attr-value-face ((t (:foreground "seagreen"))))
-
-     `(indent-guide-face ((t (:foreground "#ccc"))))
+     '(indent-guide-face ((t (:foreground "#ccc"))))
      '(hl-line ((t (:foreground nil :background "#F5F0ED"))))
-     '(iedit-occurrence ((t (:background "purple" :foreground "white"))))
-     '(anzu-replace-to ((t (:foreground "purple"))))
 
      '(window-divider ((t (:foreground "grey50"))))
-     '(line-number ((t (:background "grey85"))))
-     '(line-number-current-line ((t (:background nil :weight bold))))
-     '(fringe ((t (:background "grey85"))))))
-  ;; (add-to-list 'detvdl:after-theme-fns '(farmhouse-light . after-load-farmhouse))
+     `(line-number ((t (:background ,(face-attribute 'default :background)
+                        :foreground "#b2b2b2"))))
+     `(line-number-current-line ((t (:background ,(face-attribute 'hl-line :background)
+                                     :foreground ,(face-attribute 'default :foreground)))))
+     '(fringe ((t (:background "grey85"))))
+     ))
+  (add-to-list 'detvdl:after-theme-fns '(farmhouse-light . after-load-farmhouse))
   )
 
 ;; Window-dividers

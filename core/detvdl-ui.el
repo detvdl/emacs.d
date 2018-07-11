@@ -23,7 +23,7 @@
       scroll-preserve-screen-position 1)
 
 ;; Don't really use the right fringe currently
-(fringe-mode '(8 . 8))
+(fringe-mode '(8 . 0))
 
 ;; Frame settings (position, size)
 (defvar detvdl:default-frame-size '(1780 1120))
@@ -65,12 +65,14 @@ Additional AFTER-HOOKS can be run after setting the font"
 (defconst detvdl:fonts
   '(("Iosevka" . ("Iosevka" 13 light nil))
     ("Fira Code" . ("Fira Code Retina" 12 nil))
-    ("Input" . ("Input Mono" 12 light))
+    ("Input" . ("Input Mono" 12 extralight))
     ("IBM Plex" . ("IBM Plex Mono" 12 regular))
     ("SF Mono" . ("SF Mono" 12 nil))
+    ("Operator" . ("Operator Mono" 15 extralight))
+    ("Pragmata" . ("Pragmata Pro Mono" 15 regular))
     ("Hack" . ("Hack" 12 nil))
     ("Hasklig" . ("Hasklig" 12 nil))
-    ("Proggy Clean" . ("ProggyCleanTT CE" 16 nil))
+    ("Proggy Clean" . ("ProggyCleanTT CE" 20 nil))
     ("VGA SquarePx" . ("PxPlus VGA SquarePx" 20 nil))
     ("IBM 3270" . ("IBM 3270 Semi-Narrow" 16 medium))))
 
@@ -88,7 +90,7 @@ Additional AFTER-HOOKS can be run after setting the font"
 
 (global-set-key (kbd "C-. f") 'detvdl:change-font)
 
-(detvdl:set-font "Iosevka" 13 'light 'detvdl:extra-typeface-settings)
+(detvdl:set-font "Iosevka" 15 'light 'detvdl:extra-typeface-settings)
 
 ;; Certain fonts such as IBM Plex Mono mess with frame scaling
 ;; so we delay this until after setting the font
