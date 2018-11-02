@@ -21,6 +21,7 @@
 (require 'detvdl-c)
 ;; (require 'detvdl-c++)
 
+(require 'detvdl-prolog)
 (require 'detvdl-debugger)
 (require 'detvdl-ess)
 
