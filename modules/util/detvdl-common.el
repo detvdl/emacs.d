@@ -176,12 +176,6 @@ If the universal ARG is supplied, open in dired."
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
-(use-package iedit
-  :ensure t
-  :commands (iedit-mode)
-  :bind (("C-;" . iedit-mode)
-         ("C-. i" . iedit-mode)))
-
 (use-package multiple-cursors
   :ensure t
   :defer t
@@ -194,9 +188,10 @@ If the universal ARG is supplied, open in dired."
          ("C-. C->" . mc/skip-to-next-like-this)
          ("C-. C-<" . mc/skip-to-previous-like-this)
          ("C-. >" . mc/mark-all-like-this)
+         ("C-; w" . mc/mark-all-words-like-this)
          :map global-map
          ("C-S-<mouse-1>" . mc/add-cursor-on-click))
-  :config
+  :init
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-savefile-dir)))
 
 (provide 'detvdl-common)
