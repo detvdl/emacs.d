@@ -45,9 +45,6 @@
 (global-set-key (kbd "C-+") 'text-scale-increase)
 (global-set-key (kbd "C--") 'text-scale-decrease)
 
-;; add 1/5th of current line height to line-spacing
-(setq-default line-spacing 0.20)
-
 ;; native line-numbers since emacs-26
 (setq-default display-line-numbers t
               display-line-numbers-current-absolute t
