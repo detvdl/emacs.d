@@ -45,6 +45,42 @@ If the universal ARG is supplied, open in dired."
                         ("*ggtags-global*"          :select t             :align below           :other t)
                         ("*eshell*"                 :select t             :align below           :other t))))
 
+(use-package sr-speedbar
+  :load-path "site-lisp/sr-speedbar/"
+  ;; :ensure t
+  :commands (sr-speedbar-toggle)
+  :bind (("M-i" . detvdl:sr-speedbar-toggle)
+         ("M-n" . sr-speedbar-select-window)
+         :map speedbar-mode-map
+         ("q" . sr-speedbar-close)
+         ("b" . sr-speedbar-buffers))
+  :init
+  (defun sr-speedbar-buffers ()
+    (interactive)
+    (speedbar-change-initial-expansion-list "buffers"))
+  (defun detvdl:sr-speedbar-toggle ()
+    (interactive)
+    (sr-speedbar-toggle)
+    (when-let* ((buf (get-buffer sr-speedbar-buffer-name))
+                (win (get-buffer-window buf)))
+      (with-current-buffer buf
+        (setq-local display-line-numbers nil)
+        (setq-local left-fringe-width 0)
+        (setq-local window-min-width 30)
+        (set-window-buffer win buf))
+      ))
+  :config
+  (setq sr-speedbar-right-side nil
+        speedbar-show-unknown-files t
+        speedbar-indentation-width 2
+        speedbar-use-images nil
+        speedbar-directory-unshown-regexp "^\\(CVS\\|RCS\\|SCCS\\|\\.\\.*$\\)\\'" ;; show hidden files
+        sr-speedbar-auto-refresh nil
+        sr-speedbar-max-width 40
+        sr-speedbar-default-width 30
+        sr-speedbar-width 30))
+
+
 (use-package hydra
   :ensure t
   :defer t)
