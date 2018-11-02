@@ -29,16 +29,10 @@
                                   (t . ivy--regex-fuzzy)))
     (ivy-mode 1)))
 
-(use-package ivy-rich
-  :ensure t
-  :after ivy
-  :config
-  (ivy-set-display-transformer 'ivy-switch-buffer 'ivy-rich-switch-buffer-transformer))
-
 (use-package counsel
   :ensure t
   :bind (("M-x" . counsel-M-x)
-         ("M-i" . counsel-imenu)
+         ;; ("M-i" . counsel-imenu)
          ("C-x C-f" . counsel-find-file)
          ("C-c y" . counsel-yank-pop)
          ("C-c k" . counsel-rg)
@@ -54,6 +48,12 @@
     (setq smex-save-file (expand-file-name "smex-items" emacs-savefile-dir)))
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+
+(use-package ivy-rich
+  :ensure t
+  :after ivy
+  :init (setq ivy-rich-parse-remote-file-path t)
+  :config (ivy-rich-mode 1))
 
 (provide 'detvdl-ivy)
 ;;; detvdl-ivy.el ends here

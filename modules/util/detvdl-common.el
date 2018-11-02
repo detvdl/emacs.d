@@ -18,7 +18,9 @@ If the universal ARG is supplied, open in dired."
   :ensure t
   :config
   (progn
-    (setq exec-path-from-shell-arguments ()
+    (setq explicit-shell-file-name "/usr/local/bin/zsh"
+          shell-file-name "/usr/local/bin/zsh"
+          exec-path-from-shell-arguments ()
           exec-path-from-shell-variables (append
                                           exec-path-from-shell-variables
                                           '("LC_ALL"
@@ -107,6 +109,7 @@ If the universal ARG is supplied, open in dired."
 
 (use-package ace-window
   :ensure t
+  :diminish ace-window-mode
   :bind ("M-o" . ace-window)
   :config
   (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
