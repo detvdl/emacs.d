@@ -35,7 +35,7 @@
     (define-fringe-bitmap 'git-gutter-fr:deleted fringe-bitmap-line nil nil '(center repeated))
     (global-git-gutter-mode +1)
     (defhydra hydra-git-gutter (:body-pre (git-gutter-mode 1)
-                                          :hint nil)
+                                :hint nil)
       "
 Git gutter:
   _n_: next hunk        _s_tage hunk     _q_uit
@@ -67,10 +67,23 @@ Git gutter:
   :ensure t
   :bind (("C-x g" . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
-  ;; :demand t
+  :commands (magit-display-buffer-traditional)
+  :init
+  ;; Requirement for proper other-frame display buffer functionality
+  (use-package other-frame-window
+    :ensure t
+    :commands (ofw-display-buffer-other-frame)
+    :defer t)
+  (defun magit-display-buffer-popup-frame (buffer)
+    (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
+        (display-buffer buffer '((display-buffer-reuse-window
+                                  ofw-display-buffer-other-frame)
+                                 (reusable-frames . t)))
+      (magit-display-buffer-traditional buffer)))
   :hook (magit-post-refresh . git-gutter:update-all-windows)
   :config
-  (setq magit-completing-read-function 'ivy-completing-read))
+  (setq magit-completing-read-function 'ivy-completing-read
+        magit-display-buffer-function #'magit-display-buffer-popup-frame))
 
 (setq vc-follow-symlinks t)
 ;; smart modeline uses vc to show relevant info
