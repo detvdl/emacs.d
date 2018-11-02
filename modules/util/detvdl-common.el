@@ -31,19 +31,22 @@ If the universal ARG is supplied, open in dired."
     (when (memq window-system '(mac ns x))
       (exec-path-from-shell-initialize))))
 
-;; TODO: add some more rules
-(use-package shackle
+(use-package imenu-list
   :ensure t
-  :init (shackle-mode t)
+  :bind (("C-'" . detvdl:imenu-list-smart-toggle))
+  :init
+  (defun detvdl:imenu-list-smart-toggle ()
+    (interactive)
+    (imenu-list-smart-toggle)
+    (when-let* ((buf (get-buffer imenu-list-buffer-name))
+                (win (get-buffer-window buf)))
+      (with-current-buffer buf
+        (setq-local display-line-numbers nil)
+        (setq-local left-fringe-width 0)
+        (set-window-buffer win buf))))
   :config
-  (setq shackle-default-size 0.33
-        shackle-default-rule '(:noselect t)
-        shackle-rules '((compilation-mode           :select t             :align below           :other t)
-                        (cargo-process-mode                               :align below           :other t)
-                        ("\\*HTTP Response.*\\*\\'"             :regexp t :align right :size 0.5 :other t)
-                        ("\\*Cargo.*\\*\\'"         :select t   :regexp t :align below           :other t)
-                        ("*ggtags-global*"          :select t             :align below           :other t)
-                        ("*eshell*"                 :select t             :align below           :other t))))
+  (setq imenu-list-size 0.2
+        imenu-list-position 'right))
 
 (use-package sr-speedbar
   :load-path "site-lisp/sr-speedbar/"
@@ -80,6 +83,18 @@ If the universal ARG is supplied, open in dired."
         sr-speedbar-default-width 30
         sr-speedbar-width 30))
 
+;; (use-package shackle
+;;   :ensure t
+;;   :init (shackle-mode t)
+;;   :config
+;;   (setq shackle-default-size 0.33
+;;         shackle-default-rule '(:noselect t :other t)
+;;         shackle-rules '((compilation-mode           :select t             :align below           :other t)
+;;                         (cargo-process-mode                               :align below           :other t)
+;;                         ("\\*HTTP Response.*\\*\\'"             :regexp t :align right :size 0.5 :other t)
+;;                         ("\\*Cargo.*\\*\\'"         :select t   :regexp t :align below           :other t)
+;;                         ("*ggtags-global*"          :select t             :align below           :other t)
+;;                         ("*eshell*"                 :select t             :align below           :other t))))
 
 (use-package hydra
   :ensure t
