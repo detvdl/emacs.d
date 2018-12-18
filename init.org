@@ -1,0 +1,547 @@
+# -*- org-src-preserve-indentation: t; -*-
+
+#+STARTUP: content
+
+Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
+
+* Package archives and setup
+#+BEGIN_SRC emacs-lisp
+(require 'package)
+(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
+			             ("melpa" . "https://melpa.org/packages/")
+			             ("org" . "http://orgmode.org/elpa/")))
+(setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
+      package-enable-at-startup nil
+      package--init-file-ensured t
+      package-check-signature nil)
+#+END_SRC
+
+Install use-package and its sub-packages/necessary packages for some of its extra features
+
+#+BEGIN_SRC emacs-lisp
+(unless package--initialized 
+  (package-initialize t))
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(setq use-package-always-ensure t)
+
+(use-package delight)
+(use-package bind-key)
+(use-package use-package)
+#+END_SRC
+
+* Custom variables
+#+BEGIN_SRC emacs-lisp
+;; Constants
+(defconst *is-mac* (eq system-type 'darwin))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+
+;; General variables
+(defvar detvdl/font-list '())
+
+;; Directories
+(defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
+(defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
+#+END_SRC
+
+* Paths and custom file locations
+#+BEGIN_SRC emacs-lisp
+(push emacs-theme-dir custom-theme-load-path)
+(dolist (dir (directory-files emacs-theme-dir))
+  (let ((dirpath (expand-file-name dir emacs-theme-dir)))
+    (unless (or (member dir '("." ".." ".git"))
+		(not (file-directory-p dirpath)))
+      (push dirpath custom-theme-load-path))))
+
+(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(when (file-exists-p custom-file)
+  (load custom-file))
+#+END_SRC
+
+* Shell
+#+BEGIN_SRC emacs-lisp
+(use-package exec-path-from-shell
+  :ensure t
+  :config
+  (dolist (var '("SSH_AUTH_SOCK"
+                 "SSH_AGENT_PID"
+                 "GPG_AGENT_INFO"
+                 "GOPATH"
+                 "LANG"
+                 "LC_CTYPE"))
+    (add-to-list 'exec-path-from-shell-variables var))
+  (when (memq window-system '(mac ns))
+    (exec-path-from-shell-initialize)))
+#+END_SRC
+
+* UI elements
+#+BEGIN_SRC emacs-lisp
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+(scroll-bar-mode -1)
+(show-paren-mode 1)
+
+(global-display-line-numbers-mode)
+(setq display-line-numbers-width 4)
+
+(column-number-mode)
+
+(setq inhibit-splash-screen nil)
+(setq ring-bell-function 'ignore)
+
+(setq-default indicate-empty-lines t)
+
+(setq frame-resize-pixelwise t)
+
+(setq scroll-margin 0
+      scroll-conservatively 100000
+      scroll-preserve-screen-position 1)
+#+END_SRC
+
+** Fonts
+#+BEGIN_SRC emacs-lisp
+(defconst Go-font '(:family "Go Mono" :size 14))
+
+(setq detvdl/font-list (append detvdl/font-list
+			       '(Go-font)))
+
+(defun detvdl/transform-font-list (fonts)
+  (mapcar (lambda (font)
+	    (cons (plist-get (symbol-value font) :family) font))
+	  fonts))
+
+(defun detvdl/switch-font (&optional font)
+  (interactive)
+  (let* ((fonts (detvdl/transform-font-list detvdl/font-list))
+	 (font-name (or font (completing-read
+			      "Pick font: "
+			      (mapcar 'car fonts)
+			      nil
+			      t)))
+	 (font (symbol-value (alist-get font-name fonts))))
+    (set-frame-font (apply 'font-spec font) nil t)))
+
+(set-frame-font (apply 'font-spec Go-font) nil t)
+(setq line-spacing 0.1)
+#+END_SRC
+
+** Theme
+#+BEGIN_SRC emacs-lisp
+(mapc #'disable-theme custom-enabled-themes)
+(load-theme 'plan9 t)
+#+END_SRC
+
+** Modeline
+ #+BEGIN_SRC emacs-lisp
+(which-function-mode)
+ #+END_SRC
+
+* Editor
+Never type "yes" or "no" again.
+#+BEGIN_SRC emacs-lisp
+(fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+Automatically create missing parent directories when visiting a new file.
+
+#+BEGIN_SRC emacs-lisp
+(defun detvdl/create-non-existent-directory ()
+      (let ((parent-directory (file-name-directory buffer-file-name)))
+        (when (and (not (file-exists-p parent-directory))
+                   (y-or-n-p (format "Directory '%s' does not exist! Create it?" parent-directory)))
+          (make-directory parent-directory t))))
+(add-to-list 'find-file-not-found-functions #'detvdl/create-non-existent-directory)
+#+END_SRC
+
+Some generic variables.
+
+#+BEGIN_SRC emacs-lisp
+(setq-default tab-width 4
+	          make-backup-files nil
+	          indent-tabs-mode nil
+	          show-trailing-whitespace t
+	          visible-bell nil)
+#+END_SRC
+
+Show me which line I'm on.
+
+#+BEGIN_SRC emacs-lisp
+(global-hl-line-mode +1)
+#+END_SRC
+
+Proper line wrapping.
+
+#+BEGIN_SRC emacs-lisp
+(global-visual-line-mode +1)
+(delight 'visual-line-mode)
+#+END_SRC
+
+Uniquify buffers with the same name instead of appending a number.
+
+#+BEGIN_SRC emacs-lisp
+(setq uniquify-buffer-name-style 'forward
+      uniquify-separator " . "
+      uniquify-after-kill-buffer-p t
+      uniquify-ignore-buffers-re "^\\*")
+#+END_SRC
+
+Have proper undo/redo behaviour
+
+#+BEGIN_SRC emacs-lisp
+(use-package undo-tree
+  :ensure t
+  :bind (("C-/" . undo)
+         ("C-?" . undo-tree-redo)))
+#+END_SRC
+
+** Copy-Pasting magic
+#+BEGIN_SRC emacs-lisp
+(when *is-linux*
+  (setq x-select-enable-clipboard t))
+(setq select-active-regions t)
+(setq save-interprogram-paste-before-kill 1)
+(setq yank-pop-change-selection t)
+#+END_SRC
+
+** Functions
+Handy functions to URL-encode/-decode a region
+#+BEGIN_SRC emacs-lisp
+(defun url-encode-region (beg end)
+  "URL encode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (encoded-text (url-hexify-string selected-text)))
+        (kill-region beg end)
+        (insert encoded-text))))
+
+(defun url-decode-region (beg end)
+  "URL decode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (decoded-text (url-unhex-string selected-text)))
+        (kill-region beg end)
+        (insert decoded-text))))
+#+END_SRC
+
+** General Utilities
+Easily select regions.
+#+BEGIN_SRC emacs-lisp
+(use-package expand-region
+  :ensure t
+  :bind (("C-=" . er/expand-region)
+         ("C-. e" . er/expand-region)))
+#+END_SRC
+
+Quickly switch windows, with visual help
+#+BEGIN_SRC emacs-lisp
+(use-package ace-window
+  :ensure t
+  :delight ace-window-mode
+  :bind ("M-o" . ace-window)
+  :config
+  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
+        aw-dispatch-always nil))
+#+END_SRC
+
+Edit multiple occurences of a code fragment in one buffer.
+Used in combination with ivy/swiper and rg for easy refactoring.
+#+BEGIN_SRC emacs-lisp
+(use-package wgrep
+  :ensure t
+  :defer t
+  :config
+  (setq wgrep-auto-save-buffer t))
+#+END_SRC
+
+Helper functions to improve some emacs basics.
+#+BEGIN_SRC emacs-lisp
+(use-package crux
+  :ensure t
+  :bind (([(shift return)] . crux-smart-open-line)
+         ([(control shift return)] . crux-smart-open-line-above)
+         ("C-a" . crux-move-beginning-of-line)
+         ("C-k" . crux-kill-whole-line)
+         ("C-<backspace>" . crux-kill-line-backwards))
+  :config
+  (crux-reopen-as-root-mode))
+#+END_SRC
+
+Handy-dandy menu in case you ever forget a keybind.
+#+BEGIN_SRC emacs-lisp
+(use-package which-key
+  :ensure t
+  :delight which-key-mode
+  :config
+  (which-key-mode))
+#+END_SRC
+
+Great regex-based find-and-replace.
+#+BEGIN_SRC emacs-lisp
+(use-package anzu
+  :ensure t
+  :bind (("C-, r" . anzu-query-replace)
+         ("C-, R" . anzu-query-replace-regexp)))
+#+END_SRC
+
+Quickly select expanding regions and put them in the kill-ring.
+#+BEGIN_SRC emacs-lisp
+(use-package easy-kill
+  :ensure t
+  :bind (([remap kill-ring-save] . easy-kill)
+         ([remap mark-sexp] . easy-mark)))
+#+END_SRC
+
+Does what it says: multiple cursors!
+#+BEGIN_SRC emacs-lisp
+(use-package multiple-cursors
+  :ensure t
+  :defer t
+  :bind (("C->" . mc/mark-next-like-this)
+         ("C-<" . mc/mark-previous-like-this)
+         ("C-M-<" . mc/unmark-previous-like-this)
+         ("C-M->" . mc/unmark-next-like-this)
+         ("C-. C->" . mc/skip-to-next-like-this)
+         ("C-. C-<" . mc/skip-to-previous-like-this)
+         ("C-. >" . mc/mark-all-like-this)
+         ("C-; w" . mc/mark-all-words-like-this)
+         :map global-map
+         ("C-S-<mouse-1>" . mc/add-cursor-on-click))
+  :init
+(setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
+#+END_SRC
+
+** Ivy
+#+BEGIN_SRC emacs-lisp
+(use-package ivy
+  :ensure t
+  :delight ivy-mode
+  :bind (("C-s" . counsel-grep-or-swiper)
+         ("C-x C-f" . counsel-find-file)
+	 ("M-x" . counsel-M-x)
+	 ("M-X" . smex-major-mode-commands)
+
+         ("C-c y" . counsel-yank-pop)
+         ("C-c k" . counsel-rg)
+         ("C-x l" . counsel-locate)
+         ("C-h v" . counsel-describe-variable)
+         ("C-h f" . counsel-describe-function)
+         ("C-x 8" . counsel-unicode-char)
+         ("C-x b" . ivy-switch-buffer)
+	 ("C-c C-r" . ivy-resume)
+         ("C-c C-u" . swiper-all)
+         ("C-c C-w" . ivy-wgrep-change-to-wgrep-mode)
+         :map ivy-minibuffer-map
+         ("RET" . ivy-alt-done)
+         ("C-m" . ivy-alt-done)
+         ("C-j" . ivy-done))
+  :config
+  (require 'counsel)
+  (require 'swiper)
+  ;; Fuzzy matching
+  (use-package flx :ensure t)
+  (setq ivy-use-virtual-buffers t
+        ivy-use-selectable-prompt t
+        enable-recursive-minibuffers t
+        ivy-display-style 'fancy
+        ivy-height 8
+        ivy-virtual-abbreviate 'full
+        ivy-extra-directories nil
+        ivy-re-builders-alist '((swiper . ivy--regex-plus)
+                                (t . ivy--regex-fuzzy)))
+  (use-package smex
+    :ensure t
+    :config
+    (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
+  ;; use the faster ripgrep for standard counsel-grep
+  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+  (ivy-mode 1))
+
+(use-package ivy-rich
+  :ensure t
+  :after ivy
+  :init (setq ivy-rich-parse-remote-file-path t)
+  :config (ivy-rich-mode 1))
+#+END_SRC
+
+* Completion
+** Company
+#+BEGIN_SRC emacs-lisp
+(use-package company
+  :ensure t
+  :delight company-mode
+  :bind (("M-\\" . company-select-next))
+  :demand
+  :config
+  (setq company-idle-delay 0.5
+        company-tooltip-limit 10
+        company-minimum-prefix-length 2
+        company-tooltip-flip-when-above t
+        company-tooltip-align-annotations t)
+  (global-company-mode 1))
+
+(use-package company-quickhelp
+  :ensure t
+  :after company
+  :config
+  (use-package pos-tip :ensure t)
+  (company-quickhelp-mode 1)
+  (setq company-quickhelp-delay 0.5
+        company-quickhelp-use-propertized-text t))
+#+END_SRC
+
+* Programming general
+** Font locking important comment keywords
+#+BEGIN_SRC emacs-lisp
+(defun local-comment-auto-fill ()
+  (set (make-local-variable 'comment-auto-fill-only-comments) t))
+
+(defun font-lock-comment-annotations ()
+  "Highlight a bunch of well known comment annotations.
+This functions should be added to the hooks of major modes for programming."
+  (font-lock-add-keywords
+   nil '(("\\<\\(\\(FIX\\(ME\\)?\\|TODO\\|OPTIMIZE\\|HACK\\|REFACTOR\\|NOTE\\|WARNING\\):\\)"
+          1 font-lock-warning-face t))))
+
+(add-hook 'prog-mode-hook (lambda ()
+                            (local-comment-auto-fill)
+(font-lock-comment-annotations)))
+#+END_SRC
+
+** Compilation mode
+#+BEGIN_SRC emacs-lisp
+;; colorize the output of the compilation mode.
+(require 'ansi-color)
+(defun colorize-compilation-buffer ()
+  (toggle-read-only)
+  (ansi-color-apply-on-region (point-min) (point-max))
+
+  ;; mocha seems to output some non-standard control characters that
+  ;; aren't recognized by ansi-color-apply-on-region, so we'll
+  ;; manually convert these into the newlines they should be.
+  (goto-char (point-min))
+  (while (re-search-forward "\\[2K\\[0G" nil t)
+    (progn
+      (replace-match "")))
+  (toggle-read-only))
+(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
+#+END_SRC
+
+** Buffer-local variables to keep in mind
+#+BEGIN_SRC emacs-lisp
+(put 'encoding 'safe-local-variable (lambda (val) #'stringp))
+(put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
+#+END_SRC
+
+Don't replace existing buffers with transient ones, keep them persistent.
+#+BEGIN_SRC emacs-lisp
+(use-package dedicated
+  :ensure t
+  :commands dedicated-mode)
+#+END_SRC
+
+** Magit
+#+BEGIN_SRC emacs-lisp
+(use-package magit
+  :ensure t
+  :bind (("C-x g" . magit-status))
+  :config
+  (setq magit-completing-read-function 'ivy-completing-read
+        magit-restore-window-configuration #'detvdl/magit-visit-pull-request
+        vc-follow-symlinks t)
+  (use-package other-frame-window
+    :ensure t
+    :config
+    (defun magit-display-buffer-popup-frame (buffer)
+      (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
+          (display-buffer buffer '((display-buffer-reuse-window
+                                    ofw-display-buffer-other-frame)
+                                   (reusable-frames . t)))
+        (magit-display-buffer-traditional buffer)))
+    (setq magit-display-buffer-function #'magit-display-buffer-popup-frame))
+  (advice-add #'magit-key-mode-popup-committing :after
+              (lambda ()
+                (magit-key-mode-toggle-option (quote committing) "--verbose"))))
+
+(use-package git-gutter-fringe
+  :ensure t
+  :config
+  (global-git-gutter-mode +1)
+  (setq git-gutter:modified-sign "* "
+        git-gutter:added-sign "+ "
+        git-gutter:deleted-sign "- "
+        git-gutter:lighter " GG"))
+#+END_SRC
+
+Don't let ediff create any fancy layouts, just use a proper separate buffer.
+
+#+BEGIN_SRC emacs-lisp
+(use-package ediff
+  :ensure t
+  :config
+  (setq ediff-window-setup-function 'ediff-setup-windows-plain))
+#+END_SRC
+
+** Smartparens
+#+BEGIN_SRC emacs-lisp
+(use-package smartparens
+  :ensure t
+  :delight smartparens-mode
+  :functions sp-pair
+  :hook ((prolog-mode prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :bind (("C-. )" . sp-rewrap-sexp)
+         ("C-. (" . sp-rewrap-sexp))
+  :config
+  (require 'smartparens-config)
+  (setq sp-base-key-bindings 'paredit
+        sp-autoskip-closing-pair 'always
+        sp-hybrid-kill-entire-symbol nil)
+  (sp-use-paredit-bindings)
+  ;; TODO: add and fix pairs for Clojure-specific constructs
+  (sp-pair "{" nil :post-handlers
+           '(((lambda (&rest _ignored)
+                (crux-smart-open-line-above)) "RET")))
+  (sp-pair "{" nil :post-handlers
+           '(("||\n[i]" "RET")
+             ("| " "SPC")))
+  (sp-pair "[" nil :post-handlers
+           '(((lambda (&rest _ignored)
+                (crux-smart-open-line-above)) "RET")))
+  (sp-pair "[" nil :post-handlers
+           '(("||\n[i]" "RET")
+             ("| " "SPC"))))
+#+END_SRC
+
+** Projectile
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :ensure t
+  :delight projectile-mode
+  :bind (("C-c p p" . projectile-switch-project)
+         ("C-c p f" . projectile-find-file))
+  :config
+  (setq projectile-completion-system 'ivy)
+  (with-eval-after-load 'ivy
+    (ivy-set-actions 'projectile-find-file
+                     '(("j" find-file-other-window "other window")))
+    (ivy-set-actions 'projectile-switch-project
+                     '(("g" magit-status "magit status"))))
+  (projectile-mode))
+#+END_SRC
+
+** Rainbows
+#+BEGIN_SRC emacs-lisp
+(use-package rainbow-delimiters
+  :ensure t
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
+#+END_SRC
+
+** Documentation
+Always enable eldoc
+#+BEGIN_SRC emacs-lisp
+(global-eldoc-mode +1)
+#+END_SRC
