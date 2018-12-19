@@ -1,3 +1,12 @@
+(require 'package)
+
+(package-initialize)
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
 
 (defvar endless/init.org-message-depth 4
   "What depth of init.org headers to message at startup.")
@@ -17,4 +26,4 @@
      ((looking-at "^#\\+BEGIN_SRC +emacs-lisp *$")
       (let ((l (match-end 0)))
         (search-forward "\n#+END_SRC")
-(eval-region l (match-beginning 0)))))))
+	(eval-region l (match-beginning 0)))))))

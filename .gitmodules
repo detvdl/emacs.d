@@ -1,3 +1,6 @@
 [submodule "modules/themes/custom-themes/emacs-farmhouse-theme"]
 	path = modules/themes/custom-themes/emacs-farmhouse-theme
 	url = git@github.com:detvdl/emacs-farmhouse-theme.git
+[submodule "themes/plan9-theme.el"]
+	path = themes/plan9-theme.el
+	url = https://github.com/john2x/plan9-theme.el.git

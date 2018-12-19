@@ -8,8 +8,8 @@ Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
 #+BEGIN_SRC emacs-lisp
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			             ("melpa" . "https://melpa.org/packages/")
-			             ("org" . "http://orgmode.org/elpa/")))
+			 ("melpa" . "https://melpa.org/packages/")
+			 ("org" . "http://orgmode.org/elpa/")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package-enable-at-startup nil
       package--init-file-ensured t
@@ -19,13 +19,6 @@ Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
 Install use-package and its sub-packages/necessary packages for some of its extra features
 
 #+BEGIN_SRC emacs-lisp
-(unless package--initialized 
-  (package-initialize t))
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
 (setq use-package-always-ensure t)
 
 (use-package delight)
@@ -131,7 +124,7 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 ** Theme
 #+BEGIN_SRC emacs-lisp
 (mapc #'disable-theme custom-enabled-themes)
-(load-theme 'plan9 t)
+(load-theme 'mccarthy t)
 #+END_SRC
 
 ** Modeline
@@ -143,6 +136,18 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 Never type "yes" or "no" again.
 #+BEGIN_SRC emacs-lisp
 (fset 'yes-or-no-p 'y-or-n-p)
+#+END_SRC
+
+Always delete selection when typing over or pasting
+
+#+BEGIN_SRC emacs-lisp
+(delete-selection-mode +1)
+#+END_SRC
+
+Remove trailing whitespace when saving a file
+
+#+BEGIN_SRC emacs-lisp
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 #+END_SRC
 
 Automatically create missing parent directories when visiting a new file.
@@ -340,8 +345,6 @@ Does what it says: multiple cursors!
          ("C-m" . ivy-alt-done)
          ("C-j" . ivy-done))
   :config
-  (require 'counsel)
-  (require 'swiper)
   ;; Fuzzy matching
   (use-package flx :ensure t)
   (setq ivy-use-virtual-buffers t
@@ -360,6 +363,9 @@ Does what it says: multiple cursors!
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
   (ivy-mode 1))
+
+(use-package swiper :after ivy)
+(use-package counsel :after ivy)
 
 (use-package ivy-rich
   :ensure t
@@ -467,17 +473,14 @@ Don't replace existing buffers with transient ones, keep them persistent.
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
 
-(use-package git-gutter-fringe
+(use-package diff-hl
   :ensure t
   :config
-  (global-git-gutter-mode +1)
-  (setq git-gutter:modified-sign "* "
-        git-gutter:added-sign "+ "
-        git-gutter:deleted-sign "- "
-        git-gutter:lighter " GG"))
+  (diff-hl-flydiff-mode +1)
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 #+END_SRC
 
-Don't let ediff create any fancy layouts, just use a proper separate buffer.
+Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 
 #+BEGIN_SRC emacs-lisp
 (use-package ediff
