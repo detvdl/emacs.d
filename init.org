@@ -1068,9 +1068,11 @@ Some common functionality for all lisp-like languages (akin to smartparens)
          "\\.pac\\'")
   :interpreter "node"
   :config
-  (setq-local electric-layout-rules '((?\; . after)))
-  (setq mode-name "JS2"
-        js-indent-level 2)
+  (add-hook 'js2-mode-hook (lambda ()
+                             (setq-local electric-layout-rules
+                                         '((?\; . after)))
+                             (setq mode-name "JS2"
+                                   js-indent-level 2)))
   (js2-imenu-extras-mode +1))
 
 (use-package tern
@@ -1084,12 +1086,23 @@ Some common functionality for all lisp-like languages (akin to smartparens)
   :config
   (add-hook 'js2-mode-hook (lambda () (company:add-local-backend 'company-tern))))
 
-;; typescript development environment
-;; (use-package tide)
-
 (use-package json-mode
   :ensure t
   :mode ("\\.json\\'"))
+#+END_SRC
+
+** Typescript
+#+BEGIN_SRC emacs-lisp
+(use-package typescript-mode
+  :ensure t
+  :mode "\\.ts\\'")
+
+(use-package tide
+  :ensure t
+  :after (typescript-mode company flycheck)
+  :hook ((typescript-mode . tide-setup)
+         (typescript-mode . tide-hl-identifier-mode)
+         (before-save . tide-format-before-save)))
 #+END_SRC
 
 ** Markdown
