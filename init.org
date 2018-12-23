@@ -2,8 +2,6 @@
 
 #+STARTUP: content
 
-Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
-
 * Package archives and setup
 ** Package archives
 #+BEGIN_SRC emacs-lisp
@@ -21,11 +19,21 @@ Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
 Install use-package and its sub-packages/necessary packages for some of its extra features
 
 #+BEGIN_SRC emacs-lisp
-(setq use-package-always-ensure t)
+(require 'package)
 
-(use-package delight)
-(use-package bind-key)
-(use-package use-package)
+(unless package--initialized
+  (package-initialize))
+
+(unless (package-installed-p 'use-package)
+  (package-refresh-contents)
+  (package-install 'use-package))
+
+(require 'use-package)
+(setq use-package-always-ensure nil)
+
+(use-package delight :ensure t)
+(use-package bind-key :ensure t)
+(use-package use-package :ensure t)
 #+END_SRC
 
 * Environment
@@ -61,6 +69,12 @@ Prettify Emacs appearance to match colour scheme
 (when (and *is-mac* *pretty-mode*)
   (add-to-list 'default-frame-alist
                '(ns-transparent-titlebar . t)))
+#+END_SRC
+
+** Bugs
+Fix visual select bug
+#+BEGIN_SRC emacs-lisp
+(fset 'evil-visual-update-x-selection 'ignore)
 #+END_SRC
 
 * Paths and custom file locations
@@ -114,7 +128,9 @@ Remove unnecessary cruft from the GUI application
 
 
 (global-display-line-numbers-mode)
-(setq display-line-numbers-width 4)
+(setq display-line-numbers-width 4
+      display-line-numbers-current-absolute t
+      display-line-numbers-widen t)
 
 (column-number-mode)
 
@@ -232,7 +248,7 @@ Proper line wrapping.
 
 #+BEGIN_SRC emacs-lisp
 (global-visual-line-mode +1)
-(delight 'visual-line-mode)
+(delight 'visual-line-mode nil t)
 #+END_SRC
 
 Uniquify buffers with the same name instead of appending a number.
@@ -249,8 +265,18 @@ Have proper undo/redo behaviour
 #+BEGIN_SRC emacs-lisp
 (use-package undo-tree
   :ensure t
+  :delight
   :bind (("C-/" . undo)
-         ("C-?" . undo-tree-redo)))
+         ("C-S-/" . undo-tree-redo))
+  :config
+  (global-undo-tree-mode +1))
+#+END_SRC
+
+Auto revert buffers that changed on disk
+
+#+BEGIN_SRC emacs-lisp
+(auto-revert-mode +1)
+(delight 'auto-revert-mode nil t)
 #+END_SRC
 
 ** Clipboard
@@ -384,7 +410,7 @@ Does what it says: multiple cursors!
         ivy-virtual-abbreviate 'full
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
-                                (t . ivy--regex-fuzzy)))
+                                (t . ivy--regex-plus)))
   (use-package smex
     :ensure t
     :config
@@ -393,8 +419,8 @@ Does what it says: multiple cursors!
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
   (ivy-mode 1))
 
-(use-package swiper :after ivy)
-(use-package counsel :after ivy)
+(use-package swiper :ensure t :after ivy)
+(use-package counsel :ensure t :after ivy)
 
 (use-package ivy-rich
   :ensure t
@@ -435,6 +461,8 @@ Install org from org-plus-contrib!
    '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
    '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
    ))
+
+(delight 'org-indent-mode nil t)
 #+END_SRC
 
 Org-mode buffer-local variables
@@ -463,6 +491,21 @@ Prettifying org-mode buffers.
 #+END_SRC
 
 * Completion
+** Snippets
+#+BEGIN_SRC emacs-lisp
+(use-package yasnippet
+  :if (not noninteractive)
+  :ensure t
+  :delight
+  :commands (yas-reload-all yas-minor-mode)
+  :hook (prog-mode . yas-minor-mode))
+
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
+
+#+END_SRC
+
 ** Company
 #+BEGIN_SRC emacs-lisp
 (use-package company
@@ -486,6 +529,17 @@ Prettifying org-mode buffers.
   (company-quickhelp-mode 1)
   (setq company-quickhelp-delay 0.5
         company-quickhelp-use-propertized-text t))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+(bind-key "M-\\" #'company-complete-common-or-cycle global-map)
+
+(defun company:add-local-backend (backend)
+  "Add the BACKEND to the local `company-backends' variable."
+  (if (local-variable-if-set-p 'company-backends)
+      (add-to-list 'company-backends `(,backend :with company-yasnippet))
+    (add-to-list (make-local-variable 'company-backends)
+                 `(,backend :with company-yasnippet))))
 #+END_SRC
 
 * Programming tools
@@ -589,7 +643,6 @@ Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 (use-package smartparens
   :ensure t
   :delight smartparens-mode
-  :functions sp-pair
   :hook ((prolog-mode prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
   :bind (("C-. )" . sp-rewrap-sexp)
          ("C-. (" . sp-rewrap-sexp))
@@ -772,7 +825,296 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 (bind-key "M-(" (lambda () (wrap-with "(")) lisp-mode-shared-map)
 (bind-key "M-\"" (lambda () (wrap-with "\"")) lisp-mode-shared-map)
 #+END_SRC
+
+** Emacs Lisp
+#+BEGIN_SRC emacs-lisp
+(use-package elisp-slime-nav
+  :ensure t
+  :defer t
+  :commands (elisp-slime-nav-mode))
+
+(dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
+  (add-hook hook 'elisp-slime-nav-mode))
+
+(add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
+#+END_SRC
+
+** Common Lisp
+#+BEGIN_SRC emacs-lisp
+;; the SBCL configuration file is in Common Lisp
+(add-to-list 'auto-mode-alist '("\\.sbclrc\\'" . lisp-mode))
+
+;; Open files with .cl extension in lisp-mode
+(add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
+
+(use-package slime
+  :ensure t
+  :commands slime
+  :bind (:map slime-mode-map
+         ("C-c C-s" . slime-selector))
+  :config
+  (setq slime-lisp-implementations '((ccl ("/usr/local/bin/ccl"))
+                                     (sbcl ("/usr/local/bin/sbcl"))
+                                     (pico ("/usr/local/bin/pil")))
+        slime-contribs '(slime-fancy slime-company slime-indentation)
+        slime-autodoc-use-multiline-p t
+        slime-enable-evaluate-in-emacs t
+        common-lisp-style-default "sbcl")
+  (defun slime-enable-concurrent-hints ()
+    (interactive)
+    (setf slime-inhibit-pipelining nil)))
+
+(use-package slime-company
+  :ensure t
+  :after slime
+  :config
+  (add-hook 'slime-mode-hook (lambda () (company:add-local-backend 'company-slime)))
+  (setq slime-company-completion 'fuzzy))
+#+END_SRC
+
+** Clojure
+#+BEGIN_SRC emacs-lisp
+(use-package clojure-mode
+  :ensure t
+  :mode ("\\.clj[xc]?\\'"
+         "build\\.boot\\'")
+  :config
+  (add-hook 'clojure-mode-hook #'subword-mode))
+
+(add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojurescript-mode))
+
+(use-package cider
+  :ensure t
+  :defer t
+  :commands cider-jack-in
+  :config
+  (progn
+    (setq nrepl-log-messages t
+          ;; cider-boot-parameters "dev"
+          cider-eldoc-display-context-dependent-info t
+          cider-eldoc-display-for-symbol-at-point t
+          cider-dynamic-indentation nil)
+    (add-hook 'cider-mode-hook #'subword-mode)
+    (add-hook 'cider-mode-hook #'eldoc-mode)
+    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+    (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
+
+(use-package clojure-snippets
+  :ensure t
+  :after clojure-mode
+  :config
+  (with-eval-after-load 'yasnippet
+    (clojure-snippets-initialize)))
+
+#+END_SRC
+
+** C-like modes
+#+BEGIN_SRC emacs-lisp
+(use-package cc-mode
+  :ensure nil
+  :mode (("\\.h\\(h?\\|xx\\|pp\\)\\'" . c++-mode)
+         ("\\.m\\'" . c-mode)
+         ("\\.mm\\'" . c++-mode)
+         ("\\.java\\'" . java-mode))
+  :init
+  (defun c-mode-common-defaults ()
+    (setq c-default-style "gnu"
+          c-basic-offset 4
+          c-tab-always-indent t)
+    (c-set-offset 'substatement-open 0)
+    ;; make the underscore part of a word in C and C++ modes
+    (modify-syntax-entry ?_ "w" c++-mode-syntax-table)
+    (modify-syntax-entry ?_ "w" c-mode-syntax-table))
+  (when (derived-mode-p 'c-mode 'c++-mode 'java-mode)
+    (c-mode-common-defaults)))
+
+(defun makefile-mode-defaults ()
+  (whitespace-toggle-options '(tabs))
+  (setq indent-tabs-mode t))
+
+(add-hook 'makefile-mode-hook #'makefile-mode-defaults)
+#+END_SRC
+
 ** Go
+#+BEGIN_SRC emacs-lisp
+(use-package go-mode
+  :ensure t
+  :mode "\\.go\\'")
+
+(use-package company-go
+  :ensure t
+  :after go-mode
+  :config
+  (add-hook 'go-mode-hook (lambda () (company:add-local-backend 'company-go))))
+#+END_SRC
+
+** Ruby
+#+BEGIN_SRC emacs-lisp
+(use-package ruby-mode
+  :ensure t
+  :mode ("\\.rake\\'"
+         "Rakefile\\'"
+         "\\.gemspec\\'"
+         "\\.ru\\'"
+         "Gemfile\\'"
+         "Guardfile\\'"
+         "Capfile\\'"
+         "\\.cap\\'"
+         "\\.thor\\'"
+         "\\.rabl\\'"
+         "Thorfile\\'"
+         "Vagrantfile\\'"
+         "\\.jbuilder\\'"
+         "Podfile\\'"
+         "\\.podspec\\'"
+         "Puppetfile\\'"
+         "Berksfile\\'"
+         "Appraisals\\'")
+  :interpreter "ruby"
+  :config
+  (add-hook 'ruby-mode-hook #'subword-mode))
+
+(use-package yari
+  :ensure t
+  :defer t)
+
+(use-package inf-ruby
+  :ensure t
+  :bind (:map inf-ruby-minor-mode-map
+         ("C-x C-e" . ruby-send-last-sexp))
+  :hook (ruby-mode . inf-ruby-minor-mode))
+
+(use-package ruby-tools
+  :ensure t
+  :hook (ruby-mode . ruby-tools-mode))
+
+(use-package rbenv
+  :ensure t
+  :defer t
+  :config
+  (global-rbenv-mode)
+  (rbenv-use-corresponding))
+
+(use-package robe
+  :ensure t
+  :hook (ruby-mode . robe-mode)
+  :config
+  (add-hook 'robe-mode (lambda () (company:add-local-backend 'company-robe))))
+
+(use-package rubocop
+  :ensure t
+  :hook (ruby-mode . rubocop-mode))
+
+(use-package feature-mode
+  :ensure t
+  :mode (("\\.feature$" . feature-mode)))
+#+END_SRC
+
+** (X)HTML & CSS
+#+BEGIN_SRC emacs-lisp
+(use-package web-mode
+  :ensure t
+  :mode ("\\.phtml\\'"
+         "\\.tpl\\.php\\'"
+         "\\.tpl\\'"
+         "\\.blade\\.php\\'"
+         "\\.jsp\\'"
+         "\\.as[cp]x\\'"
+         "\\.erb\\'"
+         "\\.html?\\'"
+         "\\.eex\\'"
+         "/\\(views\\|html\\|theme\\|templates\\)/.*\\.php\\'")
+  :config
+  (setq web-mode-enable-auto-pairing nil
+        web-mode-enable-current-element-highlight t)
+  (eval-after-load 'smartparens
+    (sp-with-modes '(web-mode)
+      (sp-local-pair "%" "%"
+                     :unless '(sp-in-string-p)
+                     :post-handlers '(((lambda (&rest _ignored)
+                                         (just-one-space)
+                                         (save-excursion (insert " ")))
+                                       "SPC" "=" "#")))
+      (sp-local-tag "%" "<% "  " %>")
+      (sp-local-tag "=" "<%= " " %>")
+      (sp-local-tag "#" "<%# " " %>"))))
+
+(use-package emmet-mode
+  :ensure t
+  :bind (:map emmet-mode-keymap
+         ("TAB" . emmet-expand-line))
+  :hook ((web-mode sgml-mode css-mode) . emmet-mode))
+
+(use-package css-mode
+  :ensure t
+  :mode ("\\.[s]?css\\'")
+  :config
+  (setq css-indent-offset 2))
+
+;; Pretty colours for css-mode
+(use-package rainbow-mode
+  :ensure t
+  :after css-mode
+  :hook css-mode)
+#+END_SRC
+
+** JavaScript
+#+BEGIN_SRC emacs-lisp
+(use-package js2-mode
+  :ensure t
+  :mode ("\\.js\\'"
+         "\\.pac\\'")
+  :interpreter "node"
+  :config
+  (setq-local electric-layout-rules '((?\; . after)))
+  (setq mode-name "JS2"
+        js-indent-level 2)
+  (js2-imenu-extras-mode +1))
+
+(use-package tern
+  :ensure t
+  :delight
+  :hook js2-mode)
+
+(use-package company-tern
+  :ensure t
+  :after tern
+  :config
+  (add-hook 'js2-mode-hook (lambda () (company:add-local-backend 'company-tern))))
+
+;; typescript development environment
+;; (use-package tide)
+
+(use-package json-mode
+  :ensure t
+  :mode ("\\.json\\'"))
+#+END_SRC
+
+** Markdown
+#+BEGIN_SRC emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :config (setq markdown-command "multimarkdown"))
+
+(use-package pandoc-mode
+  :ensure t
+  :hook markdown-mode
+  ;; :magic ("README" . (lambda () (pandoc-mode -1)))
+  :config
+  (add-hook 'pandoc-mode-hook 'pandoc-load-default-settings)
+  ;; We don't need pandoc-mode in github-flavored .md files
+  (add-hook 'gfm-mode-hook (lambda () (pandoc-mode -1))))
+
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.yml\\'")
+#+END_SRC
+
 * Custom Functions
 ** General
 Start emacs from within emacs!

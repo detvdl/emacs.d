@@ -1,14 +1,3 @@
-(require 'package)
-
-(unless package--initialized
-  (package-initialize))
-
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package))
-
-(require 'use-package)
-
 (defvar endless/init.org-message-depth 4
   "What depth of init.org headers to message at startup.")
 
