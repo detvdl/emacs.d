@@ -5,6 +5,7 @@
 Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
 
 * Package archives and setup
+** Package archives
 #+BEGIN_SRC emacs-lisp
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -16,6 +17,7 @@ Largely inspired by [[https://www.john2x.com/emacs.html][this setup]].
       package-check-signature nil)
 #+END_SRC
 
+** Use-package
 Install use-package and its sub-packages/necessary packages for some of its extra features
 
 #+BEGIN_SRC emacs-lisp
@@ -26,11 +28,13 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 (use-package use-package)
 #+END_SRC
 
-* Custom variables
+* Environment
+** Custom Variables
 #+BEGIN_SRC emacs-lisp
 ;; Constants
 (defconst *is-mac* (eq system-type 'darwin))
 (defconst *is-linux* (eq system-type 'gnu/linux))
+(defconst *pretty-mode* nil)
 
 ;; General variables
 (defvar detvdl/font-list '())
@@ -40,7 +44,27 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 #+END_SRC
 
+* MacOS specifics
+** Modifiers
+Switch up modifier keys to fit the MacOS keyboard layout better
+#+BEGIN_SRC emacs-lisp
+(when *is-mac*
+  (setq mac-command-modifier 'control
+        mac-control-modifier 'meta
+        mac-option-modifier 'alt)
+  (global-set-key [kp-delete] 'delete-char))
+#+END_SRC
+
+** Looks
+Prettify Emacs appearance to match colour scheme
+#+BEGIN_SRC emacs-lisp
+(when (and *is-mac* *pretty-mode*)
+  (add-to-list 'default-frame-alist
+               '(ns-transparent-titlebar . t)))
+#+END_SRC
+
 * Paths and custom file locations
+** Load path initialization
 #+BEGIN_SRC emacs-lisp
 (push emacs-theme-dir custom-theme-load-path)
 (dolist (dir (directory-files emacs-theme-dir))
@@ -55,6 +79,7 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 #+END_SRC
 
 * Shell
+** Environment variables
 #+BEGIN_SRC emacs-lisp
 (use-package exec-path-from-shell
   :ensure t
@@ -62,20 +87,31 @@ Install use-package and its sub-packages/necessary packages for some of its extr
   (dolist (var '("SSH_AUTH_SOCK"
                  "SSH_AGENT_PID"
                  "GPG_AGENT_INFO"
+                 "GPG_TTY"
                  "GOPATH"
                  "LANG"
-                 "LC_CTYPE"))
+                 "LC_CTYPE"
+                 "LC_ALL"
+                 "LANG"
+                 "LANGUAGE"
+                 "PAGER"
+                 "TERM"))
     (add-to-list 'exec-path-from-shell-variables var))
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 #+END_SRC
 
-* UI elements
+* UI
+** GUI
+Remove unnecessary cruft from the GUI application
+
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
+(blink-cursor-mode -1)
 (show-paren-mode 1)
+
 
 (global-display-line-numbers-mode)
 (setq display-line-numbers-width 4)
@@ -94,27 +130,35 @@ Install use-package and its sub-packages/necessary packages for some of its extr
       scroll-preserve-screen-position 1)
 #+END_SRC
 
+Zoom in and out using text-scale commands
+
+#+BEGIN_SRC emacs-lisp
+(bind-key "C--" #'text-scale-decrease global-map)
+(bind-key "C-+" #'text-scale-increase global-map)
+#+END_SRC
+
 ** Fonts
 #+BEGIN_SRC emacs-lisp
-(defconst Go-font '(:family "Go Mono" :size 14))
+(defconst font-height 140)
+(defconst Go-font `(:family "Go Mono" :height ,font-height))
 
 (setq detvdl/font-list (append detvdl/font-list
-			       '(Go-font)))
+			                   '(Go-font)))
 
 (defun detvdl/transform-font-list (fonts)
   (mapcar (lambda (font)
-	    (cons (plist-get (symbol-value font) :family) font))
-	  fonts))
+	        (cons (plist-get (symbol-value font) :family) font))
+	      fonts))
 
 (defun detvdl/switch-font (&optional font)
   (interactive)
   (let* ((fonts (detvdl/transform-font-list detvdl/font-list))
-	 (font-name (or font (completing-read
-			      "Pick font: "
-			      (mapcar 'car fonts)
-			      nil
-			      t)))
-	 (font (symbol-value (alist-get font-name fonts))))
+	     (font-name (or font (completing-read
+			                  "Pick font: "
+			                  (mapcar 'car fonts)
+			                  nil
+			                  t)))
+	     (font (symbol-value (alist-get font-name fonts))))
     (set-frame-font (apply 'font-spec font) nil t)))
 
 (set-frame-font (apply 'font-spec Go-font) nil t)
@@ -124,16 +168,23 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 ** Theme
 #+BEGIN_SRC emacs-lisp
 (mapc #'disable-theme custom-enabled-themes)
-(load-theme 'mccarthy t)
+(load-theme 'leuven t)
 #+END_SRC
 
 ** Modeline
- #+BEGIN_SRC emacs-lisp
+#+BEGIN_SRC emacs-lisp
 (which-function-mode)
- #+END_SRC
+#+END_SRC
 
 * Editor
+** General
+#+BEGIN_SRC emacs-lisp
+;; smart tab behavior - indent or complete
+(setq tab-always-indent 'complete)
+#+END_SRC
+
 Never type "yes" or "no" again.
+
 #+BEGIN_SRC emacs-lisp
 (fset 'yes-or-no-p 'y-or-n-p)
 #+END_SRC
@@ -202,35 +253,13 @@ Have proper undo/redo behaviour
          ("C-?" . undo-tree-redo)))
 #+END_SRC
 
-** Copy-Pasting magic
+** Clipboard
 #+BEGIN_SRC emacs-lisp
 (when *is-linux*
   (setq x-select-enable-clipboard t))
 (setq select-active-regions t)
 (setq save-interprogram-paste-before-kill 1)
 (setq yank-pop-change-selection t)
-#+END_SRC
-
-** Functions
-Handy functions to URL-encode/-decode a region
-#+BEGIN_SRC emacs-lisp
-(defun url-encode-region (beg end)
-  "URL encode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (encoded-text (url-hexify-string selected-text)))
-        (kill-region beg end)
-        (insert encoded-text))))
-
-(defun url-decode-region (beg end)
-  "URL decode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (decoded-text (url-unhex-string selected-text)))
-        (kill-region beg end)
-        (insert decoded-text))))
 #+END_SRC
 
 ** General Utilities
@@ -374,6 +403,65 @@ Does what it says: multiple cursors!
   :config (ivy-rich-mode 1))
 #+END_SRC
 
+* Org-mode
+** General
+Install org from org-plus-contrib!
+
+#+BEGIN_SRC emacs-lisp
+(use-package org
+  :ensure org-plus-contrib
+  :pin org
+  :mode ("\\.org\\'" . org-mode)
+  :bind (("C-c l" . org-store-link)
+         ("C-c a" . org-agenda)
+         ("C-c b" . org-iswitchb))
+  :config
+  (setq org-log-done t
+        org-startup-indented t
+        org-hidden-keywords '()
+        ;; LaTeX preview size is a bit too small for comfort
+        org-format-latex-options (plist-put org-format-latex-options :scale 2.0)
+        org-highlight-latex-and-related '(latex))
+  ;; I *kinda* like distinctive header sizes
+  (custom-set-faces
+   '(org-document-title ((t (:inherit outline-1 :height 1.30 :underline t))))
+   '(org-document-info ((t (:inherit outline-1 :height 1.20))))
+   '(org-document-info-keyword ((t (:inherit outline-1 :height 1.20))))
+   '(org-warning ((t (:weight bold :foreground "#CC9393" :height 1.20))))
+
+   '(org-level-1 ((t (:inherit outline-1 :height 1.05))))
+   '(org-level-2 ((t (:inherit outline-2 :height 1.00))))
+   '(org-level-3 ((t (:inherit outline-3 :height 1.00))))
+   '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
+   '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
+   ))
+#+END_SRC
+
+Org-mode buffer-local variables
+
+#+BEGIN_SRC emacs-lisp
+(put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
+#+END_SRC
+
+** Look & feel
+Prettifying org-mode buffers.
+#+BEGIN_SRC emacs-lisp
+(use-package org-bullets
+  :ensure t
+  :after org
+  :hook (org-mode . org-bullets-mode)
+  :config
+  (setq org-bullets-bullet-list '("◉"
+                                  "○")))
+
+(use-package adaptive-wrap
+  :ensure t
+  :hook (org-mode . adaptive-wrap-prefix-mode)
+  :config
+  (progn
+    (setq-default adaptive-wrap-extra-indent 2)))
+#+END_SRC
+
 * Completion
 ** Company
 #+BEGIN_SRC emacs-lisp
@@ -400,8 +488,8 @@ Does what it says: multiple cursors!
         company-quickhelp-use-propertized-text t))
 #+END_SRC
 
-* Programming general
-** Font locking important comment keywords
+* Programming tools
+** Comment Keywords
 #+BEGIN_SRC emacs-lisp
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
@@ -437,10 +525,9 @@ This functions should be added to the hooks of major modes for programming."
 (add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
 #+END_SRC
 
-** Buffer-local variables to keep in mind
+** Encoding & Transient buffers
 #+BEGIN_SRC emacs-lisp
 (put 'encoding 'safe-local-variable (lambda (val) #'stringp))
-(put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
 #+END_SRC
 
 Don't replace existing buffers with transient ones, keep them persistent.
@@ -472,10 +559,18 @@ Don't replace existing buffers with transient ones, keep them persistent.
   (advice-add #'magit-key-mode-popup-committing :after
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
+#+END_SRC
 
+Visual diff feedback in the margin/gutter
+
+#+BEGIN_SRC emacs-lisp
 (use-package diff-hl
   :ensure t
   :config
+  (set-face-attribute 'diff-hl-change nil :height font-height)
+  (set-face-attribute 'diff-hl-delete nil :height font-height)
+  (set-face-attribute 'diff-hl-insert nil :height font-height)
+  (global-diff-hl-mode +1)
   (diff-hl-flydiff-mode +1)
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
 #+END_SRC
@@ -547,4 +642,165 @@ Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 Always enable eldoc
 #+BEGIN_SRC emacs-lisp
 (global-eldoc-mode +1)
+#+END_SRC
+
+** Error checking
+#+BEGIN_SRC emacs-lisp
+(use-package flycheck
+  :config
+  (global-flycheck-mode +1))
+#+END_SRC
+
+** Indentation
+Aggressively indent everything (except for basically all non-lisp modes)!
+
+#+BEGIN_SRC emacs-lisp
+(use-package aggressive-indent
+  :ensure t
+  :diminish aggressive-indent-mode
+  :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode clojure-mode) . aggressive-indent-mode)
+  :config
+  (defvar aggressive-indent/excluded '())
+  (setq aggressive-indent/excluded '(html-mode ruby-mode python-mode yaml-mode))
+  (dolist (i aggressive-indent/excluded)
+    (add-to-list 'aggressive-indent-excluded-modes i))
+  (add-to-list
+   'aggressive-indent-dont-indent-if
+   '(and (or (derived-mode-p 'c-mode)
+             (eq major-mode 'rust-mode))
+         (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
+                             (thing-at-point 'line))))))
+#+END_SRC
+
+Utility function to re-indent entire file
+
+#+BEGIN_SRC emacs-lisp
+(defun detvdl/indent-file ()
+  (interactive)
+  (indent-region (point-min) (point-max)))
+(bind-key "C-; l" #'detvdl/indent-file global-map)
+#+END_SRC
+
+Emacs-lisp does not indent keyword-plists correctly. This function fixes that
+
+#+BEGIN_SRC emacs-lisp
+;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
+(defun Fuco1/lisp-indent-function (indent-point state)
+  "This function is the normal value of the variable `lisp-indent-function'.
+The function `calculate-lisp-indent' calls this to determine
+if the arguments of a Lisp function call should be indented specially.
+INDENT-POINT is the position at which the line being indented begins.
+Point is located at the point to indent under (for default indentation);
+STATE is the `parse-partial-sexp' state for that position.
+If the current line is in a call to a Lisp function that has a non-nil
+property `lisp-indent-function' (or the deprecated `lisp-indent-hook'),
+it specifies how to indent.  The property value can be:
+,* `defun', meaning indent `defun'-style
+  \(this is also the case if there is no property and the function
+  has a name that begins with \"def\", and three or more arguments);
+,* an integer N, meaning indent the first N arguments specially
+  (like ordinary function arguments), and then indent any further
+  arguments like a body;
+,* a function to call that returns the indentation (or nil).
+  `lisp-indent-function' calls this function with the same two arguments
+  that it itself received.
+This function returns either the indentation to use, or nil if the
+Lisp function does not specify a special indentation."
+  (let ((normal-indent (current-column))
+        (orig-point (point)))
+    (goto-char (1+ (elt state 1)))
+    (parse-partial-sexp (point) calculate-lisp-indent-last-sexp 0 t)
+    (cond
+     ;; car of form doesn't seem to be a symbol, or is a keyword
+     ((and (elt state 2)
+           (or (not (looking-at "\\sw\\|\\s_"))
+               (looking-at ":")))
+      (if (not (> (save-excursion (forward-line 1) (point))
+                  calculate-lisp-indent-last-sexp))
+          (progn (goto-char calculate-lisp-indent-last-sexp)
+                 (beginning-of-line)
+                 (parse-partial-sexp (point)
+                                     calculate-lisp-indent-last-sexp 0 t)))
+      ;; Indent under the list or under the first sexp on the same
+      ;; line as calculate-lisp-indent-last-sexp.  Note that first
+      ;; thing on that line has to be complete sexp since we are
+      ;; inside the innermost containing sexp.
+      (backward-prefix-chars)
+      (current-column))
+     ((and (save-excursion
+             (goto-char indent-point)
+             (skip-syntax-forward " ")
+             (not (looking-at ":")))
+           (save-excursion
+             (goto-char orig-point)
+             (looking-at ":")))
+      (save-excursion
+        (goto-char (+ 2 (elt state 1)))
+        (current-column)))
+     (t
+      (let ((function (buffer-substring (point)
+                                        (progn (forward-sexp 1) (point))))
+            method)
+        (setq method (or (function-get (intern-soft function)
+                                       'lisp-indent-function)
+                         (get (intern-soft function) 'lisp-indent-hook)))
+        (cond ((or (eq method 'defun)
+                   (and (null method)
+                        (> (length function) 3)
+                        (string-match "\\`def" function)))
+               (lisp-indent-defform state indent-point))
+              ((integerp method)
+               (lisp-indent-specform method state
+                                     indent-point normal-indent))
+              (method
+               (funcall method indent-point state))))))))
+
+(add-hook 'emacs-lisp-mode-hook
+          (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
+#+END_SRC
+
+* Languages
+** Lisp
+Some common functionality for all lisp-like languages (akin to smartparens)
+#+BEGIN_SRC emacs-lisp
+(defun wrap-with (s)
+  `(lambda (&optional arg)
+     (interactive "P")
+     (sp-wrap-with-pair ,s)))
+
+(bind-key "TAB" #'completion-at-point read-expression-map)
+(bind-key "M-(" (lambda () (wrap-with "(")) lisp-mode-shared-map)
+(bind-key "M-\"" (lambda () (wrap-with "\"")) lisp-mode-shared-map)
+#+END_SRC
+** Go
+* Custom Functions
+** General
+Start emacs from within emacs!
+
+#+BEGIN_SRC emacs-lisp
+(defun start-emacs ()
+  (interactive)
+  (call-process (executable-find "emacs") nil 0 nil))
+#+END_SRC
+
+Handy functions to URL-encode/-decode a region
+
+#+BEGIN_SRC emacs-lisp
+(defun url-encode-region (beg end)
+  "URL encode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (encoded-text (url-hexify-string selected-text)))
+        (kill-region beg end)
+        (insert encoded-text))))
+
+(defun url-decode-region (beg end)
+  "URL decode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (decoded-text (url-unhex-string selected-text)))
+        (kill-region beg end)
+        (insert decoded-text))))
 #+END_SRC

@@ -1,6 +1,7 @@
 (require 'package)
 
-(package-initialize)
+(unless package--initialized
+  (package-initialize))
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
