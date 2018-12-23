@@ -700,6 +700,7 @@ Always enable eldoc
 ** Error checking
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
+  :ensure t
   :config
   (global-flycheck-mode +1))
 #+END_SRC
