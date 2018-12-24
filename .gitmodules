@@ -4,3 +4,6 @@
 [submodule "themes/plan9-theme.el"]
 	path = themes/plan9-theme.el
 	url = https://github.com/john2x/plan9-theme.el.git
+[submodule "themes/poet"]
+	path = themes/poet
+	url = https://github.com/kunalb/poet

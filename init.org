@@ -156,10 +156,10 @@ Zoom in and out using text-scale commands
 ** Fonts
 #+BEGIN_SRC emacs-lisp
 (defconst font-height 140)
-(defconst Go-font `(:family "Go Mono" :height ,font-height))
+(defconst Go-font '(:family "Go Mono" :height 140))
+(defconst Baskerville-font '(:family "Baskerville" :height 160))
 
-(setq detvdl/font-list (append detvdl/font-list
-			                   '(Go-font)))
+(setq detvdl/font-list (append detvdl/font-list '(Go-font)))
 
 (defun detvdl/transform-font-list (fonts)
   (mapcar (lambda (font)
@@ -178,6 +178,13 @@ Zoom in and out using text-scale commands
     (set-frame-font (apply 'font-spec font) nil t)))
 
 (set-frame-font (apply 'font-spec Go-font) nil t)
+(apply 'set-face-attribute `(default nil ,@Go-font))
+(apply 'set-face-attribute `(fixed-pitch nil ,@Go-font))
+(apply 'set-face-attribute `(line-number nil ,@Go-font))
+(apply 'set-face-attribute `(variable-pitch nil ,@Baskerville-font))
+
+;; (add-hook 'text-mode-hook #'variable-pitch-mode)
+
 (setq line-spacing 0.1)
 #+END_SRC
 
@@ -360,7 +367,6 @@ Does what it says: multiple cursors!
 #+BEGIN_SRC emacs-lisp
 (use-package multiple-cursors
   :ensure t
-  :defer t
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
@@ -420,7 +426,7 @@ Does what it says: multiple cursors!
   (ivy-mode 1))
 
 (use-package swiper :ensure t :after ivy)
-(use-package counsel :ensure t :after ivy)
+(use-package counsel :ensure t :after swiper)
 
 (use-package ivy-rich
   :ensure t
@@ -444,6 +450,7 @@ Install org from org-plus-contrib!
   :config
   (setq org-log-done t
         org-startup-indented t
+        org-hide-leading-stars t
         org-hidden-keywords '()
         ;; LaTeX preview size is a bit too small for comfort
         org-format-latex-options (plist-put org-format-latex-options :scale 2.0)
@@ -700,8 +707,7 @@ Always enable eldoc
 ** Error checking
 #+BEGIN_SRC emacs-lisp
 (use-package flycheck
-  :config
-  (global-flycheck-mode +1))
+  :hook (prog-mode . flycheck-mode))
 #+END_SRC
 
 ** Indentation
@@ -831,10 +837,8 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 (use-package elisp-slime-nav
   :ensure t
   :defer t
-  :commands (elisp-slime-nav-mode))
-
-(dolist (hook '(emacs-lisp-mode-hook ielm-mode-hook))
-  (add-hook hook 'elisp-slime-nav-mode))
+  :commands (elisp-slime-nav-mode)
+  :hook ((emacs-lisp-mode ielm-mode) . elisp-slime-nav-mode))
 
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 #+END_SRC
@@ -940,7 +944,33 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 #+BEGIN_SRC emacs-lisp
 (use-package go-mode
   :ensure t
-  :mode "\\.go\\'")
+  :mode "\\.go\\'"
+  :bind (:map go-mode-map
+         ("M-." . godef-jump))
+  :config
+  (setq gofmt-command "goimports"))
+
+(use-package gotest
+  :ensure t
+  :after go-mode
+  :bind (:map go-mode-map
+         ("C-c a" . go-test-current-project)
+         ("C-c m" . go-test-current-file)
+         ("C-c ." . go-test-current-test)
+         ("C-c b" . go-run)))
+
+(use-package go-eldoc
+  :ensure t
+  :after go-mode
+  :config
+  (go-eldoc-setup))
+
+(defun my-go-mode-hook ()
+  (setq-local indent-tabs-mode 1)
+  (setq-local tab-width 2)
+  (add-hook 'before-save-hook 'gofmt-before-save))
+
+(add-hook 'go-mode-hook #'my-go-mode-hook)
 
 (use-package company-go
   :ensure t
