@@ -117,7 +117,7 @@ Fix visual select bug
 
 * UI
 ** GUI
-Remove unnecessary cruft from the GUI application
+Remove unnecessary cruft from the GUI application (and then add line-number cruft)
 
 #+BEGIN_SRC emacs-lisp
 (tool-bar-mode -1)
@@ -127,10 +127,10 @@ Remove unnecessary cruft from the GUI application
 (show-paren-mode 1)
 
 
-(global-display-line-numbers-mode)
-(setq display-line-numbers-width 4
-      display-line-numbers-current-absolute t
-      display-line-numbers-widen t)
+(global-display-line-numbers-mode +1)
+(setq-default display-line-numbers-width 4
+              display-line-numbers-current-absolute t
+              display-line-numbers-widen t)
 
 (column-number-mode)
 
@@ -497,6 +497,10 @@ Prettifying org-mode buffers.
     (setq-default adaptive-wrap-extra-indent 2)))
 #+END_SRC
 
+Make the whole heading line fontified
+#+BEGIN_SRC emacs-lisp
+(setq org-fontify-whole-heading-line t)
+#+END_SRC
 * Completion
 ** Snippets
 #+BEGIN_SRC emacs-lisp
@@ -510,7 +514,6 @@ Prettifying org-mode buffers.
 (use-package yasnippet-snippets
   :ensure t
   :after yasnippet)
-
 #+END_SRC
 
 ** Company
@@ -962,22 +965,27 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 
 (use-package go-eldoc
   :ensure t
-  :after go-mode
-  :config
-  (go-eldoc-setup))
-
-(defun my-go-mode-hook ()
-  (setq-local indent-tabs-mode 1)
-  (setq-local tab-width 2)
-  (add-hook 'before-save-hook 'gofmt-before-save))
-
-(add-hook 'go-mode-hook #'my-go-mode-hook)
+  :after go-mode)
 
 (use-package company-go
   :ensure t
+  :after go-mode)
+
+(use-package go-impl
+  :ensure t
   :after go-mode
-  :config
-  (add-hook 'go-mode-hook (lambda () (company:add-local-backend 'company-go))))
+  :bind (:map go-mode-map
+         ("C-c C-l" . go-impl)))
+
+(with-eval-after-load 'go-mode
+  (defun my-go-mode-hook ()
+    (setq-local indent-tabs-mode 1)
+    (setq-local tab-width 2)
+    (add-hook 'before-save-hook 'gofmt-before-save)
+    (subword-mode +1)
+    (go-eldoc-setup)
+    (company:add-local-backend 'company-go))
+  (add-hook 'go-mode-hook #'my-go-mode-hook))
 #+END_SRC
 
 ** Ruby
@@ -1148,12 +1156,14 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 (use-package pandoc-mode
   :ensure t
   :hook markdown-mode
-  ;; :magic ("README" . (lambda () (pandoc-mode -1)))
   :config
   (add-hook 'pandoc-mode-hook 'pandoc-load-default-settings)
   ;; We don't need pandoc-mode in github-flavored .md files
   (add-hook 'gfm-mode-hook (lambda () (pandoc-mode -1))))
+#+END_SRC
 
+Yet Another Markup Language
+#+BEGIN_SRC emacs-lisp
 (use-package yaml-mode
   :ensure t
   :mode "\\.yml\\'")
