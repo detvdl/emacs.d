@@ -44,9 +44,6 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *pretty-mode* nil)
 
-;; General variables
-(defvar detvdl/font-list '())
-
 ;; Directories
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
@@ -156,28 +153,12 @@ Zoom in and out using text-scale commands
 ** Fonts
 #+BEGIN_SRC emacs-lisp
 (defconst font-height 140)
-(defconst Go-font '(:family "Go Mono" :height 140))
-(defconst Baskerville-font '(:family "Baskerville" :height 160))
+(defconst font-size (/ font-height 10))
 
-(setq detvdl/font-list (append detvdl/font-list '(Go-font)))
+(defconst Go-font `(:family "Go Mono" :height ,font-height))
+(defconst Baskerville-font `(:family "Baskerville" :height ,font-height))
 
-(defun detvdl/transform-font-list (fonts)
-  (mapcar (lambda (font)
-	        (cons (plist-get (symbol-value font) :family) font))
-	      fonts))
-
-(defun detvdl/switch-font (&optional font)
-  (interactive)
-  (let* ((fonts (detvdl/transform-font-list detvdl/font-list))
-	     (font-name (or font (completing-read
-			                  "Pick font: "
-			                  (mapcar 'car fonts)
-			                  nil
-			                  t)))
-	     (font (symbol-value (alist-get font-name fonts))))
-    (set-frame-font (apply 'font-spec font) nil t)))
-
-(set-frame-font (apply 'font-spec Go-font) nil t)
+(set-frame-font (apply 'font-spec (append Go-font `(:size ,font-size))) nil t)
 (apply 'set-face-attribute `(default nil ,@Go-font))
 (apply 'set-face-attribute `(fixed-pitch nil ,@Go-font))
 (apply 'set-face-attribute `(line-number nil ,@Go-font))
@@ -381,6 +362,23 @@ Does what it says: multiple cursors!
 (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
 #+END_SRC
 
+** Writeroom (zen-mode)
+#+BEGIN_SRC emacs-lisp
+(use-package writeroom-mode
+  :ensure t
+  :commands writeroom-mode
+  :bind ("C-c w" . writeroom-mode)
+  :config
+  (defun writeroom-disable-line-numbers (arg)
+    (cond
+     ((= arg 1) (global-display-line-numbers-mode -1))
+     ((= arg -1) (global-display-line-numbers-mode +1))))
+  (setq writeroom-fringes-outside-margins t
+        writeroom-fullscreen-effect 'maximized
+        writeroom-width 120)
+  (add-to-list 'writeroom-global-effects 'writeroom-disable-line-numbers))
+#+END_SRC
+
 ** Ivy
 #+BEGIN_SRC emacs-lisp
 (use-package ivy
@@ -501,6 +499,7 @@ Make the whole heading line fontified
 #+BEGIN_SRC emacs-lisp
 (setq org-fontify-whole-heading-line t)
 #+END_SRC
+
 * Completion
 ** Snippets
 #+BEGIN_SRC emacs-lisp
@@ -917,6 +916,36 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 
 #+END_SRC
 
+** Scheme
+#+BEGIN_SRC emacs-lisp
+(use-package geiser
+  :ensure t
+  :commands run-geiser
+  :bind (:map scheme-mode-map
+         ("C-x C-e" . geiser-eval-last-sexp)))
+#+END_SRC
+
+** Prolog
+#+BEGIN_SRC emacs-lisp
+(use-package prolog
+  :ensure nil
+  :mode (("\\.pl$" . prolog-mode)
+         ("\\.m$" . mercury-mode))
+  :init
+  (progn
+    (autoload 'run-prolog "prolog" "Start a Prolog sub-process." t)
+    (autoload 'prolog-mode "prolog" "Major mode for editing Prolog programs." t)
+    (autoload 'mercury-mode "prolog" "Major mode for editing Mercury programs." t))
+  :config
+  (setq prolog-system 'swi))
+
+(use-package ediprolog
+  :ensure t
+  :after prolog
+  :bind (:map prolog-mode-map
+         ("C-x C-e" . 'ediprolog-dwim)))
+#+END_SRC
+
 ** C-like modes
 #+BEGIN_SRC emacs-lisp
 (use-package cc-mode
@@ -986,6 +1015,43 @@ Some common functionality for all lisp-like languages (akin to smartparens)
     (go-eldoc-setup)
     (company:add-local-backend 'company-go))
   (add-hook 'go-mode-hook #'my-go-mode-hook))
+#+END_SRC
+
+** Python
+#+BEGIN_SRC emacs-lisp
+(defun detvdl:install-python-dependencies ()
+  (when (executable-find "pip")
+    (start-process "Python deps" nil "pip install" "jedi flake8 autopep8 yapf")))
+
+(add-hook 'python-mode-hook #'subword-mode)
+
+(use-package anaconda-mode
+  :ensure t
+  :hook python-mode
+  :config
+  (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir)))
+
+(use-package company-anaconda
+  :ensure t
+  :after anaconda-mode
+  :config
+  (add-hook 'anaconda-mode-hook
+            (lambda ()
+              (company:add-local-backend 'company-anaconda)
+              (anaconda-eldoc-mode))))
+
+(use-package pyenv-mode
+  :ensure t
+  :hook python-mode
+  :config
+  (progn
+    (defun projectile-pyenv-mode-set ()
+      "Set pyenv version matching project name."
+      (let ((project (projectile-project-name)))
+        (if (member project (pyenv-mode-versions))
+            (pyenv-mode-set project)
+          (pyenv-mode-unset))))
+    (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)))
 #+END_SRC
 
 ** Ruby
