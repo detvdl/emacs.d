@@ -81,7 +81,7 @@ Fix visual select bug
 (dolist (dir (directory-files emacs-theme-dir))
   (let ((dirpath (expand-file-name dir emacs-theme-dir)))
     (unless (or (member dir '("." ".." ".git"))
-		(not (file-directory-p dirpath)))
+		        (not (file-directory-p dirpath)))
       (push dirpath custom-theme-load-path))))
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -255,7 +255,9 @@ Have proper undo/redo behaviour
   :ensure t
   :delight
   :bind (("C-/" . undo)
-         ("C-S-/" . undo-tree-redo))
+         ("C-S-/" . undo-tree-redo)
+         ;; for some reason my mac interprets C-S-/ as C-?
+         ("C-?" . undo-tree-redo))
   :config
   (global-undo-tree-mode +1))
 #+END_SRC
@@ -293,6 +295,8 @@ Quickly switch windows, with visual help
   :bind ("M-o" . ace-window)
   :config
   (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
+        aw-scope 'frame
+        aw-ignore-current t
         aw-dispatch-always nil))
 #+END_SRC
 
@@ -386,8 +390,8 @@ Does what it says: multiple cursors!
   :delight ivy-mode
   :bind (("C-s" . counsel-grep-or-swiper)
          ("C-x C-f" . counsel-find-file)
-	 ("M-x" . counsel-M-x)
-	 ("M-X" . smex-major-mode-commands)
+	     ("M-x" . counsel-M-x)
+	     ("M-X" . smex-major-mode-commands)
 
          ("C-c y" . counsel-yank-pop)
          ("C-c k" . counsel-rg)
@@ -396,7 +400,7 @@ Does what it says: multiple cursors!
          ("C-h f" . counsel-describe-function)
          ("C-x 8" . counsel-unicode-char)
          ("C-x b" . ivy-switch-buffer)
-	 ("C-c C-r" . ivy-resume)
+	     ("C-c C-r" . ivy-resume)
          ("C-c C-u" . swiper-all)
          ("C-c C-w" . ivy-wgrep-change-to-wgrep-mode)
          :map ivy-minibuffer-map
@@ -414,7 +418,7 @@ Does what it says: multiple cursors!
         ivy-virtual-abbreviate 'full
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
-                                (t . ivy--regex-plus)))
+                                (t . ivy--regex-fuzzy)))
   (use-package smex
     :ensure t
     :config
@@ -465,9 +469,10 @@ Install org from org-plus-contrib!
    '(org-level-3 ((t (:inherit outline-3 :height 1.00))))
    '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
    '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
-   ))
+   )
+   (delight 'org-indent-mode nil t))
 
-(delight 'org-indent-mode nil t)
+
 #+END_SRC
 
 Org-mode buffer-local variables
@@ -498,6 +503,13 @@ Prettifying org-mode buffers.
 Make the whole heading line fontified
 #+BEGIN_SRC emacs-lisp
 (setq org-fontify-whole-heading-line t)
+#+END_SRC
+
+Make sure hidden leading stars are actually invisible in my themes
+#+BEGIN_SRC emacs-lisp
+(custom-theme-set-faces
+ 'leuven
+ '(org-hide ((t (:foreground "#FFFFFF")))))
 #+END_SRC
 
 * Completion
@@ -549,6 +561,16 @@ Make the whole heading line fontified
       (add-to-list 'company-backends `(,backend :with company-yasnippet))
     (add-to-list (make-local-variable 'company-backends)
                  `(,backend :with company-yasnippet))))
+#+END_SRC
+
+** Eglot
+#+BEGIN_SRC emacs-lisp
+(use-package eglot
+  :ensure t
+  :commands eglot-ensure
+  :config
+  (setq eglot-server-programs
+        '((go-mode . ("bingo" "-mode=stdio" "-disable-diagnostics" "-freeosmemory" "180")))))
 #+END_SRC
 
 * Programming tools
@@ -979,9 +1001,24 @@ Some common functionality for all lisp-like languages (akin to smartparens)
   :ensure t
   :mode "\\.go\\'"
   :bind (:map go-mode-map
-         ("M-." . godef-jump))
+         ("M-." . godef-jump)
+         ("M-," . pop-tag-mark)
+         ("C-c c" . compile)
+         ("C-c r" . recompile))
   :config
-  (setq gofmt-command "goimports"))
+  (setq gofmt-command "goimports")
+  (add-hook 'before-save-hook 'gofmt-before-save)
+  (defun my-go-mode-hook ()
+    (setq-local indent-tabs-mode 1)
+    (setq-local tab-width 2)
+    (subword-mode +1)
+    (go-eldoc-setup)
+    (company:add-local-backend 'company-go)
+    ;; (eglot-ensure)
+    (if (not (string-match "go" compile-command))
+        (set (make-local-variable 'compile-command)
+             "go build -v && go test -v && go vet")))
+  (add-hook 'go-mode-hook #'my-go-mode-hook))
 
 (use-package gotest
   :ensure t
@@ -998,23 +1035,27 @@ Some common functionality for all lisp-like languages (akin to smartparens)
 
 (use-package company-go
   :ensure t
-  :after go-mode)
+  :after go-mode
+  :init
+  (setq company-go-gocode-command "gocode"
+        company-go-gocode-args '("-source"
+                                 "-ignore-case"
+                                 "-builtin"
+                                 "-unimported-packages")))
+
+(use-package flycheck-gometalinter
+  :ensure t
+  :after flycheck
+  :config
+  (setq flycheck-gometalinter-fast t
+        flycheck-gometalinter-disable-linters '("gotype"))
+  (add-hook 'go-mode-hook (lambda () (flycheck-gometalinter-setup))))
 
 (use-package go-impl
   :ensure t
   :after go-mode
   :bind (:map go-mode-map
          ("C-c C-l" . go-impl)))
-
-(with-eval-after-load 'go-mode
-  (defun my-go-mode-hook ()
-    (setq-local indent-tabs-mode 1)
-    (setq-local tab-width 2)
-    (add-hook 'before-save-hook 'gofmt-before-save)
-    (subword-mode +1)
-    (go-eldoc-setup)
-    (company:add-local-backend 'company-go))
-  (add-hook 'go-mode-hook #'my-go-mode-hook))
 #+END_SRC
 
 ** Python
