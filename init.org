@@ -7,8 +7,8 @@
 #+BEGIN_SRC emacs-lisp
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			 ("melpa" . "https://melpa.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")))
+			             ("melpa" . "https://melpa.org/packages/")
+			             ("org" . "http://orgmode.org/elpa/")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package-enable-at-startup nil
       package--init-file-ensured t
@@ -95,19 +95,12 @@ Fix visual select bug
 (use-package exec-path-from-shell
   :ensure t
   :config
-  (dolist (var '("SSH_AUTH_SOCK"
-                 "SSH_AGENT_PID"
-                 "GPG_AGENT_INFO"
-                 "GPG_TTY"
-                 "GOPATH"
-                 "LANG"
-                 "LC_CTYPE"
-                 "LC_ALL"
-                 "LANG"
-                 "LANGUAGE"
-                 "PAGER"
-                 "TERM"))
-    (add-to-list 'exec-path-from-shell-variables var))
+  (setq exec-path-from-shell-variables
+        '("PATH" "MANPATH"
+          "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+          "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+          "PAGER" "TERM"
+          "GOPATH"))
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 #+END_SRC
@@ -302,6 +295,8 @@ Quickly switch windows, with visual help
 
 Edit multiple occurences of a code fragment in one buffer.
 Used in combination with ivy/swiper and rg for easy refactoring.
+To refactor for example, search with swiper =C-s=, then activate ivy-occur =C-c C-o=.
+This opens an occur buffer with all results. Now you can activate wgrep and edit to your heart's content
 #+BEGIN_SRC emacs-lisp
 (use-package wgrep
   :ensure t
@@ -1276,7 +1271,7 @@ Yet Another Markup Language
   :mode "\\.yml\\'")
 #+END_SRC
 
-* Custom Functions
+* Miscellaneous
 ** General
 Start emacs from within emacs!
 
