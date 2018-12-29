@@ -1208,11 +1208,11 @@ Some common functionality for all lisp-like languages (akin to smartparens)
          "\\.pac\\'")
   :interpreter "node"
   :config
-  (add-hook 'js2-mode-hook (lambda ()
-                             (setq-local electric-layout-rules
-                                         '((?\; . after)))
-                             (setq mode-name "JS2"
-                                   js-indent-level 2)))
+  (defun my-js2-mode-hook ()
+    (setq-local electric-layout-rules '((?\; . after)))
+    (setq mode-name "JS2"
+          js-indent-level 2))
+  (add-hook 'js2-mode-hook 'my-js2-mode-hook)
   (js2-imenu-extras-mode +1))
 
 (use-package tern
