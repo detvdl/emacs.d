@@ -1,6 +1,8 @@
 # -*- org-src-preserve-indentation: t; -*-
 
 #+STARTUP: content
+#+PROPERTY: header-args :tangle init.el :comments org
+
 
 * Package archives and setup
 ** Package archives
@@ -42,7 +44,7 @@ Install use-package and its sub-packages/necessary packages for some of its extr
 ;; Constants
 (defconst *is-mac* (eq system-type 'darwin))
 (defconst *is-linux* (eq system-type 'gnu/linux))
-(defconst *pretty-mode* nil)
+(defconst *pretty-mode* t)
 
 ;; Directories
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
