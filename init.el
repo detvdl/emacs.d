@@ -356,7 +356,8 @@
   :commands outshine-mode
   :hook (emacs-lisp-mode . outshine-mode)
   :bind (:map outshine-mode-map
-         ("S-<tab>" . outshine-cycle-buffer))
+         ("S-<tab>" . outshine-cycle-buffer)
+         ("<backtab>" . outshine-cycle-buffer))
   :config
   (setq outshine-startup-folded-p t))
 
