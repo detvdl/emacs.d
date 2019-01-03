@@ -1019,8 +1019,14 @@ This checks in turn:
 (use-package anaconda-mode
   :ensure t
   :hook python-mode
+  :bind (:map anaconda-mode-map
+         ("M-." . anaconda-mode-find-definitions)
+         ("M-[" . anaconda-mode-find-references)
+         ("M-]" . anaconda-mode-show-doc))
   :config
-  (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir)))
+  (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir))
+  (when *is-mac*
+    (setq anaconda-mode-localhost-address "localhost")))
 
 (use-package company-anaconda
   :ensure t
