@@ -76,9 +76,10 @@
   :config
   (setq exec-path-from-shell-variables
         '("PATH" "MANPATH"
+          "PAGER" "TERM"
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-          "PAGER" "TERM"
+          "JDT_SERVER" "JDT_SERVER_CONFIG" "JDT_SERVER_DATA"
           "GOPATH"))
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
@@ -482,12 +483,24 @@
   :ensure t
   :commands eglot-ensure
   :bind (:map eglot-mode-map
-         ("C-; h" . eglot-help-at-point))
+         ("M-]" . eglot-help-at-point))
   :config
-  (defconst java-executable "/usr/lib/jvm/java-8-openjdk-amd64/bin/java")
+  (defconst java-executable (executable-find "java"))
+  (defconst java-jdt-ls-jar (getenv "JDT_SERVER"))
+  (defconst java-jdt-ls-config (getenv "JDT_SERVER_CONFIG"))
+  (defconst java-jdt-ls-data (getenv "JDT_SERVER_DATA"))
   (setq eglot-server-programs
-        '((go-mode . ("bingo" "-mode=stdio" "-disable-diagnostics" "-freeosmemory" "180"))
-          (java-mode . `(,java-executable "-Declipse.application=org.eclipse.jdt.ls.core.id1" "-Dosgi.bundles.defaultStartLevel=4" "-Declipse.product=org.eclipse.jdt.ls.core.product" "-jar" "/home/vandaeld/Workspaces/eclipse-jdt-ls/plugins/org.eclipse.equinox.launcher_1.5.200.v20180922-1751.jar" "-configuration" "/home/vandaeld/.eclipse-jdt-ls-config" "-data" "/home/vandaeld/.eclipse-jdt-ls-data")))))
+        '((go-mode . ("bingo"
+                      "-mode=stdio"
+                      "-disable-diagnostics"
+                      "-freeosmemory" "180"))
+          (java-mode . `(,java-executable
+                         "-Declipse.application=org.eclipse.jdt.ls.core.id1"
+                         "-Dosgi.bundles.defaultStartLevel=4"
+                         "-Declipse.product=org.eclipse.jdt.ls.core.product"
+                         "-jar" ,java-jdt-ls-jar
+                         "-configuration" ,java-jdt-ls-config
+                         "-data" ,java-jdt-ls-data)))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -706,8 +719,7 @@ Lisp function does not specify a special indentation."
         (setq-local display-line-numbers nil)
         (setq-local left-fringe-width 0)
         (setq-local window-min-width 30)
-        (set-window-buffer win buf))
-      ))
+        (set-window-buffer win buf))))
   :config
   (setq sr-speedbar-right-side nil
         speedbar-show-unknown-files t
@@ -722,7 +734,7 @@ Lisp function does not specify a special indentation."
 ;;;; Xref
 (bind-key "M-." 'xref-find-definitions prog-mode-map)
 (bind-key "M-," 'xref-pop-marker-stack prog-mode-map)
-(bind-key "C-M-." 'xref-find-references prog-mode-map)
+(bind-key "M-[" 'xref-find-references prog-mode-map)
 
 ;;; Git
 ;;;; Magit
