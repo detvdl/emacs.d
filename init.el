@@ -305,7 +305,6 @@
          ("C-x C-f" . counsel-find-file)
 	     ("M-x" . counsel-M-x)
 	     ("M-X" . smex-major-mode-commands)
-
          ("C-c y" . counsel-yank-pop)
          ("C-c k" . counsel-rg)
          ("C-x l" . counsel-locate)
@@ -331,13 +330,15 @@
         ivy-virtual-abbreviate 'full
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
+                                (counsel-ag-function . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
   (use-package smex
     :ensure t
     :config
     (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
   ;; use the faster ripgrep for standard counsel-grep
-  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"
+        counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s .")
   (ivy-mode 1))
 
 (use-package swiper :ensure t :after ivy)
@@ -475,7 +476,8 @@
   :commands eglot-ensure
   :config
   (setq eglot-server-programs
-        '((go-mode . ("bingo" "-mode=stdio" "-disable-diagnostics" "-freeosmemory" "180")))))
+        '((go-mode . ("bingo" "-mode=stdio" "-disable-diagnostics" "-freeosmemory" "180"))
+          (java-mode . ("/usr/lib/jvm/java-8-openjdk-amd64/bin/java" "-Declipse.application=org.eclipse.jdt.ls.core.id1" "-Dosgi.bundles.defaultStartLevel=4" "-Declipse.product=org.eclipse.jdt.ls.core.product" "-jar" "/home/vandaeld/Workspaces/eclipse-jdt-ls/plugins/org.eclipse.equinox.launcher_1.5.200.v20180922-1751.jar" "-configuration" "/home/vandaeld/.eclipse-jdt-ls-config" "-data" "/home/vandaeld/.eclipse-jdt-ls-data")))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
