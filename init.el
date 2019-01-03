@@ -1004,6 +1004,11 @@ This checks in turn:
   :bind (:map go-mode-map
          ("C-c C-l" . go-impl)))
 
+;;;; Java
+(defun my-java-mode-hook ()
+  (eglot-ensure))
+
+(add-hook 'java-mode-hook 'my-java-mode-hook)
 ;;;; Python
 (defun detvdl:install-python-dependencies ()
   (when (executable-find "pip")
@@ -1186,7 +1191,11 @@ This checks in turn:
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save))
   :bind (:map tide-mode-map
-         ("M-." . tide-goto-definition))
+         ("M-." . tide-goto-definition)
+         ("M-[" . tide-references)
+         ("M-]" . tide-documentation-at-point)
+         ("C-; i" . tide-organize-imports)
+         ("C-; f" . tide-fix))
   :config
   (setq typescript-indent-level 2))
 
