@@ -92,7 +92,6 @@
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 
-
 (global-display-line-numbers-mode +1)
 (setq-default display-line-numbers-width 4
               display-line-numbers-current-absolute t
@@ -111,18 +110,23 @@
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 
+(setq x-gtk-use-system-tooltips nil)
+
 ;; Zoom in and out using text-scale commands
 (bind-key "C--" #'text-scale-decrease global-map)
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
-(defconst font-height 140)
+(defconst font-height 120)
 (defconst font-size (/ font-height 10))
+(defconst font-weight 'regular)
+(defconst font-family "Go Mono")
+(defconst font-string (format "%s-%s:%s" font-family font-size font-weight))
 
-(defconst Go-font `(:family "Go Mono" :height ,font-height))
+(defconst Go-font `(:family ,font-family :height ,font-height :weight ,font-weight))
 (defconst Baskerville-font `(:family "Baskerville" :height ,font-height))
 
-(set-frame-font (apply 'font-spec (append Go-font `(:size ,font-size))) nil t)
+(set-frame-font font-string nil t)
 (apply 'set-face-attribute `(default nil ,@Go-font))
 (apply 'set-face-attribute `(fixed-pitch nil ,@Go-font))
 (apply 'set-face-attribute `(line-number nil ,@Go-font))
@@ -350,6 +354,9 @@
   :init (setq ivy-rich-parse-remote-file-path t)
   :config (ivy-rich-mode 1))
 
+;;;; Shackle
+(use-package shackle
+  :ensure t)
 ;;; Outlining
 ;;;; Outshine
 (use-package outshine
@@ -360,7 +367,7 @@
          ("S-<tab>" . outshine-cycle-buffer)
          ("<backtab>" . outshine-cycle-buffer))
   :config
-  (setq outshine-startup-folded-p t))
+  (setq outshine-startup-folded-p nil))
 
 ;;; Org-mode
 ;;;; General
@@ -474,10 +481,13 @@
 (use-package eglot
   :ensure t
   :commands eglot-ensure
+  :bind (:map eglot-mode-map
+         ("C-; h" . eglot-help-at-point))
   :config
+  (defconst java-executable "/usr/lib/jvm/java-8-openjdk-amd64/bin/java")
   (setq eglot-server-programs
         '((go-mode . ("bingo" "-mode=stdio" "-disable-diagnostics" "-freeosmemory" "180"))
-          (java-mode . ("/usr/lib/jvm/java-8-openjdk-amd64/bin/java" "-Declipse.application=org.eclipse.jdt.ls.core.id1" "-Dosgi.bundles.defaultStartLevel=4" "-Declipse.product=org.eclipse.jdt.ls.core.product" "-jar" "/home/vandaeld/Workspaces/eclipse-jdt-ls/plugins/org.eclipse.equinox.launcher_1.5.200.v20180922-1751.jar" "-configuration" "/home/vandaeld/.eclipse-jdt-ls-config" "-data" "/home/vandaeld/.eclipse-jdt-ls-data")))))
+          (java-mode . `(,java-executable "-Declipse.application=org.eclipse.jdt.ls.core.id1" "-Dosgi.bundles.defaultStartLevel=4" "-Declipse.product=org.eclipse.jdt.ls.core.product" "-jar" "/home/vandaeld/Workspaces/eclipse-jdt-ls/plugins/org.eclipse.equinox.launcher_1.5.200.v20180922-1751.jar" "-configuration" "/home/vandaeld/.eclipse-jdt-ls-config" "-data" "/home/vandaeld/.eclipse-jdt-ls-data")))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -594,15 +604,11 @@ This functions should be added to the hooks of major modes for programming."
          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                              (thing-at-point 'line))))))
 
-
-
 ;; Utility function to re-indent entire file
 (defun detvdl/indent-file ()
   (interactive)
   (indent-region (point-min) (point-max)))
 (bind-key "C-; l" #'detvdl/indent-file global-map)
-
-
 
 ;; Emacs-lisp does not indent keyword-plists correctly. This function fixes that
 ;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
@@ -678,6 +684,45 @@ Lisp function does not specify a special indentation."
 
 (add-hook 'emacs-lisp-mode-hook
           (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
+
+;;;; Imenu/speedbar
+(use-package sr-speedbar
+  :ensure t
+  :bind (("M-i" . detvdl:sr-speedbar-toggle)
+         ("M-n" . sr-speedbar-select-window)
+         :map speedbar-mode-map
+         ("q" . sr-speedbar-close)
+         ("b" . sr-speedbar-buffers))
+  :init
+  (defun sr-speedbar-buffers ()
+    (interactive)
+    (speedbar-change-initial-expansion-list "buffers"))
+  (defun detvdl:sr-speedbar-toggle ()
+    (interactive)
+    (sr-speedbar-toggle)
+    (when-let* ((buf (get-buffer sr-speedbar-buffer-name))
+                (win (get-buffer-window buf)))
+      (with-current-buffer buf
+        (setq-local display-line-numbers nil)
+        (setq-local left-fringe-width 0)
+        (setq-local window-min-width 30)
+        (set-window-buffer win buf))
+      ))
+  :config
+  (setq sr-speedbar-right-side nil
+        speedbar-show-unknown-files t
+        speedbar-indentation-width 2
+        speedbar-use-images nil
+        speedbar-directory-unshown-regexp "^\\(CVS\\|RCS\\|SCCS\\|\\.\\.*$\\)\\'" ;; show hidden files
+        sr-speedbar-auto-refresh nil
+        sr-speedbar-max-width 40
+        sr-speedbar-default-width 30
+        sr-speedbar-width 30))
+
+;;;; Xref
+(bind-key "M-." 'xref-find-definitions prog-mode-map)
+(bind-key "M-," 'xref-pop-marker-stack prog-mode-map)
+(bind-key "C-M-." 'xref-find-references prog-mode-map)
 
 ;;; Git
 ;;;; Magit
