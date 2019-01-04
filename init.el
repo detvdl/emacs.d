@@ -719,6 +719,7 @@ Lisp function does not specify a special indentation."
         (setq-local display-line-numbers nil)
         (setq-local left-fringe-width 0)
         (setq-local window-min-width 30)
+        (setq window-size-fixed 'width)
         (set-window-buffer win buf))))
   :config
   (setq sr-speedbar-right-side nil
@@ -726,10 +727,15 @@ Lisp function does not specify a special indentation."
         speedbar-indentation-width 2
         speedbar-use-images nil
         speedbar-directory-unshown-regexp "^\\(CVS\\|RCS\\|SCCS\\|\\.\\.*$\\)\\'" ;; show hidden files
-        sr-speedbar-auto-refresh nil
+        sr-speedbar-auto-refresh t
         sr-speedbar-max-width 40
         sr-speedbar-default-width 30
-        sr-speedbar-width 30))
+        sr-speedbar-width 30)
+  (set-face-attribute 'speedbar-button-face nil :height 100)
+  (set-face-attribute 'speedbar-file-face nil :height 100)
+  (set-face-attribute 'speedbar-directory-face nil :height 100)
+  (set-face-attribute 'speedbar-tag-face nil :height 100)
+  (set-face-attribute 'speedbar-selected-face nil :height 100))
 
 ;;;; Describe thing at point
 ;; handy function from https://www.emacswiki.org/emacs/DescribeThingAtPoint
