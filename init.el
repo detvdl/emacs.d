@@ -79,9 +79,9 @@
           "PAGER" "TERM"
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-          "JDT_SERVER" "JDT_SERVER_CONFIG" "JDT_SERVER_DATA"
+          "JDT_SERVER" "JDT_SERVER_CONFIG" "JDT_SERVER_DATA" "LOMBOK_JAR"
           "GOPATH"))
-  (when (memq window-system '(mac ns))
+  (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
 ;;; User Interface
@@ -487,20 +487,23 @@
   :config
   (defconst java-executable (executable-find "java"))
   (defconst java-jdt-ls-jar (getenv "JDT_SERVER"))
+  (defconst java-lombok-jar (getenv "LOMBOK_JAR"))
   (defconst java-jdt-ls-config (getenv "JDT_SERVER_CONFIG"))
   (defconst java-jdt-ls-data (getenv "JDT_SERVER_DATA"))
-  (setq eglot-server-programs
-        '((go-mode . ("bingo"
-                      "-mode=stdio"
-                      "-disable-diagnostics"
-                      "-freeosmemory" "180"))
-          (java-mode . `(,java-executable
-                         "-Declipse.application=org.eclipse.jdt.ls.core.id1"
-                         "-Dosgi.bundles.defaultStartLevel=4"
-                         "-Declipse.product=org.eclipse.jdt.ls.core.product"
-                         "-jar" ,java-jdt-ls-jar
-                         "-configuration" ,java-jdt-ls-config
-                         "-data" ,java-jdt-ls-data)))))
+  (add-to-list 'eglot-server-programs '(go-mode . ("bingo"
+                                                   "-mode=stdio"
+                                                   "-disable-diagnostics"
+                                                   "-freeosmemory" "180")))
+  (add-to-list 'eglot-server-programs `(java-mode . (eglot-eclipse-jdt
+                                                     ,java-executable
+                                                     "-Declipse.application=org.eclipse.jdt.ls.core.id1"
+                                                     "-Dosgi.bundles.defaultStartLevel=4"
+                                                     "-Declipse.product=org.eclipse.jdt.ls.core.product"
+                                                     ,(format "-javaagent:%s" java-lombok-jar)
+                                                     ,(format "-Xbootclasspath/a:%s" java-lombok-jar)
+                                                     "-jar" ,java-jdt-ls-jar
+                                                     "-configuration" ,java-jdt-ls-config
+                                                     "-data" ,java-jdt-ls-data))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -731,11 +734,17 @@ Lisp function does not specify a special indentation."
         sr-speedbar-max-width 40
         sr-speedbar-default-width 30
         sr-speedbar-width 30)
-  (set-face-attribute 'speedbar-button-face nil :height 100)
-  (set-face-attribute 'speedbar-file-face nil :height 100)
-  (set-face-attribute 'speedbar-directory-face nil :height 100)
-  (set-face-attribute 'speedbar-tag-face nil :height 100)
-  (set-face-attribute 'speedbar-selected-face nil :height 100))
+  (defconst speedbar--face-font-height 100)
+  (set-face-attribute 'speedbar-button-face nil :height speedbar--face-font-height)
+  (set-face-attribute 'speedbar-file-face nil :height speedbar--face-font-height)
+  (set-face-attribute 'speedbar-directory-face nil :height speedbar--face-font-height)
+  (set-face-attribute 'speedbar-tag-face nil :height speedbar--face-font-height)
+  (set-face-attribute 'speedbar-selected-face nil :height speedbar--face-font-height))
+
+(use-package imenu-list
+  :ensure t
+  :commands imenu-list
+  :bind ("C-'" . imenu-list))
 
 ;;;; Describe thing at point
 ;; handy function from https://www.emacswiki.org/emacs/DescribeThingAtPoint
