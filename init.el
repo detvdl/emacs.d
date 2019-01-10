@@ -1233,6 +1233,20 @@ This checks in turn:
   :ensure t
   :mode "\\.yml\\'")
 
+;;;; REST
+(use-package restclient
+  :ensure t
+  :mode (("\\.rest\\'" . restclient-mode)))
+
+(use-package company-restclient
+  :ensure t
+  :after restclient
+  :config
+  (add-hook 'restclient-mode-hook (lambda () (company:add-local-backend 'company-restclient))))
+
+(use-package ob-restclient
+  :ensure t)
+
 ;;; Miscellaneous
 ;; Start emacs from within emacs!
 (defun start-emacs ()
