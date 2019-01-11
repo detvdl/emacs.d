@@ -138,9 +138,15 @@
 (setq line-spacing 0.1)
 
 ;;;; Theme
+(use-package poet-theme
+  :ensure t
+  :defer t
+  :config
+  (custom-theme-set-faces
+   'poet
+   '(org-level-1 ((nil ((:weight bold :overline "#A7A7A7")))))))
 (mapc #'disable-theme custom-enabled-themes)
 (load-theme 'leuven t)
-
 ;;;; Modeline
 (which-function-mode)
 
