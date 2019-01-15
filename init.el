@@ -625,6 +625,7 @@ This functions should be added to the hooks of major modes for programming."
 ;;;; Documentation
 ;; Always enable eldoc
 (global-eldoc-mode +1)
+(delight 'eldoc-mode nil t)
 
 ;;;; Error checking
 (use-package flycheck
@@ -635,7 +636,7 @@ This functions should be added to the hooks of major modes for programming."
 ;; Aggressively indent everything (except for basically all non-lisp modes)!
 (use-package aggressive-indent
   :ensure t
-  :diminish aggressive-indent-mode
+  :delight
   :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode clojure-mode) . aggressive-indent-mode)
   :config
   (defvar aggressive-indent/excluded '())
