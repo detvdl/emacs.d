@@ -32,6 +32,7 @@
 (defconst *is-mac* (eq system-type 'darwin))
 (defconst *is-linux* (eq system-type 'gnu/linux))
 (defconst *pretty-mode* t)
+(defconst *line-numbers-on* -1)
 
 ;; Directories
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
@@ -93,7 +94,7 @@
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 
-(global-display-line-numbers-mode +1)
+(global-display-line-numbers-mode *line-numbers-on*)
 (setq-default display-line-numbers-width 4
               display-line-numbers-current-absolute t
               display-line-numbers-widen t)
@@ -118,7 +119,7 @@
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
-(defconst font-height 120)
+(defconst font-height 140)
 (defconst font-size (/ font-height 10))
 (defconst font-weight 'regular)
 (defconst font-family "Go Mono")
@@ -144,9 +145,27 @@
   :config
   (custom-theme-set-faces
    'poet
-   '(org-level-1 ((nil ((:weight bold :overline "#A7A7A7")))))))
+   '(org-level-1 ((nil ((:weight bold :overline "#A7A7A7")))))
+   '(outline-1 ((nil (:overline "#A7A7A7"))))))
+
+(use-package zenburn-theme
+  :ensure t
+  :defer t
+  :custom
+  (zenburn-override-colors-alist '(("zenburn-bg" . "#111111"))))
+
 (mapc #'disable-theme custom-enabled-themes)
-(load-theme 'leuven t)
+(load-theme 'zenburn t)
+
+(setq-default left-margin-width 2)
+(setq-default fringes-outside-margins t)
+(defun refresh-new-frame-buffer (frame)
+  "Refresh all windows in the given FRAME."
+  (mapcar (lambda (w)
+            (set-window-buffer w (window-buffer w)))
+          (cons (minibuffer-window frame) (window-list frame))))
+(add-to-list 'after-make-frame-functions #'refresh-new-frame-buffer)
+
 ;;;; Modeline
 (which-function-mode)
 
@@ -301,8 +320,9 @@
   :config
   (defun writeroom-disable-line-numbers (arg)
     (cond
-     ((= arg 1) (global-display-line-numbers-mode -1))
-     ((= arg -1) (global-display-line-numbers-mode +1))))
+     ((= arg 1) (display-line-numbers-mode -1))
+     ((= arg -1) (when (= *line-numbers-on* +1)
+                   (display-line-numbers-mode +1)))))
   (setq writeroom-fringes-outside-margins t
         writeroom-fullscreen-effect 'maximized
         writeroom-width 120)
@@ -432,10 +452,13 @@
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
-;; Make sure hidden leading stars are actually invisible in my themes
-(custom-theme-set-faces
- 'leuven
- '(org-hide ((t (:foreground "#FFFFFF")))))
+(use-package leuven-theme
+  :ensure t
+  :config
+  ;; Make sure hidden leading stars are actually invisible in my themes
+  (custom-theme-set-faces
+   'leuven
+   '(org-hide ((t (:foreground "#FFFFFF"))))))
 
 ;;; Completion
 ;;;; Snippets
