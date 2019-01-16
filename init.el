@@ -439,21 +439,21 @@
   :after org
   :hook (org-mode . org-bullets-mode)
   :config
-  (setq org-bullets-bullet-list '("◉"
+  (setq org-bullets-bullet-list '("●"
                                   "○")))
 
 (use-package adaptive-wrap
   :ensure t
-  :hook (org-mode . adaptive-wrap-prefix-mode)
+  :hook ((prog-mode org-mode) . adaptive-wrap-prefix-mode)
   :config
-  (progn
-    (setq-default adaptive-wrap-extra-indent 2)))
+  (setq-default adaptive-wrap-extra-indent 2))
 
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
 (use-package leuven-theme
   :ensure t
+  :defer t
   :config
   ;; Make sure hidden leading stars are actually invisible in my themes
   (custom-theme-set-faces
@@ -1310,3 +1310,39 @@ This checks in turn:
              (decoded-text (url-unhex-string selected-text)))
         (kill-region beg end)
         (insert decoded-text))))
+
+(defun raw-prefix-arg-p (arg)
+  (and (listp arg) (car arg)))
+
+(defun insert-agenda-week (&optional arg)
+  "Insert a new week at point.  Used in personal time-clocking agenda.
+When ARG is specified, prompts for a file to add it to."
+  (interactive "P")
+  (let* ((raw (raw-prefix-arg-p arg))
+         (arg (prefix-numeric-value arg))
+         (use-file-dialog nil)
+         (file (when raw (read-file-name "Agenda file: " "~")))
+         (start (org-read-date t t nil "Starting" (current-time)))
+         (end (time-add start (days-to-time 4)))
+         (text (with-temp-buffer
+                 (org-insert-time-stamp start nil t "* Week " "--")
+                 (org-insert-time-stamp end  nil t nil "\n")
+                 (dotimes (i 5)
+                   (let ((day (time-add start (days-to-time i))))
+                     (org-insert-time-stamp
+                      day
+                      nil
+                      t
+                      (format-time-string "** %A " day))))
+                 (insert "\n#+BEGIN: clocktable :scope file :maxlevel 2 :link t"
+                         " :tstart " (format-time-string "\"<%F %a>\"" start)
+                         " :tend "(format-time-string "\"<%F %a>\"" end)
+                         "\n#+END:")
+                 (org-clock-report)
+                 (buffer-string))))
+    (if file
+        (write-region text nil file t)
+      (save-excursion
+        (cond ((= arg 1) (goto-char (point-max)))
+              (t (goto-char arg)))
+        (insert text)))))
