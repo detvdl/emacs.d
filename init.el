@@ -514,25 +514,10 @@
   :bind (:map eglot-mode-map
          ("M-]" . eglot-help-at-point))
   :config
-  (defconst java-executable (executable-find "java"))
-  (defconst java-jdt-ls-jar (getenv "JDT_SERVER"))
-  (defconst java-lombok-jar (getenv "LOMBOK_JAR"))
-  (defconst java-jdt-ls-config (getenv "JDT_SERVER_CONFIG"))
-  (defconst java-jdt-ls-data (getenv "JDT_SERVER_DATA"))
   (add-to-list 'eglot-server-programs '(go-mode . ("bingo"
                                                    "-mode=stdio"
                                                    "-disable-diagnostics"
-                                                   "-freeosmemory" "180")))
-  (add-to-list 'eglot-server-programs `(java-mode . (eglot-eclipse-jdt
-                                                     ,java-executable
-                                                     "-Declipse.application=org.eclipse.jdt.ls.core.id1"
-                                                     "-Dosgi.bundles.defaultStartLevel=4"
-                                                     "-Declipse.product=org.eclipse.jdt.ls.core.product"
-                                                     ,(format "-javaagent:%s" java-lombok-jar)
-                                                     ,(format "-Xbootclasspath/a:%s" java-lombok-jar)
-                                                     "-jar" ,java-jdt-ls-jar
-                                                     "-configuration" ,java-jdt-ls-config
-                                                     "-data" ,java-jdt-ls-data))))
+                                                   "-freeosmemory" "180"))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -1050,10 +1035,85 @@ This checks in turn:
          ("C-c C-l" . go-impl)))
 
 ;;;; Java
+(defun get-shell-profile-file ()
+  "Look for active login shell profile file."
+  (let ((shell (or (getenv "SHELL")
+                   (error "SHELL environment variable is unset"))))
+    (cond
+     ((string-match "bash" shell) "~/.bash_profile")
+     ((string-match "zsh" shell) "~/.zprofile"))))
+
+(defun fetch-latest-eclipse-jdt-ls-server ()
+  "Fetch latest version of the Eclipse JDT LS server and install it in a default location."
+  (interactive)
+  (let* ((shfile (get-shell-profile-file))
+         (buf (or (find-buffer-visiting shfile)
+                  (create-file-buffer shfile)))
+         (os (cond (*is-mac* "mac")
+                   (*is-linux* "linux")
+                   (t "win")))
+         (tar (cond (*is-mac* (executable-find "gtar"))
+                    (*is-linux* (executable-find "tar"))
+                    (t (error "No tar available on Windows"))))
+         (jdt-dir "~/.eclipse-jdt-ls")
+         (jdt-server-jar nil)
+         (jdt-server-data (expand-file-name "data" jdt-dir))
+         (jdt-server-conf (expand-file-name (format "config_%s" os) jdt-dir))
+         (varlist `(("JDT_SERVER_CONFIG" ,jdt-server-conf)
+                    ("JDT_SERVER_DATA" ,jdt-server-data))))
+    (when (or (not (file-directory-p jdt-dir))
+              (not (directory-files jdt-dir nil (format "^plugins\\|^features\\|^config_%s" "mac"))))
+      (let ((jdt-tar (concat (temporary-file-directory) "jdt-language-server-latest.tar.gz")))
+        (url-copy-file
+         "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
+         jdt-tar
+         t)
+        (make-directory jdt-dir t)
+        (shell-command (format "%s -xvzf %s -C %s config_%s features plugins"
+                               tar jdt-tar jdt-dir os)
+                       "*Extracting*"
+                       "*Extracting Errors*")
+        (setq jdt-server-jar (car (directory-files (expand-file-name "plugins" jdt-dir) t "^org.eclipse.equinox.launcher_")))
+        (setq varlist (cons `("JDT_SERVER" ,jdt-server-jar) varlist)))
+      (make-directory jdt-server-data)
+      (setenv "JDT_SERVER" jdt-server-jar)
+      (when buf
+        (with-current-buffer buf
+          (mapcar
+           (lambda (var)
+             (save-excursion
+               (when (re-search-forward (car var) nil t)
+                 (delete-region (beginning-of-line) (end-of-line)))
+               (goto-char (point-max))
+               (insert (apply 'format "\nexport %s=%s" (car var) (cdr var)))
+               (apply 'setenv (car var) (cdr var))))
+           varlist)
+          (save-buffer))
+        ))))
+
+(defun set-eglot-java-server ()
+  (let ((java-executable (executable-find "java"))
+        (java-jdt-ls-jar (getenv "JDT_SERVER"))
+        (java-lombok-jar (getenv "LOMBOK_JAR"))
+        (java-jdt-ls-config (getenv "JDT_SERVER_CONFIG"))
+        (java-jdt-ls-data (getenv "JDT_SERVER_DATA")))
+    (add-to-list 'eglot-server-programs `(java-mode . (eglot-eclipse-jdt
+                                                       ,java-executable
+                                                       "-Declipse.application=org.eclipse.jdt.ls.core.id1"
+                                                       "-Dosgi.bundles.defaultStartLevel=4"
+                                                       "-Declipse.product=org.eclipse.jdt.ls.core.product"
+                                                       ,(format "-javaagent:%s" java-lombok-jar)
+                                                       ,(format "-Xbootclasspath/a:%s" java-lombok-jar)
+                                                       "-jar" ,java-jdt-ls-jar
+                                                       "-configuration" ,java-jdt-ls-config
+                                                       "-data" ,java-jdt-ls-data)))))
+
+(set-eglot-java-server)
 (defun my-java-mode-hook ()
   (eglot-ensure))
 
 (add-hook 'java-mode-hook 'my-java-mode-hook)
+
 ;;;; Python
 (defun detvdl:install-python-dependencies ()
   (when (executable-find "pip")
@@ -1346,3 +1406,23 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
+
+(defun turtle ()
+  (interactive)
+  (insert
+   "                            ___-------___\n"
+   "                        _-~~             ~~-_\n"
+   "                     _-~                    /~-_\n"
+   "  /^\\__/^\\        /~  \\                   /    \\\n"
+   " /|  O|| O|       /      \\_______________/        \\\n"
+   "| |___||__|      /       /                \\          \\\n"
+   "|          \\    /      /                    \\          \\\n"
+   "|   (_______) /______/                        \\_________ \\\n"
+   "|         / /         \\                      /            \\\n"
+   " \\         \^\\\        \\                  /               \\     /\n"
+   "  \\         ||           \______________/      _-_       //\\__//\n"
+   "    \\       ||------_-~~-_ ------------- \\ --/~   ~\\    || __/\n"
+   "      ~-----||====/~     |==================|       |/~~~~~\n"
+   "       (_(__/  ./     /                    \\_\\      \\.\n"
+   "               (_(___/                         \\_____)_)\n"
+   ))
