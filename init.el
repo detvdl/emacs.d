@@ -42,8 +42,7 @@
 ;;;; Modifiers
 ;; Switch up modifier keys to fit the MacOS keyboard layout better
 (when *is-mac*
-  (setq mac-command-modifier 'control
-        mac-control-modifier 'meta
+  (setq mac-command-modifier 'meta
         mac-option-modifier 'alt)
   (global-set-key [kp-delete] 'delete-char))
 
@@ -53,9 +52,6 @@
   (add-to-list 'default-frame-alist
                '(ns-transparent-titlebar . t)))
 
-;;;; Bugs
-;; Fix visual select bug
-(fset 'evil-visual-update-x-selection 'ignore)
 
 ;;; Paths & Custom files
 ;;;; Load path initialization
@@ -213,18 +209,14 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
       uniquify-after-kill-buffer-p t
       uniquify-ignore-buffers-re "^\\*")
 
-
-
 ;;;; Undo/Redo
 (use-package undo-tree
   :ensure t
   :delight
   :bind (("C-/" . undo)
-         ("C-S-/" . undo-tree-redo))
+         ("C-S-\/" . undo-tree-redo))
   :config
   (global-undo-tree-mode +1))
-
-
 
 ;;;; Auto-revert
 ;; Automatically revert buffers that have changed on disk
@@ -798,9 +790,9 @@ This checks in turn:
          ([remap xref-find-references] . lsp-ui-peek-find-references)
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
-  (setq lsp-ui-doc-use-childframe t
-        lsp-ui-doc-include-signature t
-        lsp-eldoc-enable-hover nil))
+  (setq lsp-ui-doc-include-signature t
+        lsp-eldoc-enable-hover nil
+        lsp-ui-sideline-show-hover nil))
 
 (use-package company-lsp
   :ensure t
@@ -1058,25 +1050,45 @@ This checks in turn:
 ;;;; Java
 (use-package dap-mode
   :ensure t
+  :functions (dap-breakpoint-toggle
+              dap-debug
+              dap-eval
+              dap-eval-region
+              dap-eval-thing-at-point
+              dap-step-in
+              dap-step-out
+              dap-next
+              dap-continue)
   :after lsp-mode)
+
+(defun dap:set-local-keybindings ()
+  (local-set-key (kbd "C-; b") #'dap-breakpoint-toggle)
+  (local-set-key (kbd "C-; e") #'dap-eval-thing-at-point)
+  (local-set-key (kbd "C-; n") #'dap-next)
+  (local-set-key (kbd "C-; c") #'dap-continue)
+  (local-set-key (kbd "C-; i") #'dap-step-in)
+  (local-set-key (kbd "C-; o") #'dap-step-out))
 
 (use-package lsp-java
   :ensure t
-  :after lsp-mode)
+  :after lsp-mode
+  :config
+  (setq lsp-java-workspace-dir (expand-file-name "workspace" lsp-java-server-install-dir)))
 
 (use-package dap-java
   :after (lsp-java dap-mode))
 
 (defun my-java-mode-hook ()
+  (setq lsp-prefer-flymake nil)
   (lsp)
   (company:add-local-backend 'company-lsp)
   (dap-mode t)
   (dap-ui-mode t)
-  (setq lsp-prefer-flymake nil)
   (local-set-key (kbd "C-; i") #'lsp-java-organize-imports)
   (local-set-key (kbd "C-; m") #'lsp-java-extract-method)
   (local-set-key (kbd "C-; v") #'lsp-java-extract-to-local-variable)
-  (local-set-key (kbd "C-; c") #'lsp-java-extract-to-constant))
+  (local-set-key (kbd "C-; c") #'lsp-java-extract-to-constant)
+  (dap:set-local-keybindings))
 
 (add-hook 'java-mode-hook 'my-java-mode-hook)
 
