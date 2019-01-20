@@ -152,7 +152,8 @@
   :ensure t
   :defer t
   :custom
-  (zenburn-override-colors-alist '(("zenburn-bg" . "#111111"))))
+  (zenburn-override-colors-alist '(("zenburn-bg" . "#222222")
+                                   ("zenburn-bg+1" . "#323232"))))
 
 (mapc #'disable-theme custom-enabled-themes)
 (load-theme 'zenburn t)
@@ -160,7 +161,8 @@
 (setq-default left-margin-width 2)
 (setq-default fringes-outside-margins t)
 (defun refresh-new-frame-buffer (frame)
-  "Refresh all windows in the given FRAME."
+  "Refresh all windows in the given FRAME.
+Doing this allows the `fringes-outside-margins' setting to take effect."
   (mapcar (lambda (w)
             (set-window-buffer w (window-buffer w)))
           (cons (minibuffer-window frame) (window-list frame))))
@@ -218,9 +220,7 @@
   :ensure t
   :delight
   :bind (("C-/" . undo)
-         ("C-S-/" . undo-tree-redo)
-         ;; for some reason my mac interprets C-S-/ as C-?
-         ("C-?" . undo-tree-redo))
+         ("C-S-/" . undo-tree-redo))
   :config
   (global-undo-tree-mode +1))
 
@@ -373,7 +373,10 @@
   (ivy-mode 1))
 
 (use-package swiper :ensure t :after ivy)
-(use-package counsel :ensure t :after swiper)
+(use-package counsel :ensure t
+  :after swiper
+  :config
+  (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
 (use-package ivy-rich
   :ensure t
@@ -388,6 +391,7 @@
 ;;;; Outshine
 (use-package outshine
   :ensure t
+  :delight
   :commands outshine-mode
   :hook (emacs-lisp-mode . outshine-mode)
   :bind (:map outshine-mode-map
@@ -459,65 +463,6 @@
   (custom-theme-set-faces
    'leuven
    '(org-hide ((t (:foreground "#FFFFFF"))))))
-
-;;; Completion
-;;;; Snippets
-(use-package yasnippet
-  :if (not noninteractive)
-  :ensure t
-  :delight
-  :commands (yas-reload-all yas-minor-mode)
-  :hook (prog-mode . yas-minor-mode))
-
-(use-package yasnippet-snippets
-  :ensure t
-  :after yasnippet)
-
-;;;; Company
-(use-package company
-  :ensure t
-  :delight company-mode
-  :bind (("M-\\" . company-select-next))
-  :demand
-  :config
-  (setq company-idle-delay 0.5
-        company-tooltip-limit 10
-        company-minimum-prefix-length 2
-        company-tooltip-flip-when-above t
-        company-tooltip-align-annotations t)
-  (global-company-mode 1))
-
-(use-package company-quickhelp
-  :ensure t
-  :after company
-  :config
-  (use-package pos-tip :ensure t)
-  (company-quickhelp-mode 1)
-  (setq company-quickhelp-delay 0.5
-        company-quickhelp-use-propertized-text t))
-
-(bind-key "M-\\" #'company-complete-common-or-cycle global-map)
-
-(defun company:add-local-backend (backend)
-  "Add the BACKEND to the local `company-backends' variable."
-  (if (local-variable-if-set-p 'company-backends)
-      (add-to-list 'company-backends `(,backend :with company-yasnippet))
-    (add-to-list (make-local-variable 'company-backends)
-                 `(,backend :with company-yasnippet))))
-
-;;;; Eglot
-;; Emacs language-server-protocol polyglot client
-;; Easier to use and lighter implementation of lsp-mode
-(use-package eglot
-  :ensure t
-  :commands eglot-ensure
-  :bind (:map eglot-mode-map
-         ("M-]" . eglot-help-at-point))
-  :config
-  (add-to-list 'eglot-server-programs '(go-mode . ("bingo"
-                                                   "-mode=stdio"
-                                                   "-disable-diagnostics"
-                                                   "-freeosmemory" "180"))))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -791,8 +736,78 @@ This checks in turn:
 ;;;; Xref
 (bind-key "M-." 'xref-find-definitions prog-mode-map)
 (bind-key "M-," 'xref-pop-marker-stack prog-mode-map)
-(bind-key "M-[" 'xref-find-references prog-mode-map)
-(bind-key "M-]" 'describe-thing-at-point prog-mode-map)
+(bind-key "M-?" 'xref-find-references prog-mode-map)
+(bind-key "M-[" 'describe-thing-at-point prog-mode-map)
+
+;;; Completion
+;;;; Snippets
+(use-package yasnippet
+  :if (not noninteractive)
+  :ensure t
+  :delight
+  :commands (yas-reload-all yas-minor-mode)
+  :hook (prog-mode . yas-minor-mode))
+
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
+
+;;;; Company
+(use-package company
+  :ensure t
+  :delight company-mode
+  :bind (("M-\\" . company-select-next))
+  :demand
+  :config
+  (setq company-idle-delay 0.5
+        company-tooltip-limit 10
+        company-minimum-prefix-length 2
+        company-tooltip-flip-when-above t
+        company-tooltip-align-annotations t)
+  (global-company-mode 1))
+
+(use-package company-quickhelp
+  :ensure t
+  :after company
+  :config
+  (use-package pos-tip :ensure t)
+  (company-quickhelp-mode 1)
+  (setq company-quickhelp-delay 0.5
+        company-quickhelp-use-propertized-text t))
+
+(bind-key "M-\\" #'company-complete-common-or-cycle global-map)
+
+(defun company:add-local-backend (backend)
+  "Add the BACKEND to the local `company-backends' variable."
+  (if (local-variable-if-set-p 'company-backends)
+      (add-to-list 'company-backends `(:separate ,backend company-yasnippet))
+    (add-to-list (make-local-variable 'company-backends)
+                 `(:separate ,backend company-yasnippet))))
+
+;;;; Language Server Protocol (LSP)
+(use-package lsp-mode
+  :ensure t
+  :commands lsp)
+
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :bind (:map lsp-ui-mode-map
+         ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+         ([remap xref-find-references] . lsp-ui-peek-find-references)
+         ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
+  :config
+  (setq lsp-ui-doc-use-childframe t
+        lsp-ui-doc-include-signature t
+        lsp-eldoc-enable-hover nil))
+
+(use-package company-lsp
+  :ensure t
+  :after (lsp-mode company)
+  :commands company-lsp)
+
+(add-hook 'lsp-mode-hook #'lsp-ui-mode)
 
 ;;; Git
 ;;;; Magit
@@ -837,6 +852,13 @@ This checks in turn:
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 ;;; Languages
+;;;; Shell Script
+;; Enable shell-script mode for zshell configuration files
+(let ((shell-files '("zprofile" "zshenv" "zshrc" "zlogin" "zlogout" "zpreztorc")))
+  (mapc (lambda (file)
+          (add-to-list 'auto-mode-alist `(,(format "\\%s\\'" file) . sh-mode)))
+        shell-files))
+
 ;;;; Lisp
 ;; Some common functionality for all lisp-like languages (akin to smartparens)
 (defun wrap-with (s)
@@ -932,7 +954,7 @@ This checks in turn:
 ;;;; Prolog
 (use-package prolog
   :ensure nil
-  :mode (("\\.pl$" . prolog-mode)
+  :mode (("\\.pro$" . prolog-mode)
          ("\\.m$" . mercury-mode))
   :init
   (progn
@@ -991,7 +1013,6 @@ This checks in turn:
     (subword-mode +1)
     (go-eldoc-setup)
     (company:add-local-backend 'company-go)
-    ;; (eglot-ensure)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
@@ -1035,82 +1056,27 @@ This checks in turn:
          ("C-c C-l" . go-impl)))
 
 ;;;; Java
-(defun get-shell-profile-file ()
-  "Look for active login shell profile file."
-  (let ((shell (or (getenv "SHELL")
-                   (error "SHELL environment variable is unset"))))
-    (cond
-     ((string-match "bash" shell) "~/.bash_profile")
-     ((string-match "zsh" shell) "~/.zprofile"))))
+(use-package dap-mode
+  :ensure t
+  :after lsp-mode)
 
-(defun fetch-latest-eclipse-jdt-ls-server ()
-  "Fetch latest version of the Eclipse JDT LS server and install it in a default location."
-  (interactive)
-  (let* ((shfile (get-shell-profile-file))
-         (buf (or (find-buffer-visiting shfile)
-                  (create-file-buffer shfile)))
-         (os (cond (*is-mac* "mac")
-                   (*is-linux* "linux")
-                   (t "win")))
-         (tar (cond (*is-mac* (executable-find "gtar"))
-                    (*is-linux* (executable-find "tar"))
-                    (t (error "No tar available on Windows"))))
-         (jdt-dir "~/.eclipse-jdt-ls")
-         (jdt-server-jar nil)
-         (jdt-server-data (expand-file-name "data" jdt-dir))
-         (jdt-server-conf (expand-file-name (format "config_%s" os) jdt-dir))
-         (varlist `(("JDT_SERVER_CONFIG" ,jdt-server-conf)
-                    ("JDT_SERVER_DATA" ,jdt-server-data))))
-    (when (or (not (file-directory-p jdt-dir))
-              (not (directory-files jdt-dir nil (format "^plugins\\|^features\\|^config_%s" "mac"))))
-      (let ((jdt-tar (concat (temporary-file-directory) "jdt-language-server-latest.tar.gz")))
-        (url-copy-file
-         "https://download.eclipse.org/jdtls/snapshots/jdt-language-server-latest.tar.gz"
-         jdt-tar
-         t)
-        (make-directory jdt-dir t)
-        (shell-command (format "%s -xvzf %s -C %s config_%s features plugins"
-                               tar jdt-tar jdt-dir os)
-                       "*Extracting*"
-                       "*Extracting Errors*")
-        (setq jdt-server-jar (car (directory-files (expand-file-name "plugins" jdt-dir) t "^org.eclipse.equinox.launcher_")))
-        (setq varlist (cons `("JDT_SERVER" ,jdt-server-jar) varlist)))
-      (make-directory jdt-server-data)
-      (setenv "JDT_SERVER" jdt-server-jar)
-      (when buf
-        (with-current-buffer buf
-          (mapcar
-           (lambda (var)
-             (save-excursion
-               (when (re-search-forward (car var) nil t)
-                 (delete-region (beginning-of-line) (end-of-line)))
-               (goto-char (point-max))
-               (insert (apply 'format "\nexport %s=%s" (car var) (cdr var)))
-               (apply 'setenv (car var) (cdr var))))
-           varlist)
-          (save-buffer))
-        ))))
+(use-package lsp-java
+  :ensure t
+  :after lsp-mode)
 
-(defun set-eglot-java-server ()
-  (let ((java-executable (executable-find "java"))
-        (java-jdt-ls-jar (getenv "JDT_SERVER"))
-        (java-lombok-jar (getenv "LOMBOK_JAR"))
-        (java-jdt-ls-config (getenv "JDT_SERVER_CONFIG"))
-        (java-jdt-ls-data (getenv "JDT_SERVER_DATA")))
-    (add-to-list 'eglot-server-programs `(java-mode . (eglot-eclipse-jdt
-                                                       ,java-executable
-                                                       "-Declipse.application=org.eclipse.jdt.ls.core.id1"
-                                                       "-Dosgi.bundles.defaultStartLevel=4"
-                                                       "-Declipse.product=org.eclipse.jdt.ls.core.product"
-                                                       ,(format "-javaagent:%s" java-lombok-jar)
-                                                       ,(format "-Xbootclasspath/a:%s" java-lombok-jar)
-                                                       "-jar" ,java-jdt-ls-jar
-                                                       "-configuration" ,java-jdt-ls-config
-                                                       "-data" ,java-jdt-ls-data)))))
+(use-package dap-java
+  :after (lsp-java dap-mode))
 
-(set-eglot-java-server)
 (defun my-java-mode-hook ()
-  (eglot-ensure))
+  (lsp)
+  (company:add-local-backend 'company-lsp)
+  (dap-mode t)
+  (dap-ui-mode t)
+  (setq lsp-prefer-flymake nil)
+  (local-set-key (kbd "C-; i") #'lsp-java-organize-imports)
+  (local-set-key (kbd "C-; m") #'lsp-java-extract-method)
+  (local-set-key (kbd "C-; v") #'lsp-java-extract-to-local-variable)
+  (local-set-key (kbd "C-; c") #'lsp-java-extract-to-constant))
 
 (add-hook 'java-mode-hook 'my-java-mode-hook)
 
@@ -1126,8 +1092,8 @@ This checks in turn:
   :hook python-mode
   :bind (:map anaconda-mode-map
          ("M-." . anaconda-mode-find-definitions)
-         ("M-[" . anaconda-mode-find-references)
-         ("M-]" . anaconda-mode-show-doc))
+         ("M-?" . anaconda-mode-find-references)
+         ("M-[" . anaconda-mode-show-doc))
   :config
   (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir))
   (when *is-mac*
@@ -1215,6 +1181,10 @@ This checks in turn:
   :ensure t
   :mode (("\\.feature$" . feature-mode)))
 
+;;;; Perl6
+(use-package perl6-mode
+  :ensure t
+  :defer t)
 ;;;; (X)HTML & CSS
 (use-package web-mode
   :ensure t
@@ -1303,8 +1273,8 @@ This checks in turn:
          (before-save . tide-format-before-save))
   :bind (:map tide-mode-map
          ("M-." . tide-goto-definition)
-         ("M-[" . tide-references)
-         ("M-]" . tide-documentation-at-point)
+         ("M-?" . tide-references)
+         ("M-[" . tide-documentation-at-point)
          ("C-; i" . tide-organize-imports)
          ("C-; f" . tide-fix))
   :config
@@ -1406,23 +1376,3 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
-
-(defun turtle ()
-  (interactive)
-  (insert
-   "                            ___-------___\n"
-   "                        _-~~             ~~-_\n"
-   "                     _-~                    /~-_\n"
-   "  /^\\__/^\\        /~  \\                   /    \\\n"
-   " /|  O|| O|       /      \\_______________/        \\\n"
-   "| |___||__|      /       /                \\          \\\n"
-   "|          \\    /      /                    \\          \\\n"
-   "|   (_______) /______/                        \\_________ \\\n"
-   "|         / /         \\                      /            \\\n"
-   " \\         \^\\\        \\                  /               \\     /\n"
-   "  \\         ||           \______________/      _-_       //\\__//\n"
-   "    \\       ||------_-~~-_ ------------- \\ --/~   ~\\    || __/\n"
-   "      ~-----||====/~     |==================|       |/~~~~~\n"
-   "       (_(__/  ./     /                    \\_\\      \\.\n"
-   "               (_(___/                         \\_____)_)\n"
-   ))
