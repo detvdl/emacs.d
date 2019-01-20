@@ -791,8 +791,9 @@ This checks in turn:
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
   (setq lsp-ui-doc-include-signature t
-        lsp-eldoc-enable-hover nil
-        lsp-ui-sideline-show-hover nil))
+        lsp-eldoc-enable-hover nil))
+
+(add-hook 'before-revert-hook #'lsp-ui-sideline--delete-ov)
 
 (use-package company-lsp
   :ensure t
@@ -1048,6 +1049,9 @@ This checks in turn:
          ("C-c C-l" . go-impl)))
 
 ;;;; Java
+;; NOTE: possibly dap-java needs to be byte-compiled separately, to account for the following snippet:
+;; (eval-when-compile
+;;   (require 'cl))
 (use-package dap-mode
   :ensure t
   :functions (dap-breakpoint-toggle
