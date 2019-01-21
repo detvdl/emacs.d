@@ -214,7 +214,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :delight
   :bind (("C-/" . undo)
-         ("C-S-\/" . undo-tree-redo))
+         ("C-?" . undo-tree-redo))
   :config
   (global-undo-tree-mode +1))
 
@@ -506,6 +506,8 @@ This functions should be added to the hooks of major modes for programming."
          ("C-. (" . sp-rewrap-sexp))
   :config
   (require 'smartparens-config)
+  ;; reserve this keybing for `xref-find-references'
+  (unbind-key "M-?" smartparens-mode-map)
   (setq sp-base-key-bindings 'paredit
         sp-autoskip-closing-pair 'always
         sp-hybrid-kill-entire-symbol nil)
@@ -994,8 +996,8 @@ This checks in turn:
   :ensure t
   :mode "\\.go\\'"
   :bind (:map go-mode-map
-         ("M-." . godef-jump)
-         ("M-," . pop-tag-mark)
+         ([remap xref-find-definitions] . godef-jump)
+         ([remap xref-pop-marker-stack] . pop-tag-mark)
          ("C-c c" . compile)
          ("C-c r" . recompile))
   :config
@@ -1109,9 +1111,9 @@ This checks in turn:
   :ensure t
   :hook python-mode
   :bind (:map anaconda-mode-map
-         ("M-." . anaconda-mode-find-definitions)
-         ("M-?" . anaconda-mode-find-references)
-         ("M-[" . anaconda-mode-show-doc))
+         ([remap xref-find-definitions] . anaconda-mode-find-definitions)
+         ([remap xref-find-references] . anaconda-mode-find-references)
+         ([remap describe-thing-at-point] . anaconda-mode-show-doc))
   :config
   (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir))
   (when *is-mac*
@@ -1290,9 +1292,9 @@ This checks in turn:
          (typescript-mode . tide-hl-identifier-mode)
          (before-save . tide-format-before-save))
   :bind (:map tide-mode-map
-         ("M-." . tide-goto-definition)
-         ("M-?" . tide-references)
-         ("M-[" . tide-documentation-at-point)
+         ([remap xref-find-definition] . tide-goto-definition)
+         ([remap xref-find-references] . tide-references)
+         ([remap describe-thing-at-point] . tide-documentation-at-point)
          ("C-; i" . tide-organize-imports)
          ("C-; f" . tide-fix))
   :config
