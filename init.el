@@ -791,7 +791,8 @@ This checks in turn:
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
   (setq lsp-ui-doc-include-signature t
-        lsp-eldoc-enable-hover nil))
+        lsp-eldoc-enable-hover nil
+        lsp-ui-sideline-update-mode 'point))
 
 (add-hook 'before-revert-hook #'lsp-ui-sideline--delete-ov)
 
@@ -1077,7 +1078,8 @@ This checks in turn:
   :ensure t
   :after lsp-mode
   :config
-  (setq lsp-java-workspace-dir (expand-file-name "workspace" lsp-java-server-install-dir)))
+  (setq lsp-java-workspace-dir (expand-file-name "workspace" lsp-java-server-install-dir)
+        lsp-java-save-action-organize-imports nil))
 
 (use-package dap-java
   :after (lsp-java dap-mode))
@@ -1382,7 +1384,7 @@ When ARG is specified, prompts for a file to add it to."
                       (format-time-string "** %A " day))))
                  (insert "\n#+BEGIN: clocktable :scope file :maxlevel 2 :link t"
                          " :tstart " (format-time-string "\"<%F %a>\"" start)
-                         " :tend "(format-time-string "\"<%F %a>\"" end)
+                         " :tend "(format-time-string "\"<%F %a>\"" (time-add end (days-to-time 1)))
                          "\n#+END:")
                  (org-clock-report)
                  (buffer-string))))
