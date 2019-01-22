@@ -507,11 +507,11 @@ This functions should be added to the hooks of major modes for programming."
   :config
   (require 'smartparens-config)
   ;; reserve this keybing for `xref-find-references'
-  (unbind-key "M-?" smartparens-mode-map)
   (setq sp-base-key-bindings 'paredit
         sp-autoskip-closing-pair 'always
         sp-hybrid-kill-entire-symbol nil)
   (sp-use-paredit-bindings)
+  (unbind-key "M-?" smartparens-mode-map)
   ;; TODO: add and fix pairs for Clojure-specific constructs
   (sp-pair "{" nil :post-handlers
            '(((lambda (&rest _ignored)
@@ -658,7 +658,7 @@ Lisp function does not specify a special indentation."
 ;;;; Imenu/speedbar
 (use-package sr-speedbar
   :ensure t
-  :bind (("M-i" . detvdl:sr-speedbar-toggle)
+  :bind (("M-i" . my--sr-speedbar-toggle)
          ("M-n" . sr-speedbar-select-window)
          :map speedbar-mode-map
          ("q" . sr-speedbar-close)
@@ -667,7 +667,7 @@ Lisp function does not specify a special indentation."
   (defun sr-speedbar-buffers ()
     (interactive)
     (speedbar-change-initial-expansion-list "buffers"))
-  (defun detvdl:sr-speedbar-toggle ()
+  (defun my--sr-speedbar-toggle ()
     (interactive)
     (sr-speedbar-toggle)
     (when-let* ((buf (get-buffer sr-speedbar-buffer-name))
@@ -792,6 +792,77 @@ This checks in turn:
          ([remap xref-find-references] . lsp-ui-peek-find-references)
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
+  ;; Very Projectile-like way to handle short-file-names (sfn)
+  ;; in lsp-ui-peek on a project-basis
+  ;; Currently just copied functions from `projectile.el'
+  ;; TODO: integrate with Projectile itself
+  (defvar lsp-ui--sfn-projects-file
+    (expand-file-name "lsp-ui--sfn.eld" user-emacs-directory))
+  (defvar lsp-ui--sfn-projects nil)
+  (defvar lsp-ui--sfn-projects-on-file nil)
+  (defun lsp-ui--sfn-diff (list1 list2)
+    (cl-remove-if
+     (lambda (x) (member x list2))
+     list1))
+  (defun lsp-ui--sfn-serialize (data file)
+    (when (file-writable-p file)
+      (with-temp-file file
+        (insert (let (print-length) (prin1-to-string data))))))
+  (defun lsp-ui--sfn-deserialize (file)
+    (with-demoted-errors
+        "Error during file deserialization: %S"
+      (when (file-exists-p file)
+        (with-temp-buffer
+          (insert-file-contents file)
+          (read (buffer-string))))))
+  (defun lsp-ui--sfn-load-projects ()
+    (setq lsp-ui--sfn-projects (lsp-ui--sfn-deserialize lsp-ui--sfn-projects-file))
+    (setq lsp-ui--sfn-projects-on-file
+          (and (sequencep lsp-ui--sfn-projects)
+               (copy-sequence lsp-ui--sfn-projects))))
+  (defun lsp-ui--sfn-add-project (project-root)
+    (interactive (list (read-directory-name "Add to sfn-projects: ")))
+    (setq lsp-ui--sfn-projects
+          (delete-dups
+           (cons (file-name-as-directory (abbreviate-file-name project-root))
+                 lsp-ui--sfn-projects)))
+    (lsp-ui--sfn-merge-projects))
+  (defun lsp-ui--sfn-save-projects ()
+    (lsp-ui--sfn-serialize lsp-ui--sfn-projects
+                           lsp-ui--sfn-projects-file)
+    (setq lsp-ui--sfn-projects-on-file
+          (and (sequencep lsp-ui--sfn-projects)
+               (copy-sequence lsp-ui--sfn-projects))))
+  (defun lsp-ui--sfn-merge-projects ()
+    (let* ((known-now lsp-ui--sfn-projects)
+           (known-on-last-sync lsp-ui--sfn-projects-on-file)
+           (known-on-file
+            (lsp-ui--sfn-deserialize lsp-ui--sfn-projects-file))
+           (removed-after-sync (lsp-ui--sfn-diff known-on-last-sync known-now))
+           (removed-in-other-process
+            (lsp-ui--sfn-diff known-on-last-sync known-on-file))
+           (result (delete-dups
+                    (lsp-ui--sfn-diff
+                     (append known-now known-on-file)
+                     (append removed-after-sync
+                             removed-in-other-process)))))
+      (setq lsp-ui--sfn-projects result)
+      (lsp-ui--sfn-save-projects)))
+  (lsp-ui--sfn-load-projects)
+  (defun lsp-ui-peek--truncate-filepath (orig-fun &rest args)
+    "Advisory function to only keep the filename from the path
+when using lsp-ui-peek functionality.
+Used for a pre-defined list of modes to mitigate large, unreadable filepaths in lsp-ui-peek-find-references.
+Applies ORIG-FUN to ARGS first, and then truncates the path."
+    (if (seq-some (lambda (project-dir)
+                    (string-prefix-p
+                     (expand-file-name project-dir)
+                     (buffer-file-name (current-buffer))))
+                  lsp-ui--sfn-projects)
+        (let ((res (apply orig-fun args)))
+          (file-name-nondirectory res))
+      (apply orig-fun args)))
+  (advice-add 'lsp-ui--workspace-path :around 'lsp-ui-peek--truncate-filepath)
   (setq lsp-ui-doc-include-signature t
         lsp-eldoc-enable-hover nil
         lsp-ui-sideline-update-mode 'point))
@@ -1003,7 +1074,7 @@ This checks in turn:
   :config
   (setq gofmt-command "goimports")
   (add-hook 'before-save-hook 'gofmt-before-save)
-  (defun my-go-mode-hook ()
+  (defun my--go-mode-hook ()
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 2)
     (subword-mode +1)
@@ -1012,7 +1083,7 @@ This checks in turn:
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
-  (add-hook 'go-mode-hook #'my-go-mode-hook))
+  (add-hook 'go-mode-hook #'my--go-mode-hook))
 
 (use-package gotest
   :ensure t
@@ -1086,7 +1157,7 @@ This checks in turn:
 (use-package dap-java
   :after (lsp-java dap-mode))
 
-(defun my-java-mode-hook ()
+(defun my--java-mode-hook ()
   (setq lsp-prefer-flymake nil)
   (lsp)
   (company:add-local-backend 'company-lsp)
@@ -1098,10 +1169,10 @@ This checks in turn:
   (local-set-key (kbd "C-; c") #'lsp-java-extract-to-constant)
   (dap:set-local-keybindings))
 
-(add-hook 'java-mode-hook 'my-java-mode-hook)
+(add-hook 'java-mode-hook 'my--java-mode-hook)
 
 ;;;; Python
-(defun detvdl:install-python-dependencies ()
+(defun my--install-python-dependencies ()
   (when (executable-find "pip")
     (start-process "Python deps" nil "pip install" "jedi flake8 autopep8 yapf")))
 
@@ -1258,11 +1329,11 @@ This checks in turn:
          "\\.pac\\'")
   :interpreter "node"
   :config
-  (defun my-js2-mode-hook ()
+  (defun my--js2-mode-hook ()
     (setq-local electric-layout-rules '((?\; . after)))
     (setq mode-name "JS2"
           js-indent-level 2))
-  (add-hook 'js2-mode-hook 'my-js2-mode-hook)
+  (add-hook 'js2-mode-hook 'my--js2-mode-hook)
   (js2-imenu-extras-mode +1))
 
 (use-package tern
@@ -1383,7 +1454,8 @@ When ARG is specified, prompts for a file to add it to."
                       day
                       nil
                       t
-                      (format-time-string "** %A " day))))
+                      (format-time-string "** %A " day)
+                      "\n")))
                  (insert "\n#+BEGIN: clocktable :scope file :maxlevel 2 :link t"
                          " :tstart " (format-time-string "\"<%F %a>\"" start)
                          " :tend "(format-time-string "\"<%F %a>\"" (time-add end (days-to-time 1)))
