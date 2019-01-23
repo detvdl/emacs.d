@@ -849,15 +849,16 @@ This checks in turn:
       (setq lsp-ui--sfn-projects result)
       (lsp-ui--sfn-save-projects)))
   (lsp-ui--sfn-load-projects)
+  (defun file-in-project? (project-dir)
+    (string-prefix-p
+     (expand-file-name project-dir)
+     (buffer-file-name (current-buffer))))
   (defun lsp-ui-peek--truncate-filepath (orig-fun &rest args)
     "Advisory function to only keep the filename from the path
 when using lsp-ui-peek functionality.
 Used for a pre-defined list of modes to mitigate large, unreadable filepaths in lsp-ui-peek-find-references.
 Applies ORIG-FUN to ARGS first, and then truncates the path."
-    (if (seq-some (lambda (project-dir)
-                    (string-prefix-p
-                     (expand-file-name project-dir)
-                     (buffer-file-name (current-buffer))))
+    (if (seq-some #'file-in-project?
                   lsp-ui--sfn-projects)
         (let ((res (apply orig-fun args)))
           (file-name-nondirectory res))
