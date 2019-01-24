@@ -354,6 +354,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
                                 (counsel-ag-function . ivy--regex-plus)
+                                (swiper-all . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
   (use-package smex
     :ensure t
@@ -884,7 +885,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :bind (("C-x g" . magit-status))
   :config
   (setq magit-completing-read-function 'ivy-completing-read
-        magit-restore-window-configuration #'detvdl/magit-visit-pull-request
         vc-follow-symlinks t)
   (use-package other-frame-window
     :ensure t
@@ -895,7 +895,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
                                     ofw-display-buffer-other-frame)
                                    (reusable-frames . t)))
         (magit-display-buffer-traditional buffer)))
-    (setq magit-display-buffer-function #'magit-display-buffer-popup-frame))
+    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
   (advice-add #'magit-key-mode-popup-committing :after
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
