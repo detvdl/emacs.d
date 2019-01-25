@@ -76,7 +76,8 @@
           "PAGER" "TERM"
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-          "JDT_SERVER" "JDT_SERVER_CONFIG" "JDT_SERVER_DATA" "LOMBOK_JAR"
+          "EMACS_FONT_SIZE"
+          "LOMBOK_JAR"
           "GOPATH"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
@@ -115,7 +116,10 @@
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
-(defconst font-height 140)
+(defvar font-height 140)
+(let ((fh (getenv "EMACS_FONT_SIZE")))
+  (when fh
+    (setq font-height (string-to-number fh))))
 (defconst font-size (/ font-height 10))
 (defconst font-weight 'regular)
 (defconst font-family "Go Mono")
@@ -380,6 +384,75 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Shackle
 (use-package shackle
   :ensure t)
+;;;; Term
+(defvar eshell-display-buffer-function 'eshell--display-buffer-fullframe-v1)
+(defvar eshell-bury-buffer-function 'eshell--restore-window-configuration)
+(defcustom eshell-pre-display-buffer-hook '(eshell-save-window-configuration)
+  "Hook run by `eshell-display-buffer' before displaying it."
+  :type 'hook)
+(defvar-local eshell-previous-window-configuration nil)
+(put 'eshell-previous-window-configuration 'permanent-local t)
+(defun eshell-save-window-configuration ()
+  (unless (get-buffer-window (current-buffer) (selected-frame))
+    (setq eshell-previous-window-configuration
+          (current-window-configuration))))
+(defun eshell--restore-window-configuration (&optional kill-buffer)
+  (let ((winconf eshell-previous-window-configuration)
+        (buffer (current-buffer))
+        (frame (selected-frame)))
+    (quit-window kill-buffer (selected-window))
+    (when (and winconf (equal frame (window-configuration-frame winconf)))
+      (set-window-configuration winconf)
+      (when (buffer-live-p buffer)
+        (with-current-buffer buffer
+          (setq eshell-previous-window-configuration nil))))))
+(defun eshell-display-buffer (buffer &optional display-function)
+  (with-current-buffer buffer
+    (run-hooks 'eshell-pre-display-buffer-hook))
+  (let* ((window (funcall (or display-function eshell-display-buffer-function)
+                          buffer))
+         (old-frame (selected-frame))
+         (new-frame (window-frame window)))
+    (select-window window)
+    (unless (eq old-frame new-frame)
+      (select-frame-set-input-focus new-frame))))
+(defun eshell--display-buffer-traditional (buffer)
+  (display-buffer
+   buffer (if (derived-mode-p 'eshell-mode)
+              '(display-buffer-same-window)
+            nil)))
+(defun eshell--display-buffer-fullframe (buffer alist)
+  (when-let ((window (or (display-buffer-reuse-window buffer alist)
+                         (display-buffer-same-window buffer alist)
+                         (display-buffer-pop-up-window buffer alist)
+                         (display-buffer-use-some-window buffer alist))))
+    (delete-other-windows window)
+    window))
+(defun eshell--display-buffer-fullframe-v1 (buffer)
+  (if (eq (with-current-buffer buffer major-mode)
+          'eshell-mode)
+      (display-buffer buffer '(eshell--display-buffer-fullframe))
+    (eshell--display-buffer-traditional buffer)))
+(defun eshell-bury-buffer (&optional kill-buffer)
+  (interactive "P")
+  (funcall eshell-bury-buffer-function kill-buffer))
+(defun eshell-popup ()
+  (interactive)
+  (let ((buffer (or (--first (with-current-buffer it
+                               (eq major-mode 'eshell-mode))
+                             (buffer-list))
+                    (generate-new-buffer "*eshell-mode*"))))
+    (with-current-buffer buffer
+      (unless (eq major-mode 'eshell-mode)
+        (eshell-mode)))
+    (eshell-display-buffer buffer)))
+(defun eshell-toggle ()
+  (interactive)
+  (if (eq (with-current-buffer (current-buffer) major-mode)
+          'eshell-mode)
+      (funcall 'eshell-bury-buffer)
+    (funcall 'eshell-popup)))
+(bind-key "C-x t" #'eshell-toggle global-map)
 ;;; Outlining
 ;;;; Outshine
 (use-package outshine
