@@ -139,15 +139,6 @@
 (setq line-spacing 0.1)
 
 ;;;; Theme
-(use-package poet-theme
-  :ensure t
-  :defer t
-  :config
-  (custom-theme-set-faces
-   'poet
-   '(org-level-1 ((nil ((:weight bold :overline "#A7A7A7")))))
-   '(outline-1 ((nil (:overline "#A7A7A7"))))))
-
 (use-package zenburn-theme
   :ensure t
   :defer t
@@ -163,9 +154,9 @@
 (defun refresh-new-frame-buffer (frame)
   "Refresh all windows in the given FRAME.
 Doing this allows the `fringes-outside-margins' setting to take effect."
-  (mapcar (lambda (w)
-            (set-window-buffer w (window-buffer w)))
-          (cons (minibuffer-window frame) (window-list frame))))
+  (mapc (lambda (w)
+          (set-window-buffer w (window-buffer w)))
+        (cons (minibuffer-window frame) (window-list frame))))
 (add-to-list 'after-make-frame-functions #'refresh-new-frame-buffer)
 
 ;;;; Modeline
@@ -317,12 +308,20 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (defun writeroom-disable-line-numbers (arg)
     (cond
      ((= arg 1) (display-line-numbers-mode -1))
-     ((= arg -1) (when (= *line-numbers-on* +1)
-                   (display-line-numbers-mode +1)))))
+     ((= arg -1) (display-line-numbers-mode *line-numbers-on*))))
+  (defun writeroom-refresh-frame-contents ()
+    (mapc (lambda (w)
+            (with-selected-window w
+              (set-window-margins (selected-window) 2 0)
+              (set-window-fringes (selected-window) 8 4 t)))
+          (get-buffer-window-list (current-buffer) nil))
+    (refresh-new-frame-buffer (selected-frame)))
   (setq writeroom-fringes-outside-margins t
         writeroom-fullscreen-effect 'maximized
+        writeroom-restore-window-config t
         writeroom-width 120)
-  (add-to-list 'writeroom-global-effects 'writeroom-disable-line-numbers))
+  (add-to-list 'writeroom-global-effects 'writeroom-disable-line-numbers)
+  (advice-add 'writeroom--disable :after #'writeroom-refresh-frame-contents))
 
 ;;;; Ivy
 (use-package ivy
@@ -384,7 +383,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Shackle
 (use-package shackle
   :ensure t)
-;;;; Term
+;;;; Eshell
+;; As of currently, most of this code is blatantly stolen and/or adapted from the Magit codebase
 (defvar eshell-display-buffer-function 'eshell--display-buffer-fullframe-v1)
 (defvar eshell-bury-buffer-function 'eshell--restore-window-configuration)
 (defcustom eshell-pre-display-buffer-hook '(eshell-save-window-configuration)
@@ -393,6 +393,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (defvar-local eshell-previous-window-configuration nil)
 (put 'eshell-previous-window-configuration 'permanent-local t)
 (defun eshell-save-window-configuration ()
+  ;; A hook, when executed with run-hooks, is not executed in the
+  ;; context of a buffer, so this code-fragment returns nil
   (unless (get-buffer-window (current-buffer) (selected-frame))
     (setq eshell-previous-window-configuration
           (current-window-configuration))))
@@ -1524,12 +1526,7 @@ When ARG is specified, prompts for a file to add it to."
                  (org-insert-time-stamp end  nil t nil "\n")
                  (dotimes (i 5)
                    (let ((day (time-add start (days-to-time i))))
-                     (org-insert-time-stamp
-                      day
-                      nil
-                      t
-                      (format-time-string "** %A " day)
-                      "\n")))
+                     (org-insert-time-stamp day nil t (format-time-string "** %A " day) "\n")))
                  (insert "\n#+BEGIN: clocktable :scope file :maxlevel 2 :link t"
                          " :tstart " (format-time-string "\"<%F %a>\"" start)
                          " :tend "(format-time-string "\"<%F %a>\"" (time-add end (days-to-time 1)))
