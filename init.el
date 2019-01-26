@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 ;;; Package archives and setup
 ;;;; Package archives
 (require 'package)
@@ -25,6 +27,14 @@
 
 (use-package delight :ensure t)
 (use-package bind-key :ensure t)
+
+;;;; Development packages
+(require 'cl-lib)
+
+(use-package dash
+  :ensure t
+  :config
+  (add-hook 'emacs-lisp-mode-hook #'dash-enable-font-lock))
 
 ;;; Environment
 ;;;; Custom Variables
