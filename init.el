@@ -32,9 +32,7 @@
 (require 'cl-lib)
 
 (use-package dash
-  :ensure t
-  :config
-  (add-hook 'emacs-lisp-mode-hook #'dash-enable-font-lock))
+  :ensure t)
 
 ;;; Environment
 ;;;; Custom Variables
@@ -76,6 +74,11 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+;;; Utility functions
+(defun file-in-project? (project-dir)
+  (string-prefix-p
+   (expand-file-name project-dir)
+   (buffer-file-name (current-buffer))))
 ;;; Shell
 ;;;; Environment variables
 (use-package exec-path-from-shell
@@ -149,6 +152,14 @@
 (setq line-spacing 0.1)
 
 ;;;; Theme
+(use-package leuven-theme
+  :ensure t
+  :defer t
+  :config
+  (custom-theme-set-faces
+   'leuven
+   '(org-hide ((t (:foreground "#FFFFFF"))))))
+
 (use-package zenburn-theme
   :ensure t
   :defer t
@@ -171,6 +182,12 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 
 ;;;; Modeline
 (which-function-mode)
+
+;;;; Window/frame Management
+(use-package eyebrowse
+  :ensure t
+  :config
+  (eyebrowse-mode t))
 
 ;;; Editor
 ;;;; General
@@ -342,6 +359,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 	     ("M-x" . counsel-M-x)
 	     ("M-X" . smex-major-mode-commands)
          ("C-c y" . counsel-yank-pop)
+         ;; TODO: investigate https://github.com/Wilfred/deadgrep as a possible substitute/enrichment
          ("C-c k" . counsel-rg)
          ("C-x l" . counsel-locate)
          ("C-h v" . counsel-describe-variable)
@@ -395,6 +413,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t)
 ;;;; Eshell
 ;; As of currently, most of this code is blatantly stolen and/or adapted from the Magit codebase
+;; TODO: generify most of this code to be used for other modes I would like to have available
+;; as a pop-up kind of window
 (defvar eshell-display-buffer-function 'eshell--display-buffer-fullframe-v1)
 (defvar eshell-bury-buffer-function 'eshell--restore-window-configuration)
 (defcustom eshell-pre-display-buffer-hook '(eshell-save-window-configuration)
@@ -533,14 +553,57 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
-(use-package leuven-theme
+;;; RSS
+(use-package elfeed
   :ensure t
-  :defer t
+  :bind ("C-x w" . #'elfeed--toggle-wconf))
+
+(defvar my--previous-eyebrowse-wconf nil)
+
+;; TODO: figure out a way to do this without catch/throw (ugly)
+(defun eyebrowse--match-buffer-name (wconf buffer-name &optional tag)
+  "Walk over an existing window configuration WCONF and match its active buffer to BUFFER-NAME.  Optionally pass the original window configuration TAG along to be able to restore it."
+  (dolist (item wconf)
+    (when (consp item)
+      (when (and (symbolp (car item))
+                 (eq (car item) 'buffer)
+                 (string-match buffer-name (cadr item)))
+        (throw 'eb--matched-winconf tag))
+      (when (and (consp (cdr item))
+                 (not (eyebrowse--dotted-list-p (cdr item))))
+        (eyebrowse--match-buffer-name (cdr item) buffer-name tag)))))
+
+(defun eyebrowse--match-elfeed-buffer (wconf)
+  (catch 'eb--matched-winconf
+    (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf))))
+
+(defun elfeed--open-or-switch-to-wconf ()
+  "Open elfeed in a new eyebrowse config or switch to an existing one."
+  (interactive)
+  (let* ((wconfs (eyebrowse--get 'window-configs))
+         (elfconf (cl-some #'eyebrowse--match-elfeed-buffer wconfs)))
+    (setq my--previous-eyebrowse-wconf
+          (eyebrowse--get 'current-slot))
+    (if elfconf
+        (eyebrowse-switch-to-window-config elfconf)
+      (with-current-buffer (get-buffer-create (elfeed-search-buffer))
+        (unless (eq major-mode 'elfeed-search-mode)
+          (elfeed-search-mode))
+        (eyebrowse-create-window-config)
+        (switch-to-buffer (current-buffer))))))
+
+(defun elfeed--toggle-wconf ()
+  "Toggle between elfeed wconf and current one."
+  (interactive)
+  (if (eq major-mode 'elfeed-search-mode)
+      (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
+    (elfeed--open-or-switch-to-wconf)))
+
+(use-package elfeed-org
+  :ensure t
+  :after elfeed
   :config
-  ;; Make sure hidden leading stars are actually invisible in my themes
-  (custom-theme-set-faces
-   'leuven
-   '(org-hide ((t (:foreground "#FFFFFF"))))))
+  (elfeed-org))
 
 ;;; Programming tools
 ;;;; Comment Keywords
@@ -594,7 +657,7 @@ This functions should be added to the hooks of major modes for programming."
   (require 'smartparens-config)
   ;; reserve this keybing for `xref-find-references'
   (setq sp-base-key-bindings 'paredit
-        sp-autoskip-closing-pair 'always
+        sp-autoskip-closing-pair t
         sp-hybrid-kill-entire-symbol nil)
   (sp-use-paredit-bindings)
   (unbind-key "M-?" smartparens-mode-map)
@@ -824,7 +887,7 @@ This checks in turn:
 (use-package yasnippet
   :if (not noninteractive)
   :ensure t
-  :delight
+  :delight yas-minor-mode
   :commands (yas-reload-all yas-minor-mode)
   :hook (prog-mode . yas-minor-mode))
 
@@ -935,10 +998,6 @@ This checks in turn:
       (setq lsp-ui--sfn-projects result)
       (lsp-ui--sfn-save-projects)))
   (lsp-ui--sfn-load-projects)
-  (defun file-in-project? (project-dir)
-    (string-prefix-p
-     (expand-file-name project-dir)
-     (buffer-file-name (current-buffer))))
   (defun lsp-ui-peek--truncate-filepath (orig-fun &rest args)
     "Advisory function to only keep the filename from the path
 when using lsp-ui-peek functionality.
@@ -954,7 +1013,9 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
         lsp-eldoc-enable-hover nil
         lsp-ui-sideline-update-mode 'point))
 
-(add-hook 'before-revert-hook #'lsp-ui-sideline--delete-ov)
+(add-hook 'before-revert-hook (lambda ()
+                                (when (bound-and-true-p lsp-ui-sideline-mode)
+                                  (lsp-ui-sideline--delete-ov))))
 
 (use-package company-lsp
   :ensure t
@@ -985,6 +1046,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
 
+;; TODO: investigate https://github.com/alphapapa/magit-todos as a possible enrichment
 
 ;;;; git diff
 ;; Visual diff feedback in the margin/gutter
