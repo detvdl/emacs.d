@@ -186,6 +186,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Window/frame Management
 (use-package eyebrowse
   :ensure t
+  :defer 1
   :config
   (eyebrowse-mode t))
 
