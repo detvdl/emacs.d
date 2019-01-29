@@ -188,6 +188,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :defer 1
   :config
+  (setq eyebrowse-new-workspace nil)
   (eyebrowse-mode t))
 
 ;;; Editor
@@ -559,6 +560,18 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :bind ("C-x w" . #'elfeed--toggle-wconf))
 
+(use-package elfeed-org
+  :ensure t
+  :config
+  (elfeed-org))
+
+(use-package elfeed-goodies
+  :ensure t
+  :after elfeed
+  :config
+  (setq elfeed-goodies/entry-pane-size 0.5
+        elfeed-goodies/wide-threshold 0.4))
+
 (defvar my--previous-eyebrowse-wconf nil)
 
 ;; TODO: figure out a way to do this without catch/throw (ugly)
@@ -599,12 +612,6 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (if (eq major-mode 'elfeed-search-mode)
       (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
     (elfeed--open-or-switch-to-wconf)))
-
-(use-package elfeed-org
-  :ensure t
-  :after elfeed
-  :config
-  (elfeed-org))
 
 ;;; Programming tools
 ;;;; Comment Keywords
