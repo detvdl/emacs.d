@@ -155,9 +155,9 @@
 (apply 'set-face-attribute `(line-number nil ,@Go-font))
 (apply 'set-face-attribute `(variable-pitch nil ,@Baskerville-font))
 
-;; (add-hook 'text-mode-hook #'variable-pitch-mode)
-
 (setq line-spacing 0.1)
+
+(setq inhibit-compacting-font-caches t)
 
 ;;;; Theme
 (use-package leuven-theme
@@ -576,13 +576,6 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :config
   (elfeed-org))
-
-(use-package elfeed-goodies
-  :ensure t
-  :after elfeed
-  :config
-  (setq elfeed-goodies/entry-pane-size 0.5
-        elfeed-goodies/wide-threshold 0.4))
 
 (defvar my--previous-eyebrowse-wconf nil)
 
