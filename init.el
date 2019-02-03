@@ -76,9 +76,17 @@
 
 ;;; Utility functions
 (defun file-in-project? (project-dir)
+  "Return whether the current buffer is part of the project at PROJECT-DIR."
   (string-prefix-p
    (expand-file-name project-dir)
    (buffer-file-name (current-buffer))))
+(defun window-side (&optional window)
+  "Return the side of the frame WINDOW is on."
+  (let ((window (or window (selected-window))))
+    (cl-some (lambda (side)
+               (when (window-at-side-p window side)
+                 side)))))
+
 ;;; Shell
 ;;;; Environment variables
 (use-package exec-path-from-shell
@@ -188,7 +196,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :defer 1
   :config
-  (setq eyebrowse-new-workspace nil)
+  (setq eyebrowse-new-workspace #'delete-other-windows)
   (eyebrowse-mode t))
 
 ;;; Editor
@@ -206,12 +214,12 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 ;; Automatically create missing parent directories when visiting a new file.
-(defun detvdl/create-non-existent-directory ()
+(defun create-non-existent-directory ()
   (let ((parent-directory (file-name-directory buffer-file-name)))
     (when (and (not (file-exists-p parent-directory))
                (y-or-n-p (format "Directory '%s' does not exist! Create it?" parent-directory)))
       (make-directory parent-directory t))))
-(add-to-list 'find-file-not-found-functions #'detvdl/create-non-existent-directory)
+(add-to-list 'find-file-not-found-functions #'create-non-existent-directory)
 
 ;; Some generic variables.
 (setq-default tab-width 4
@@ -443,8 +451,9 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (defun eshell-display-buffer (buffer &optional display-function)
   (with-current-buffer buffer
     (run-hooks 'eshell-pre-display-buffer-hook))
-  (let* ((window (funcall (or display-function eshell-display-buffer-function)
-                          buffer))
+  (let* ((window (or (get-buffer-window buffer (selected-window))
+                     (funcall (or display-function eshell-display-buffer-function)
+                              buffer)))
          (old-frame (selected-frame))
          (new-frame (window-frame window)))
     (select-window window)
@@ -470,16 +479,18 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (defun eshell-bury-buffer (&optional kill-buffer)
   (interactive "P")
   (funcall eshell-bury-buffer-function kill-buffer))
-(defun eshell-popup ()
-  (interactive)
+(defun eshell-popup (&optional arg)
+  (interactive "P")
   (let ((buffer (or (--first (with-current-buffer it
                                (eq major-mode 'eshell-mode))
                              (buffer-list))
-                    (generate-new-buffer "*eshell-mode*"))))
+                    (generate-new-buffer "*eshell-mode*")))
+        (display-function (cond ((= arg 3) 'eshell--display-buffer-vertsplit)
+                                (t nil))))
     (with-current-buffer buffer
       (unless (eq major-mode 'eshell-mode)
         (eshell-mode)))
-    (eshell-display-buffer buffer)))
+    (eshell-display-buffer buffer display-function)))
 (defun eshell-toggle ()
   (interactive)
   (if (eq (with-current-buffer (current-buffer) major-mode)
@@ -487,6 +498,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
       (funcall 'eshell-bury-buffer)
     (funcall 'eshell-popup)))
 (bind-key "C-x t" #'eshell-toggle global-map)
+
 ;;; Outlining
 ;;;; Outshine
 (use-package outshine
@@ -732,10 +744,10 @@ This functions should be added to the hooks of major modes for programming."
                              (thing-at-point 'line))))))
 
 ;; Utility function to re-indent entire file
-(defun detvdl/indent-file ()
+(defun indent-whole-file ()
   (interactive)
   (indent-region (point-min) (point-max)))
-(bind-key "C-; l" #'detvdl/indent-file global-map)
+(bind-key "C-; l" #'indent-whole-file global-map)
 
 ;; Emacs-lisp does not indent keyword-plists correctly. This function fixes that
 ;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
@@ -813,45 +825,6 @@ Lisp function does not specify a special indentation."
           (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
 
 ;;;; Imenu/speedbar
-(use-package sr-speedbar
-  :ensure t
-  :bind (("M-i" . my--sr-speedbar-toggle)
-         ("M-n" . sr-speedbar-select-window)
-         :map speedbar-mode-map
-         ("q" . sr-speedbar-close)
-         ("b" . sr-speedbar-buffers))
-  :init
-  (defun sr-speedbar-buffers ()
-    (interactive)
-    (speedbar-change-initial-expansion-list "buffers"))
-  (defun my--sr-speedbar-toggle ()
-    (interactive)
-    (sr-speedbar-toggle)
-    (when-let* ((buf (get-buffer sr-speedbar-buffer-name))
-                (win (get-buffer-window buf)))
-      (with-current-buffer buf
-        (setq-local display-line-numbers nil)
-        (setq-local left-fringe-width 0)
-        (setq-local window-min-width 30)
-        (setq window-size-fixed 'width)
-        (set-window-buffer win buf))))
-  :config
-  (setq sr-speedbar-right-side nil
-        speedbar-show-unknown-files t
-        speedbar-indentation-width 2
-        speedbar-use-images nil
-        speedbar-directory-unshown-regexp "^\\(CVS\\|RCS\\|SCCS\\|\\.\\.*$\\)\\'" ;; show hidden files
-        sr-speedbar-auto-refresh t
-        sr-speedbar-max-width 40
-        sr-speedbar-default-width 30
-        sr-speedbar-width 30)
-  (defconst speedbar--face-font-height 100)
-  (set-face-attribute 'speedbar-button-face nil :height speedbar--face-font-height)
-  (set-face-attribute 'speedbar-file-face nil :height speedbar--face-font-height)
-  (set-face-attribute 'speedbar-directory-face nil :height speedbar--face-font-height)
-  (set-face-attribute 'speedbar-tag-face nil :height speedbar--face-font-height)
-  (set-face-attribute 'speedbar-selected-face nil :height speedbar--face-font-height))
-
 (use-package imenu-list
   :ensure t
   :commands imenu-list
@@ -1432,6 +1405,11 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (use-package perl6-mode
   :ensure t
   :defer t)
+
+(use-package flycheck-perl6
+  :ensure t
+  :after flycheck perl6-mode)
+
 ;;;; (X)HTML & CSS
 (use-package web-mode
   :ensure t

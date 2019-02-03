@@ -3,9 +3,10 @@
 * Feeds                                                              :elfeed:
 ** entry-title: \(linux\|linus\|ubuntu\|kde\|gnome\)                 :linux:
 ** entry-title: \(emacs\)                                            :emacs:
+** entry-title: \(clojure\)                                        :clojure:
 ** [[https://www.instapaper.com/rss/6436730/aAzvYopNslgQPU2arTDVThHW4][Instapaper]]                                  :instapaper:mustread:backlog:
 ** [[https://news.ycombinator.com/rss][Hacker News]]                                                    :HN:daily:
-** [[http://showrss.info/user/174140.rss?magnets=true&namespaces=true&name=null&quality=null&re=null][showRSS]]
+** [[http://showrss.info/user/174140.rss?magnets=true&namespaces=true&name=null&quality=null&re=null][showRSS]]                                                           :shows:
 ** [[https://blog.acolyer.org/feed/][The Morning Paper]]                                        :daily:mustread:
 ** [[http://feeds.feedburner.com/webdesignernews][WebdesignerNews]]                                            :frontend:web:
 ** Programming                                                 :programming:
@@ -24,6 +25,7 @@
 ***** [[https://rakudo.party/feed/][Perl 6 Party]]
 ***** [[http://pl6anet.org/atom.xml][pl6anet]]
 ***** [[https://p6weekly.wordpress.com/feed/][Weekly changes in and around Perl 6]]                        :weekly:
+***** [[https://perl6advent.wordpress.com][Perl6 Advent]]
 **** Rust                                                           :rust:
 ***** [[http://smallcultfollowing.com/babysteps/atom.xml][Baby Steps]]
 ***** [[https://this-week-in-rust.org/rss.xml][This Week in Rust]]
