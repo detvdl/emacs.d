@@ -517,13 +517,11 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (let ((buffer (or (--first (with-current-buffer it
                                (eq major-mode 'eshell-mode))
                              (buffer-list))
-                    (generate-new-buffer "*eshell-mode*")))
-        (display-function (cond ((= arg 3) 'eshell--display-buffer-vertsplit)
-                                (t nil))))
+                    (generate-new-buffer "*eshell-mode*"))))
     (with-current-buffer buffer
       (unless (eq major-mode 'eshell-mode)
         (eshell-mode)))
-    (eshell-display-buffer buffer display-function)))
+    (eshell-display-buffer buffer nil)))
 (defun eshell-toggle ()
   (interactive)
   (if (eq (with-current-buffer (current-buffer) major-mode)
