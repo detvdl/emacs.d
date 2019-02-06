@@ -86,6 +86,76 @@
     (cl-some (lambda (side)
                (when (window-at-side-p window side)
                  side)))))
+(defvar popup--bury-buffer-function 'restore-window-configuration)
+(defvar popup--default-display-buffer-function 'display-buffer-same-window-v1)
+(defvar-local previous-window-configuration nil)
+(put 'previous-window-configuration 'permanent-local t)
+(defcustom popup--pre-display-buffer-hook '(save-window-configuration)
+  "Hook run by `popup-display-buffer' before displaying it."
+  :type 'hook)
+
+(defun save-window-configuration ()
+  "Save the current window configuration."
+  ;; A hook, when executed with run-hooks, is not executed in the
+  ;; context of a buffer, so this code-fragment returns nil
+  (unless (get-buffer-window (current-buffer) (selected-frame))
+    (setq previous-window-configuration
+          (current-window-configuration))))
+(defun restore-window-configuration (&optional kill-buffer)
+  "Restore the previous window configuration.
+Optionally specify a KILL-BUFFER function to be run when burying."
+  (let ((winconf previous-window-configuration)
+        (buffer (current-buffer))
+        (frame (selected-frame)))
+    (quit-window kill-buffer (selected-window))
+    (when (and winconf (equal frame (window-configuration-frame winconf)))
+      (set-window-configuration winconf)
+      (when (buffer-live-p buffer)
+        (with-current-buffer buffer
+          (setq previous-window-configuration nil))))))
+(defun popup-display-buffer (buffer mode &optional display-function)
+  "Display function to handle a popup BUFFER for a certain MODE.
+Optionally takes a DISPLAY-FUNCTION to be run."
+  (with-current-buffer buffer
+    (apply 'run-hooks popup--pre-display-buffer-hook))
+  (let* ((window (or (get-buffer-window buffer (selected-window))
+                     (funcall (or display-function
+                                  popup--default-display-buffer-function)
+                              buffer mode)))
+         (old-frame (selected-frame))
+         (new-frame (window-frame window)))
+    (select-window window)
+    (unless (eq old-frame new-frame)
+      (select-frame-set-input-focus new-frame))))
+(defun buffer-popup (mode name &optional display-function post-function arg)
+  "Pop up a buffer with mode MODE and a given NAME.
+With universal ARG, splits it to the side."
+  (let ((buffer (or (--first (with-current-buffer it
+                               (eq major-mode mode))
+                             (buffer-list))
+                    (generate-new-buffer name))))
+    (with-current-buffer buffer
+      (unless (eq major-mode mode)
+        (if post-function
+            (funcall post-function)
+          (funcall-interactively mode))))
+    (popup-display-buffer buffer mode display-function)))
+(defun display-buffer-fullframe (buffer alist)
+  (when-let ((window (or (display-buffer-reuse-window buffer alist)
+                         (display-buffer-same-window buffer alist)
+                         (display-buffer-pop-up-window buffer alist)
+                         (display-buffer-use-some-window buffer alist))))
+    (delete-other-windows window)
+    window))
+(defun display-buffer-fullframe-v1 (buffer mode)
+  (if (eq (with-current-buffer buffer major-mode) mode)
+      (display-buffer buffer '(display-buffer-fullframe))
+    (display-buffer buffer '(display-buffer-same-window))))
+(defun display-buffer-same-window-v1 (buffer &optional mode)
+  (display-buffer buffer '(popup--default-display-buffer-function)))
+(defun popup-bury-buffer (&optional kill-buffer)
+  (interactive "P")
+  (funcall popup--bury-buffer-function kill-buffer))
 
 ;;; Shell
 ;;;; Environment variables
@@ -428,6 +498,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
                                 (counsel-ag-function . ivy--regex-plus)
+                                (counsel-grep-function . ivy--regex-plus)
                                 (swiper-all . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
   (use-package smex
@@ -454,81 +525,6 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Shackle
 (use-package shackle
   :ensure t)
-;;;; Eshell
-;; As of currently, most of this code is blatantly stolen and/or adapted from the Magit codebase
-;; TODO: generify most of this code to be used for other modes I would like to have available
-;; as a pop-up kind of window
-(defvar eshell-display-buffer-function 'eshell--display-buffer-fullframe-v1)
-(defvar eshell-bury-buffer-function 'eshell--restore-window-configuration)
-(defcustom eshell-pre-display-buffer-hook '(eshell-save-window-configuration)
-  "Hook run by `eshell-display-buffer' before displaying it."
-  :type 'hook)
-(defvar-local eshell-previous-window-configuration nil)
-(put 'eshell-previous-window-configuration 'permanent-local t)
-(defun eshell-save-window-configuration ()
-  ;; A hook, when executed with run-hooks, is not executed in the
-  ;; context of a buffer, so this code-fragment returns nil
-  (unless (get-buffer-window (current-buffer) (selected-frame))
-    (setq eshell-previous-window-configuration
-          (current-window-configuration))))
-(defun eshell--restore-window-configuration (&optional kill-buffer)
-  (let ((winconf eshell-previous-window-configuration)
-        (buffer (current-buffer))
-        (frame (selected-frame)))
-    (quit-window kill-buffer (selected-window))
-    (when (and winconf (equal frame (window-configuration-frame winconf)))
-      (set-window-configuration winconf)
-      (when (buffer-live-p buffer)
-        (with-current-buffer buffer
-          (setq eshell-previous-window-configuration nil))))))
-(defun eshell-display-buffer (buffer &optional display-function)
-  (with-current-buffer buffer
-    (run-hooks 'eshell-pre-display-buffer-hook))
-  (let* ((window (or (get-buffer-window buffer (selected-window))
-                     (funcall (or display-function eshell-display-buffer-function)
-                              buffer)))
-         (old-frame (selected-frame))
-         (new-frame (window-frame window)))
-    (select-window window)
-    (unless (eq old-frame new-frame)
-      (select-frame-set-input-focus new-frame))))
-(defun eshell--display-buffer-traditional (buffer)
-  (display-buffer
-   buffer (if (derived-mode-p 'eshell-mode)
-              '(display-buffer-same-window)
-            nil)))
-(defun eshell--display-buffer-fullframe (buffer alist)
-  (when-let ((window (or (display-buffer-reuse-window buffer alist)
-                         (display-buffer-same-window buffer alist)
-                         (display-buffer-pop-up-window buffer alist)
-                         (display-buffer-use-some-window buffer alist))))
-    (delete-other-windows window)
-    window))
-(defun eshell--display-buffer-fullframe-v1 (buffer)
-  (if (eq (with-current-buffer buffer major-mode)
-          'eshell-mode)
-      (display-buffer buffer '(eshell--display-buffer-fullframe))
-    (eshell--display-buffer-traditional buffer)))
-(defun eshell-bury-buffer (&optional kill-buffer)
-  (interactive "P")
-  (funcall eshell-bury-buffer-function kill-buffer))
-(defun eshell-popup (&optional arg)
-  (interactive "P")
-  (let ((buffer (or (--first (with-current-buffer it
-                               (eq major-mode 'eshell-mode))
-                             (buffer-list))
-                    (generate-new-buffer "*eshell-mode*"))))
-    (with-current-buffer buffer
-      (unless (eq major-mode 'eshell-mode)
-        (eshell-mode)))
-    (eshell-display-buffer buffer nil)))
-(defun eshell-toggle ()
-  (interactive)
-  (if (eq (with-current-buffer (current-buffer) major-mode)
-          'eshell-mode)
-      (funcall 'eshell-bury-buffer)
-    (funcall 'eshell-popup)))
-(bind-key "C-x t" #'eshell-toggle global-map)
 
 ;;; Outlining
 ;;;; Outshine
@@ -1564,6 +1560,48 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (use-package ob-restclient
   :ensure t)
+
+;;; Shells & Terminals
+;;;; Multi-Term
+(use-package multi-term
+  :ensure t
+  :config
+  (setq term-scroll-to-bottom-on-output t
+        term-scroll-show-maximum-output t
+        term-completion-addsuffix t)
+  (add-to-list 'term-bind-key-alist '("M-." . completion-at-point)))
+
+(add-hook 'term-mode-hook
+          (lambda()
+            (setq bidi-paragraph-direction 'left-to-right)
+            (yas-minor-mode -1)))
+
+(defun multi-term-popup (&optional arg)
+  (interactive "P")
+  (buffer-popup 'term-mode (buffer-name (multi-term-get-buffer)) 'display-buffer-fullframe-v1 'multi-term))
+(defun multi-term-toggle ()
+  (interactive)
+  (if (and (eq major-mode 'term-mode)
+           (string-match "*terminal*" (buffer-name)))
+      (funcall 'popup-bury-buffer)
+    (funcall 'multi-term-popup)))
+(bind-key "C-c t" #'multi-term-toggle global-map)
+(with-eval-after-load 'term
+  (bind-key "C-c t" #'multi-term-toggle term-raw-map)
+  (bind-key "C-c C-y" #'term-paste term-raw-map)
+  (bind-key "M-." #'completion-at-point term-raw-map))
+
+;;;; Eshell
+(defun eshell-popup (&optional arg)
+  (interactive "P")
+  (buffer-popup 'eshell-mode "*eshell-mode*" 'display-buffer-fullframe-v1))
+(defun eshell-toggle ()
+  (interactive)
+  (if (eq (with-current-buffer (current-buffer) major-mode)
+          'eshell-mode)
+      (funcall 'popup-bury-buffer)
+    (funcall 'eshell-popup)))
+(bind-key "C-x t" #'eshell-toggle global-map)
 
 ;;; Miscellaneous
 ;; Start emacs from within emacs!
