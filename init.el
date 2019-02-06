@@ -137,10 +137,26 @@
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
-(defvar font-height 140)
-(let ((fh (getenv "EMACS_FONT_SIZE")))
-  (when fh
-    (setq font-height (string-to-number fh))))
+(defun get-dpi (&optional frame)
+  "Get the dpi for the current FRAME."
+  (let* ((attrs (frame-monitor-attributes frame))
+         (size-x (cadr (assoc 'mm-size attrs)))
+         (res (cdr (assoc 'geometry attrs)))
+         (res-h (caddr res)))
+    (when (or (not size-x)
+              (> size-x 1000))
+      nil)
+    (* (/ (float res-h) size-x) 25.4)))
+
+(defun get-optimal-font-height (&optional frame)
+  "Get the optimal font-height for a given FRAME using DPI."
+  (let ((dpi (get-dpi frame)))
+    (cond ((< dpi 120) 100)
+          ((< dpi 150) 110)
+          ((< dpi 160) 120)
+          (t 140))))
+
+(defvar font-height (get-optimal-font-height))
 (defconst font-size (/ font-height 10))
 (defconst font-weight 'regular)
 (defconst font-family "Go Mono")
@@ -149,13 +165,30 @@
 (defconst Go-font `(:family ,font-family :height ,font-height :weight ,font-weight))
 (defconst Baskerville-font `(:family "Baskerville" :height ,font-height))
 
-(set-frame-font font-string nil t)
-(apply 'set-face-attribute `(default nil ,@Go-font))
-(apply 'set-face-attribute `(fixed-pitch nil ,@Go-font))
-(apply 'set-face-attribute `(line-number nil ,@Go-font))
-(apply 'set-face-attribute `(variable-pitch nil ,@Baskerville-font))
+(defun set-fonts (&optional frame)
+  "Set the fonts for the given FRAME."
+  (interactive)
+  (let* ((font-h (get-optimal-font-height))
+         (font-size (/ font-height 10))
+         (font-weight font-weight)
+         (font-family font-family)
+         (font-str (format "%s-%s:%s"
+                           font-family
+                           font-size
+                           font-weight))
+         (font-fixed `(:family ,font-family
+                       :height ,font-h
+                       :weight ,font-weight))
+         (font-var `(:family "Baskerville"
+                     :height ,font-height)))
+    (set-frame-font font-str nil t)
+    (apply 'set-face-attribute `(default nil ,@font-fixed))
+    (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
+    (apply 'set-face-attribute `(line-number nil ,@font-fixed))
+    (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
+    (setq line-spacing 0.1)))
 
-(setq line-spacing 0.1)
+(funcall-interactively #'set-fonts)
 
 (setq inhibit-compacting-font-caches t)
 
