@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
-;;; Package archives and setup
+;;; [ PACKAGING ]
 ;;;; Package archives
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -34,7 +34,7 @@
 (use-package dash
   :ensure t)
 
-;;; Environment
+;;; [ ENVIRONMENT ]
 ;;;; Custom Variables
 ;; Constants
 (defconst *is-mac* (eq system-type 'darwin))
@@ -46,7 +46,7 @@
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 
-;;; MacOS specifics
+;;;; MacOS specifics
 ;;;; Modifiers
 ;; Switch up modifier keys to fit the MacOS keyboard layout better
 (when *is-mac*
@@ -61,7 +61,7 @@
                '(ns-transparent-titlebar . t)))
 
 
-;;; Paths & Custom files
+;;; [ PATHS & FILES ]
 ;;;; Load path initialization
 (push emacs-theme-dir custom-theme-load-path)
 (dolist (dir (directory-files emacs-theme-dir))
@@ -74,7 +74,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;;; Utility functions
+;;; [ FUNCTIONS ]
 (defun file-in-project? (project-dir)
   "Return whether the current buffer is part of the project at PROJECT-DIR."
   (string-prefix-p
@@ -157,23 +157,64 @@ With universal ARG, splits it to the side."
   (interactive "P")
   (funcall popup--bury-buffer-function kill-buffer))
 
-;;; Shell
-;;;; Environment variables
-(use-package exec-path-from-shell
+;;; [ SHELL ]
+;;;; Environment Variables
+(USE-PACKAGE EXEC-PATH-FROM-SHELL
+             :ENSURE T
+             :CONFIG
+             (SETQ EXEC-PATH-FROM-SHELL-VARIABLES
+                   '("PATH" "MANPATH"
+                     "PAGER" "TERM"
+                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+                     "EMACS_FONT_SIZE"
+                     "LOMBOK_JAR"
+                     "GOPATH"))
+             (WHEN (MEMQ WINDOW-SYSTEM '(MAC NS X))
+                   (EXEC-PATH-FROM-SHELL-INITIALIZE)))
+
+;;;; Multi-Term
+(use-package multi-term
   :ensure t
   :config
-  (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH"
-          "PAGER" "TERM"
-          "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-          "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-          "EMACS_FONT_SIZE"
-          "LOMBOK_JAR"
-          "GOPATH"))
-  (when (memq window-system '(mac ns x))
-    (exec-path-from-shell-initialize)))
+  (setq term-scroll-to-bottom-on-output t
+        term-scroll-show-maximum-output t
+        term-completion-addsuffix t)
+  (add-to-list 'term-bind-key-alist '("M-." . completion-at-point)))
 
-;;; User Interface
+(add-hook 'term-mode-hook
+          (lambda()
+            (setq bidi-paragraph-direction 'left-to-right)
+            (yas-minor-mode -1)))
+
+(defun multi-term-popup (&optional arg)
+  (interactive "P")
+  (buffer-popup 'term-mode (buffer-name (multi-term-get-buffer)) 'display-buffer-fullframe-v1 'multi-term))
+(defun multi-term-toggle ()
+  (interactive)
+  (if (and (eq major-mode 'term-mode)
+           (string-match "*terminal*" (buffer-name)))
+      (funcall 'popup-bury-buffer)
+    (funcall 'multi-term-popup)))
+(bind-key "C-c t" #'multi-term-toggle global-map)
+(with-eval-after-load 'term
+  (bind-key "C-c t" #'multi-term-toggle term-raw-map)
+  (bind-key "C-c C-y" #'term-paste term-raw-map)
+  (bind-key "M-." #'completion-at-point term-raw-map))
+
+;;;; Eshell
+(defun eshell-popup (&optional arg)
+  (interactive "P")
+  (buffer-popup 'eshell-mode "*eshell-mode*" 'display-buffer-fullframe-v1))
+(defun eshell-toggle ()
+  (interactive)
+  (if (eq (with-current-buffer (current-buffer) major-mode)
+          'eshell-mode)
+      (funcall 'popup-bury-buffer)
+    (funcall 'eshell-popup)))
+(bind-key "C-x t" #'eshell-toggle global-map)
+
+;;; [ UI ]
 ;;;; GUI
 ;; Remove unnecessary cruft from the GUI application (and then add line-number cruft)
 (tool-bar-mode -1)
@@ -302,7 +343,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (setq eyebrowse-new-workspace #'delete-other-windows)
   (eyebrowse-mode t))
 
-;;; Editor
+;;; [ EDITOR ]
 ;;;; General
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
@@ -344,12 +385,13 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
       uniquify-after-kill-buffer-p t
       uniquify-ignore-buffers-re "^\\*")
 
+;;;; Buffers
+(bind-key "C-x C-b" #'ibuffer global-map)
+
 ;;;; Undo/Redo
 (use-package undo-tree
   :ensure t
   :delight
-  :bind (("C-/" . undo)
-         ("C-?" . undo-tree-redo))
   :config
   (global-undo-tree-mode +1))
 
@@ -526,8 +568,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (use-package shackle
   :ensure t)
 
-;;; Outlining
-;;;; Outshine
+;;;; Outlining
 (use-package outshine
   :ensure t
   :delight
@@ -539,7 +580,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :config
   (setq outshine-startup-folded-p nil))
 
-;;; Org-mode
+;;; [ ORG-MODE ]
 ;;;; General
 ;; Install org from org-plus-contrib!
 (use-package org
@@ -594,7 +635,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
-;;; RSS
+;;; [ NEWS & IRC ]
 (use-package elfeed
   :ensure t
   :bind ("C-x w" . #'elfeed--toggle-wconf))
@@ -636,7 +677,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
         (unless (eq major-mode 'elfeed-search-mode)
           (elfeed-search-mode))
         (eyebrowse-create-window-config)
-        (switch-to-buffer (current-buffer))))))
+        (switch-to-buffer (current-buffer))
+        (dedicated-window)))))
 
 (defun elfeed--toggle-wconf ()
   "Toggle between elfeed wconf and current one."
@@ -645,7 +687,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
       (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
     (elfeed--open-or-switch-to-wconf)))
 
-;;; Programming tools
+;;; [ PROGRAMMING TOOLS ]
 ;;;; Comment Keywords
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
@@ -883,7 +925,7 @@ This checks in turn:
 (bind-key "M-?" 'xref-find-references prog-mode-map)
 (bind-key "M-[" 'describe-thing-at-point prog-mode-map)
 
-;;; Completion
+;;; [ COMPLETION ]
 ;;;; Snippets
 (use-package yasnippet
   :if (not noninteractive)
@@ -1025,7 +1067,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (add-hook 'lsp-mode-hook #'lsp-ui-mode)
 
-;;; Git
+;;; [ GIT ]
 ;;;; Magit
 (use-package magit
   :ensure t
@@ -1067,7 +1109,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
-;;; Languages
+;;; [ LANGUAGES ]
 ;;;; Shell Script
 ;; Enable shell-script mode for zshell configuration files
 (let ((shell-files '("zprofile" "zshenv" "zshrc" "zlogin" "zlogout" "zpreztorc")))
@@ -1561,51 +1603,9 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (use-package ob-restclient
   :ensure t)
 
-;;; Shells & Terminals
-;;;; Multi-Term
-(use-package multi-term
-  :ensure t
-  :config
-  (setq term-scroll-to-bottom-on-output t
-        term-scroll-show-maximum-output t
-        term-completion-addsuffix t)
-  (add-to-list 'term-bind-key-alist '("M-." . completion-at-point)))
-
-(add-hook 'term-mode-hook
-          (lambda()
-            (setq bidi-paragraph-direction 'left-to-right)
-            (yas-minor-mode -1)))
-
-(defun multi-term-popup (&optional arg)
-  (interactive "P")
-  (buffer-popup 'term-mode (buffer-name (multi-term-get-buffer)) 'display-buffer-fullframe-v1 'multi-term))
-(defun multi-term-toggle ()
-  (interactive)
-  (if (and (eq major-mode 'term-mode)
-           (string-match "*terminal*" (buffer-name)))
-      (funcall 'popup-bury-buffer)
-    (funcall 'multi-term-popup)))
-(bind-key "C-c t" #'multi-term-toggle global-map)
-(with-eval-after-load 'term
-  (bind-key "C-c t" #'multi-term-toggle term-raw-map)
-  (bind-key "C-c C-y" #'term-paste term-raw-map)
-  (bind-key "M-." #'completion-at-point term-raw-map))
-
-;;;; Eshell
-(defun eshell-popup (&optional arg)
-  (interactive "P")
-  (buffer-popup 'eshell-mode "*eshell-mode*" 'display-buffer-fullframe-v1))
-(defun eshell-toggle ()
-  (interactive)
-  (if (eq (with-current-buffer (current-buffer) major-mode)
-          'eshell-mode)
-      (funcall 'popup-bury-buffer)
-    (funcall 'eshell-popup)))
-(bind-key "C-x t" #'eshell-toggle global-map)
-
-;;; Miscellaneous
-;; Start emacs from within emacs!
+;;; [ MISCELLANEOUS ]
 (defun start-emacs ()
+  "Start Emacs from within Emacs!"
   (interactive)
   (call-process (executable-find "emacs") nil 0 nil))
 
