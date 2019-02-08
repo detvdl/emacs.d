@@ -638,7 +638,9 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;; [ NEWS & IRC ]
 (use-package elfeed
   :ensure t
-  :bind ("C-x w" . #'elfeed--toggle-wconf))
+  :bind ("C-x w" . #'elfeed--toggle-wconf)
+  :config
+  (setq elfeed-show-entry-switch #'elfeed--view-other-window))
 
 (use-package elfeed-org
   :ensure t
@@ -664,6 +666,20 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (catch 'eb--matched-winconf
     (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf))))
 
+(defun elfeed--inhibiting-quit ()
+  "Save the database, then `quit-window'."
+  (interactive)
+  (elfeed-db-save))
+
+;; TODO: check if there's already a horizontal split and reuse it if possible
+(defun elfeed--view-other-window (buf)
+  "View the selected entry BUF in another window."
+  (with-current-buffer buf
+    (let ((window (or (get-buffer-window buf)
+                      (split-window-below))))
+      (set-window-buffer window buf)
+      (select-window window))))
+
 (defun elfeed--open-or-switch-to-wconf ()
   "Open elfeed in a new eyebrowse config or switch to an existing one."
   (interactive)
@@ -678,7 +694,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
           (elfeed-search-mode))
         (eyebrowse-create-window-config)
         (switch-to-buffer (current-buffer))
-        (dedicated-window)))))
+        (dedicated-window))
+      (funcall-interactively 'elfeed-search-show-entry))))
 
 (defun elfeed--toggle-wconf ()
   "Toggle between elfeed wconf and current one."
@@ -686,6 +703,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (if (eq major-mode 'elfeed-search-mode)
       (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
     (elfeed--open-or-switch-to-wconf)))
+
+(bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
 
 ;;; [ PROGRAMMING TOOLS ]
 ;;;; Comment Keywords
