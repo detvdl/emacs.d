@@ -276,7 +276,7 @@ With universal ARG, splits it to the side."
 (defun get-optimal-font-height (&optional frame)
   "Get the optimal font-height for a given FRAME using DPI."
   (let ((dpi (get-dpi frame)))
-    (cond ((< dpi 120) 100)
+    (cond ((< dpi 120) 110)
           ((< dpi 150) 120)
           ((< dpi 160) 130)
           (t 140))))
@@ -713,7 +713,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
           (elfeed-search-mode))
         (eyebrowse-create-window-config)
         (switch-to-buffer (current-buffer))
-        (dedicated-window))
+        (set-window-dedicated-p (selected-window) t))
       (funcall-interactively 'elfeed-search-show-entry))))
 
 (defun elfeed--toggle-wconf ()
