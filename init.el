@@ -159,19 +159,19 @@ With universal ARG, splits it to the side."
 
 ;;; [ SHELL ]
 ;;;; Environment Variables
-(USE-PACKAGE EXEC-PATH-FROM-SHELL
-             :ENSURE T
-             :CONFIG
-             (SETQ EXEC-PATH-FROM-SHELL-VARIABLES
-                   '("PATH" "MANPATH"
-                     "PAGER" "TERM"
-                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-                     "EMACS_FONT_SIZE"
-                     "LOMBOK_JAR"
-                     "GOPATH"))
-             (WHEN (MEMQ WINDOW-SYSTEM '(MAC NS X))
-                   (EXEC-PATH-FROM-SHELL-INITIALIZE)))
+(use-package exec-path-from-shell
+             :ensure t
+             :config
+             (setq exec-path-from-shell-variables
+                   '("path" "manpath"
+                     "pager" "term"
+                     "ssh_auth_sock" "ssh_agent_pid" "gpg_agent_info"
+                     "language" "lang" "lc_ctype" "lc_all"
+                     "emacs_font_size"
+                     "lombok_jar"
+                     "gopath"))
+             (when (memq window-system '(mac ns x))
+                   (exec-path-from-shell-initialize)))
 
 ;;;; Multi-Term
 (use-package multi-term
@@ -338,7 +338,6 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Window/frame Management
 (use-package eyebrowse
   :ensure t
-  :defer 1
   :config
   (setq eyebrowse-new-workspace #'delete-other-windows)
   (eyebrowse-mode t))
@@ -640,7 +639,14 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :ensure t
   :bind ("C-x w" . #'elfeed--toggle-wconf)
   :config
-  (setq elfeed-show-entry-switch #'elfeed--view-other-window))
+  (setq elfeed-show-entry-switch #'elfeed--view-other-window
+        elfeed-show-entry-delete #'delete-window))
+
+;; (defun elfeed--no-kill-next/prev (orig-fun &rest args)
+;;   (let ((elfeed-show-entry-delete #'ignore))
+;;     (apply orig-fun args)))
+;; (advice-add 'elfeed-show-next :around #'elfeed--no-kill-next/prev)
+;; (advice-add 'elfeed-show-prev :around #'elfeed--no-kill-next/prev)
 
 (use-package elfeed-org
   :ensure t
@@ -649,22 +655,21 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 
 (defvar my--previous-eyebrowse-wconf nil)
 
-;; TODO: figure out a way to do this without catch/throw (ugly)
 (defun eyebrowse--match-buffer-name (wconf buffer-name &optional tag)
   "Walk over an existing window configuration WCONF and match its active buffer to BUFFER-NAME.  Optionally pass the original window configuration TAG along to be able to restore it."
-  (dolist (item wconf)
+  (cl-dolist (item wconf)
     (when (consp item)
-      (when (and (symbolp (car item))
-                 (eq (car item) 'buffer)
-                 (string-match buffer-name (cadr item)))
-        (throw 'eb--matched-winconf tag))
-      (when (and (consp (cdr item))
-                 (not (eyebrowse--dotted-list-p (cdr item))))
-        (eyebrowse--match-buffer-name (cdr item) buffer-name tag)))))
+      (if (and (symbolp (car item))
+               (eq (car item) 'buffer)
+               (string-match buffer-name (cadr item)))
+          (cl-return tag)
+        (when (and (consp (cdr item))
+                   (not (eyebrowse--dotted-list-p (cdr item)))
+                   (eyebrowse--match-buffer-name (cdr item) buffer-name tag))
+          (cl-return tag))))))
 
 (defun eyebrowse--match-elfeed-buffer (wconf)
-  (catch 'eb--matched-winconf
-    (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf))))
+    (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf)))
 
 (defun elfeed--inhibiting-quit ()
   "Save the database, then `quit-window'."
@@ -705,6 +710,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
     (elfeed--open-or-switch-to-wconf)))
 
 (bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
+(bind-key "q" #'delete-window elfeed-show-mode-map)
 
 ;;; [ PROGRAMMING TOOLS ]
 ;;;; Comment Keywords
@@ -905,7 +911,7 @@ Lisp function does not specify a special indentation."
 (add-hook 'emacs-lisp-mode-hook
           (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
 
-;;;; Imenu/speedbar
+;;;; Imenu
 (use-package imenu-list
   :ensure t
   :commands imenu-list
@@ -1678,3 +1684,4 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
+(put 'list-timers 'disabled nil)
