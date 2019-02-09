@@ -173,13 +173,12 @@ With universal ARG, splits it to the side."
   :ensure t
   :config
   (setq exec-path-from-shell-variables
-        '("path" "manpath"
-          "pager" "term"
-          "ssh_auth_sock" "ssh_agent_pid" "gpg_agent_info"
-          "language" "lang" "lc_ctype" "lc_all"
-          "emacs_font_size"
-          "lombok_jar"
-          "gopath"))
+        '("PATH" "MANPATH"
+          "PAGER" "TERM"
+          "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+          "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+          "LOMBOK_JAR"
+          "GOPATH"))
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize)))
 
@@ -263,7 +262,7 @@ With universal ARG, splits it to the side."
   (let* ((attrs (frame-monitor-attributes frame))
          (size-x (cadr (assoc 'mm-size attrs)))
          (res (cdr (assoc 'geometry attrs)))
-         (res-h (caddr res)))
+         (res-h (x-display-pixel-height)))
     (when (or (not size-x)
               (> size-x 1000))
       nil)
@@ -273,8 +272,8 @@ With universal ARG, splits it to the side."
   "Get the optimal font-height for a given FRAME using DPI."
   (let ((dpi (get-dpi frame)))
     (cond ((< dpi 120) 100)
-          ((< dpi 150) 110)
-          ((< dpi 160) 120)
+          ((< dpi 150) 120)
+          ((< dpi 160) 130)
           (t 140))))
 
 (defvar font-height (get-optimal-font-height))
@@ -284,12 +283,12 @@ With universal ARG, splits it to the side."
 (defconst font-string (format "%s-%s:%s" font-family font-size font-weight))
 
 (defconst Go-font `(:family ,font-family :height ,font-height :weight ,font-weight))
-(defconst Baskerville-font `(:family "Baskerville" :height ,font-height))
+(defconst Baskerville-font `(:family "Baskerville" :height ,(+ font-height 20)))
 
-(defun set-fonts (&optional frame)
+(defun set-fonts ()
   "Set the fonts for the given FRAME."
   (interactive)
-  (let* ((font-h (get-optimal-font-height))
+  (let* ((font-h (get-optimal-font-height (selected-frame)))
          (font-size (/ font-height 10))
          (font-weight font-weight)
          (font-family font-family)
