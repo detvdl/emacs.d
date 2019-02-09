@@ -85,7 +85,17 @@
   (let ((window (or window (selected-window))))
     (cl-some (lambda (side)
                (when (window-at-side-p window side)
-                 side)))))
+                 side))
+             '(left top right bottom))))
+(defun get-vertical-split (&optional window)
+  (let* ((window (or window (selected-window)))
+         (side (window-side window)))
+    (if (one-window-p)
+        (split-window-below)
+      (cond ((eq side 'bottom) (window-in-direction 'above window))
+            ((eq side 'top) (window-in-direction 'below window))
+            (t (window-next-sibling window))))))
+
 (defvar popup--bury-buffer-function 'restore-window-configuration)
 (defvar popup--default-display-buffer-function 'display-buffer-same-window-v1)
 (defvar-local previous-window-configuration nil)
@@ -160,18 +170,18 @@ With universal ARG, splits it to the side."
 ;;; [ SHELL ]
 ;;;; Environment Variables
 (use-package exec-path-from-shell
-             :ensure t
-             :config
-             (setq exec-path-from-shell-variables
-                   '("path" "manpath"
-                     "pager" "term"
-                     "ssh_auth_sock" "ssh_agent_pid" "gpg_agent_info"
-                     "language" "lang" "lc_ctype" "lc_all"
-                     "emacs_font_size"
-                     "lombok_jar"
-                     "gopath"))
-             (when (memq window-system '(mac ns x))
-                   (exec-path-from-shell-initialize)))
+  :ensure t
+  :config
+  (setq exec-path-from-shell-variables
+        '("path" "manpath"
+          "pager" "term"
+          "ssh_auth_sock" "ssh_agent_pid" "gpg_agent_info"
+          "language" "lang" "lc_ctype" "lc_all"
+          "emacs_font_size"
+          "lombok_jar"
+          "gopath"))
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize)))
 
 ;;;; Multi-Term
 (use-package multi-term
@@ -642,6 +652,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (setq elfeed-show-entry-switch #'elfeed--view-other-window
         elfeed-show-entry-delete #'delete-window))
 
+;; FIXME: find a different way to re-use the show-buffer when cycling entries
 ;; (defun elfeed--no-kill-next/prev (orig-fun &rest args)
 ;;   (let ((elfeed-show-entry-delete #'ignore))
 ;;     (apply orig-fun args)))
@@ -669,19 +680,18 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
           (cl-return tag))))))
 
 (defun eyebrowse--match-elfeed-buffer (wconf)
-    (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf)))
+  (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf)))
 
 (defun elfeed--inhibiting-quit ()
   "Save the database, then `quit-window'."
   (interactive)
   (elfeed-db-save))
 
-;; TODO: check if there's already a horizontal split and reuse it if possible
 (defun elfeed--view-other-window (buf)
   "View the selected entry BUF in another window."
   (with-current-buffer buf
     (let ((window (or (get-buffer-window buf)
-                      (split-window-below))))
+                      (get-vertical-split))))
       (set-window-buffer window buf)
       (select-window window))))
 
