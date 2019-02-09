@@ -89,11 +89,16 @@
              '(left top right bottom))))
 (defun get-vertical-split (&optional window)
   (let* ((window (or window (selected-window)))
-         (side (window-side window)))
+         (side (window-side window))
+         (split-side (if (>= (frame-pixel-width) (/ (* 3 (x-display-pixel-width)) 4))
+                         'right
+                       'below)))
     (if (one-window-p)
-        (split-window-below)
+        (split-window (selected-window) nil split-side)
       (cond ((eq side 'bottom) (window-in-direction 'above window))
             ((eq side 'top) (window-in-direction 'below window))
+            ((eq side 'left) (window-in-direction 'right window))
+            ((eq side 'right) (window-in-direction 'left window))
             (t (window-next-sibling window))))))
 
 (defvar popup--bury-buffer-function 'restore-window-configuration)
