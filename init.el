@@ -175,6 +175,7 @@ With universal ARG, splits it to the side."
 ;;; [ SHELL ]
 ;;;; Environment Variables
 (use-package exec-path-from-shell
+  :if (memq window-system '(mac ns))
   :ensure t
   :config
   (setq exec-path-from-shell-variables
@@ -184,7 +185,7 @@ With universal ARG, splits it to the side."
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
           "LOMBOK_JAR"
           "GOPATH"))
-  (when (memq window-system '(mac ns x))
+  (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
 ;;;; Multi-Term
@@ -332,8 +333,8 @@ With universal ARG, splits it to the side."
   :ensure t
   :defer t
   :custom
-  (zenburn-override-colors-alist '(("zenburn-bg" . "#000000")
-                                   ("zenburn-bg+1" . "#0B0B0B"))))
+  (zenburn-override-colors-alist '(("zenburn-bg" . "#151515")
+                                   ("zenburn-bg+1" . "#222222"))))
 
 (defun disable-all-themes ()
   "Disable all currently active themes."
