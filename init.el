@@ -284,11 +284,10 @@ With universal ARG, splits it to the side."
 (defvar font-height (get-optimal-font-height))
 (defconst font-size (/ font-height 10))
 (defconst font-weight 'regular)
-(defconst font-family "Go Mono")
-(defconst font-string (format "%s-%s:%s" font-family font-size font-weight))
-
-(defconst Go-font `(:family ,font-family :height ,font-height :weight ,font-weight))
-(defconst Baskerville-font `(:family "Baskerville" :height ,(+ font-height 20)))
+(defconst fixed-font-family "Go Mono")
+(defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
+(defconst var-font-family "Baskerville")
+(defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
 
 (defun set-fonts ()
   "Set the fonts for the given FRAME."
@@ -296,16 +295,16 @@ With universal ARG, splits it to the side."
   (let* ((font-h (get-optimal-font-height (selected-frame)))
          (font-size (/ font-height 10))
          (font-weight font-weight)
-         (font-family font-family)
+         (fixed-font-family fixed-font-family)
          (font-str (format "%s-%s:%s"
-                           font-family
+                           fixed-font-family
                            font-size
                            font-weight))
-         (font-fixed `(:family ,font-family
+         (font-fixed `(:family ,fixed-font-family
                        :height ,font-h
                        :weight ,font-weight))
-         (font-var `(:family "Baskerville"
-                     :height ,font-height)))
+         (font-var `(:family ,var-font-family
+                     :height ,(+ font-height 20))))
     (set-frame-font font-str nil t)
     (apply 'set-face-attribute `(default nil ,@font-fixed))
     (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
@@ -318,6 +317,9 @@ With universal ARG, splits it to the side."
 (setq inhibit-compacting-font-caches t)
 
 ;;;; Theme
+(defconst light-theme nil)
+(defconst dark-theme 'zenburn)
+
 (use-package leuven-theme
   :ensure t
   :defer t
@@ -330,11 +332,34 @@ With universal ARG, splits it to the side."
   :ensure t
   :defer t
   :custom
-  (zenburn-override-colors-alist '(("zenburn-bg" . "#222222")
-                                   ("zenburn-bg+1" . "#323232"))))
+  (zenburn-override-colors-alist '(("zenburn-bg" . "#000000")
+                                   ("zenburn-bg+1" . "#0B0B0B"))))
 
-(mapc #'disable-theme custom-enabled-themes)
-(load-theme 'zenburn t)
+(defun disable-all-themes ()
+  "Disable all currently active themes."
+  (interactive)
+  (mapc #'disable-theme custom-enabled-themes))
+
+(defun load-dark-theme ()
+  "Load the dark theme of the week."
+  (interactive)
+  (funcall-interactively #'disable-all-themes)
+  (load-theme 'zenburn t))
+
+(defun load-light-theme ()
+  "Load the default light theme (disable all active themes)."
+  (interactive)
+  (funcall-interactively #'disable-all-themes))
+
+(defun toggle-theme ()
+  (interactive)
+  (if (memq dark-theme custom-enabled-themes)
+      (funcall-interactively #'load-light-theme)
+    (funcall-interactively #'load-dark-theme)))
+
+(bind-key "C-, t" #'toggle-theme global-map)
+
+(funcall-interactively #'load-dark-theme)
 
 (setq-default left-margin-width 2)
 (setq-default fringes-outside-margins t)
@@ -382,8 +407,9 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (setq-default tab-width 4
 	          make-backup-files nil
 	          indent-tabs-mode nil
-	          show-trailing-whitespace t
 	          visible-bell nil)
+
+(add-hook 'prog-mode-hook (lambda () (setq-local show-trailing-whitespace t)))
 
 ;; Show me which line I'm on.
 (global-hl-line-mode +1)
@@ -536,7 +562,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
          ("C-x b" . ivy-switch-buffer)
 	     ("C-c C-r" . ivy-resume)
          ("C-c C-u" . swiper-all)
-         ("C-c C-w" . ivy-wgrep-change-to-wgrep-mode)
+         :map ivy-occur-mode-map
+         ("w" . ivy-wgrep-change-to-wgrep-mode)
          :map ivy-minibuffer-map
          ("RET" . ivy-alt-done)
          ("C-m" . ivy-alt-done)
@@ -713,8 +740,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
           (elfeed-search-mode))
         (eyebrowse-create-window-config)
         (switch-to-buffer (current-buffer))
-        (set-window-dedicated-p (selected-window) t))
-      (funcall-interactively 'elfeed-search-show-entry))))
+        (set-window-dedicated-p (selected-window) t)
+        (call-interactively #'elfeed-search-show-entry)))))
 
 (defun elfeed--toggle-wconf ()
   "Toggle between elfeed wconf and current one."
@@ -1095,6 +1122,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
         lsp-eldoc-enable-hover nil
         lsp-ui-sideline-update-mode 'point))
 
+;; lsp-ui-sideline does not clean up its overlays when a buffer is reverted
 (add-hook 'before-revert-hook (lambda ()
                                 (when (bound-and-true-p lsp-ui-sideline-mode)
                                   (lsp-ui-sideline--delete-ov))))
