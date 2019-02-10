@@ -318,7 +318,7 @@ With universal ARG, splits it to the side."
 (setq inhibit-compacting-font-caches t)
 
 ;;;; Theme
-(defconst light-theme nil)
+(defconst light-theme 'default-improved)
 (defconst dark-theme 'zenburn)
 
 (use-package leuven-theme
@@ -350,7 +350,8 @@ With universal ARG, splits it to the side."
 (defun load-light-theme ()
   "Load the default light theme (disable all active themes)."
   (interactive)
-  (funcall-interactively #'disable-all-themes))
+  (funcall-interactively #'disable-all-themes)
+  (load-theme 'default-improved t))
 
 (defun toggle-theme ()
   (interactive)
