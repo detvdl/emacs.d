@@ -75,11 +75,41 @@
   (load custom-file))
 
 ;;; [ FUNCTIONS ]
+;;;; General
+(defun start-emacs ()
+  "Start Emacs from within Emacs!"
+  (interactive)
+  (call-process (executable-find "emacs") nil 0 nil))
+
+;; Handy functions to URL-encode/-decode a region
+(defun url-encode-region (beg end)
+  "URL encode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (encoded-text (url-hexify-string selected-text)))
+        (kill-region beg end)
+        (insert encoded-text))))
+
+(defun url-decode-region (beg end)
+  "URL decode the region between BEG and END."
+  (interactive "r")
+  (if (use-region-p)
+      (let* ((selected-text (buffer-substring beg end))
+             (decoded-text (url-unhex-string selected-text)))
+        (kill-region beg end)
+        (insert decoded-text))))
+
+(defun raw-prefix-arg-p (arg)
+  (and (listp arg) (car arg)))
+
 (defun file-in-project? (project-dir)
   "Return whether the current buffer is part of the project at PROJECT-DIR."
   (string-prefix-p
    (expand-file-name project-dir)
    (buffer-file-name (current-buffer))))
+
+;;;; Window Management
 (defun window-side (&optional window)
   "Return the side of the frame WINDOW is on."
   (let ((window (or window (selected-window))))
@@ -87,6 +117,7 @@
                (when (window-at-side-p window side)
                  side))
              '(left top right bottom))))
+
 (defun get-vertical-split (&optional window)
   (let* ((window (or window (selected-window)))
          (side (window-side window))
@@ -101,6 +132,7 @@
             ((eq side 'right) (window-in-direction 'left window))
             (t (window-next-sibling window))))))
 
+;;;; Popup-Buffers
 (defvar popup--bury-buffer-function 'restore-window-configuration)
 (defvar popup--default-display-buffer-function 'display-buffer-same-window-v1)
 (defvar-local previous-window-configuration nil)
@@ -116,6 +148,7 @@
   (unless (get-buffer-window (current-buffer) (selected-frame))
     (setq previous-window-configuration
           (current-window-configuration))))
+
 (defun restore-window-configuration (&optional kill-buffer)
   "Restore the previous window configuration.
 Optionally specify a KILL-BUFFER function to be run when burying."
@@ -128,6 +161,7 @@ Optionally specify a KILL-BUFFER function to be run when burying."
       (when (buffer-live-p buffer)
         (with-current-buffer buffer
           (setq previous-window-configuration nil))))))
+
 (defun popup-display-buffer (buffer mode &optional display-function)
   "Display function to handle a popup BUFFER for a certain MODE.
 Optionally takes a DISPLAY-FUNCTION to be run."
@@ -142,6 +176,7 @@ Optionally takes a DISPLAY-FUNCTION to be run."
     (select-window window)
     (unless (eq old-frame new-frame)
       (select-frame-set-input-focus new-frame))))
+
 (defun buffer-popup (mode name &optional display-function post-function arg)
   "Pop up a buffer with mode MODE and a given NAME.
 With universal ARG, splits it to the side."
@@ -155,6 +190,7 @@ With universal ARG, splits it to the side."
             (funcall post-function)
           (funcall-interactively mode))))
     (popup-display-buffer buffer mode display-function)))
+
 (defun display-buffer-fullframe (buffer alist)
   (when-let ((window (or (display-buffer-reuse-window buffer alist)
                          (display-buffer-same-window buffer alist)
@@ -162,12 +198,15 @@ With universal ARG, splits it to the side."
                          (display-buffer-use-some-window buffer alist))))
     (delete-other-windows window)
     window))
+
 (defun display-buffer-fullframe-v1 (buffer mode)
   (if (eq (with-current-buffer buffer major-mode) mode)
       (display-buffer buffer '(display-buffer-fullframe))
     (display-buffer buffer '(display-buffer-same-window))))
+
 (defun display-buffer-same-window-v1 (buffer &optional mode)
   (display-buffer buffer '(popup--default-display-buffer-function)))
+
 (defun popup-bury-buffer (&optional kill-buffer)
   (interactive "P")
   (funcall popup--bury-buffer-function kill-buffer))
@@ -958,7 +997,9 @@ Lisp function does not specify a special indentation."
 (use-package imenu-list
   :ensure t
   :commands imenu-list
-  :bind ("C-'" . imenu-list))
+  :bind (("C-'" . imenu-list)
+         :map imenu-list-major-mode-map
+         ("C-'" . imenu-list-quit-window)))
 
 ;;;; Describe thing at point
 ;; handy function from https://www.emacswiki.org/emacs/DescribeThingAtPoint
@@ -1327,8 +1368,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :ensure t
   :mode "\\.go\\'"
   :bind (:map go-mode-map
-         ([remap xref-find-definitions] . godef-jump)
-         ([remap xref-pop-marker-stack] . pop-tag-mark)
+         ;; ([remap xref-find-definitions] . godef-jump)
+         ;; ([remap xref-pop-marker-stack] . pop-tag-mark)
          ("C-c c" . compile)
          ("C-c r" . recompile))
   :config
@@ -1339,7 +1380,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
     (setq-local tab-width 2)
     (subword-mode +1)
     (go-eldoc-setup)
-    (company:add-local-backend 'company-go)
+    (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
+    (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
@@ -1358,23 +1400,13 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :ensure t
   :after go-mode)
 
-(use-package company-go
-  :ensure t
-  :after go-mode
-  :init
-  (setq company-go-gocode-command "gocode"
-        company-go-gocode-args '("-source"
-                                 "-ignore-case"
-                                 "-builtin"
-                                 "-unimported-packages")))
-
 (use-package flycheck-gometalinter
   :ensure t
   :after flycheck
   :config
   (setq flycheck-gometalinter-fast t
         flycheck-gometalinter-disable-linters '("gotype"))
-  (add-hook 'go-mode-hook (lambda () (flycheck-gometalinter-setup))))
+  (add-hook 'go-mode-hook #'flycheck-gometalinter-setup))
 
 (use-package go-impl
   :ensure t
@@ -1673,33 +1705,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :ensure t)
 
 ;;; [ MISCELLANEOUS ]
-(defun start-emacs ()
-  "Start Emacs from within Emacs!"
-  (interactive)
-  (call-process (executable-find "emacs") nil 0 nil))
-
-;; Handy functions to URL-encode/-decode a region
-(defun url-encode-region (beg end)
-  "URL encode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (encoded-text (url-hexify-string selected-text)))
-        (kill-region beg end)
-        (insert encoded-text))))
-
-(defun url-decode-region (beg end)
-  "URL decode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (decoded-text (url-unhex-string selected-text)))
-        (kill-region beg end)
-        (insert decoded-text))))
-
-(defun raw-prefix-arg-p (arg)
-  (and (listp arg) (car arg)))
-
 (defun insert-agenda-week (&optional arg)
   "Insert a new week at point.  Used in personal time-clocking agenda.
 When ARG is specified, prompts for a file to add it to."
@@ -1728,4 +1733,3 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
-(put 'list-timers 'disabled nil)

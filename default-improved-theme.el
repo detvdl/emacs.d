@@ -3,7 +3,7 @@
 
 (custom-theme-set-faces
  'default-improved
- '(default ((t (:family "Go Mono" :foundry "nil" :width normal :height 140 :weight normal :slant normal :underline nil :overline nil :strike-through nil :box nil :inverse-video nil :foreground "black" :background "white" :stipple nil :inherit nil))))
+ '(default ((t (:underline nil :overline nil :strike-through nil :box nil :inverse-video nil :foreground "black" :background "white" :stipple nil :inherit nil))))
  '(cursor ((((background light)) (:background "black")) (((background dark)) (:background "white"))))
  '(fixed-pitch ((t (:family "Go Mono" :height 140 :weight regular))))
  '(variable-pitch ((t (:family "Baskerville" :height 160))))
