@@ -1199,7 +1199,15 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
 
-;; TODO: investigate https://github.com/alphapapa/magit-todos as a possible enrichment
+(use-package magit-todos
+  :ensure t
+  :after magit
+  :demand t
+  :bind (:map magit-status-mode-map
+         ("j l" . magit-todos-list))
+  :config
+  (magit-todos-mode +1)
+  (setq magit-todos-auto-group-items 5))
 
 ;;;; git diff
 ;; Visual diff feedback in the margin/gutter
