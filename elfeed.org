@@ -14,7 +14,9 @@
 **** Clojure                                                     :clojure:
 ***** [[https://adambard.com/blog/feed.xml][Adam Bard Makes Words]]
 ***** [[https://www.reddit.com/r/clojure/.rss][r/Clojure]]                                                  :reddit:
-**** [[https://www.reddit.com/r/golang/.rss][r/Golang]]                                              :golang:reddit:
+**** Golang                                                       :golang:
+***** [[https://www.reddit.com/r/golang/.rss][r/Golang]]                                                   :reddit:
+***** [[http://schier.co/rss.xml][Schier blog]]
 **** Javascript                                                       :JS:
 ***** [[https://medium.com/feed/topic/javascript][Medium:Javascript]]                                 :frontend:medium:
 ***** [[https://refind.com/feed/javascript.rss][Refind:Javascript]]                                 :frontend:refind:

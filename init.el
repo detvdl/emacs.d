@@ -1082,7 +1082,10 @@ This checks in turn:
 ;;;; Language Server Protocol (LSP)
 (use-package lsp-mode
   :ensure t
-  :commands lsp)
+  :commands lsp
+  :config
+  (setq lsp-eldoc-enable-hover t
+        lsp-eldoc-render-all t))
 
 (use-package lsp-ui
   :ensure t
@@ -1093,6 +1096,10 @@ This checks in turn:
          ([remap xref-find-references] . lsp-ui-peek-find-references)
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
+  (setq lsp-ui-doc-include-signature nil
+        lsp-ui-doc-use-childframe nil
+        lsp-ui-sideline-update-mode 'point)
+  (add-hook 'lsp-ui-mode-hook (lambda () (lsp-ui-doc-mode -1)))
   ;; Very Projectile-like way to handle short-file-names (sfn)
   ;; in lsp-ui-peek on a project-basis
   ;; Currently just copied functions from `projectile.el'
@@ -1160,10 +1167,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
         (let ((res (apply orig-fun args)))
           (file-name-nondirectory res))
       (apply orig-fun args)))
-  (advice-add 'lsp-ui--workspace-path :around 'lsp-ui-peek--truncate-filepath)
-  (setq lsp-ui-doc-include-signature t
-        lsp-eldoc-enable-hover nil
-        lsp-ui-sideline-update-mode 'point))
+  (advice-add 'lsp-ui--workspace-path :around 'lsp-ui-peek--truncate-filepath))
 
 ;; lsp-ui-sideline does not clean up its overlays when a buffer is reverted
 (add-hook 'before-revert-hook (lambda ()
@@ -1172,10 +1176,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (use-package company-lsp
   :ensure t
-  :after (lsp-mode company)
-  :commands company-lsp)
-
-(add-hook 'lsp-mode-hook #'lsp-ui-mode)
+  :after (lsp-mode company)  )
 
 ;;; [ GIT ]
 ;;;; Magit
@@ -1376,8 +1377,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :ensure t
   :mode "\\.go\\'"
   :bind (:map go-mode-map
-         ;; ([remap xref-find-definitions] . godef-jump)
-         ;; ([remap xref-pop-marker-stack] . pop-tag-mark)
          ("C-c c" . compile)
          ("C-c r" . recompile))
   :config
@@ -1387,7 +1386,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 2)
     (subword-mode +1)
-    (go-eldoc-setup)
     (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
     (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
@@ -1403,10 +1401,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
          ("C-c m" . go-test-current-file)
          ("C-c ." . go-test-current-test)
          ("C-c b" . go-run)))
-
-(use-package go-eldoc
-  :ensure t
-  :after go-mode)
 
 (use-package flycheck-gometalinter
   :ensure t
