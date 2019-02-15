@@ -131,7 +131,7 @@
 (defun get-vertical-split (&optional window)
   (let* ((window (or window (selected-window)))
          (side (window-side window))
-         (split-side (if (>= (frame-pixel-width) (/ (* 3 (x-display-pixel-width)) 4))
+         (split-side (if (>= (frame-pixel-width) (/ (* 3 (display-pixel-width)) 4))
                          'right
                        'below)))
     (if (one-window-p)
@@ -310,64 +310,68 @@ With universal ARG, splits it to the side."
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 
-(setq x-gtk-use-system-tooltips nil)
+
+(when (display-graphic-p)
+  (setq x-gtk-use-system-tooltips nil))
 
 ;; Zoom in and out using text-scale commands
 (bind-key "C--" #'text-scale-decrease global-map)
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
-(defun get-dpi (&optional frame)
-  "Get the dpi for the current FRAME."
-  (let* ((attrs (frame-monitor-attributes frame))
-         (size-x (cadr (assoc 'mm-size attrs)))
-         (res (cdr (assoc 'geometry attrs)))
-         (res-h (x-display-pixel-height)))
-    (when (or (not size-x)
-              (> size-x 1000))
-      nil)
-    (* (/ (float res-h) size-x) 25.4)))
+(defvar font-height (face-attribute 'default :height))
+(when (display-graphic-p)
+  (defun get-dpi (&optional frame)
+    "Get the dpi for the current FRAME."
+    (let* ((attrs (frame-monitor-attributes frame))
+           (size-x (cadr (assoc 'mm-size attrs)))
+           (res (cdr (assoc 'geometry attrs)))
+           (res-h (display-pixel-height)))
+      (when (or (not size-x)
+                (> size-x 1000))
+        nil)
+      (* (/ (float res-h) size-x) 25.4)))
 
-(defun get-optimal-font-height (&optional frame)
-  "Get the optimal font-height for a given FRAME using DPI."
-  (let ((dpi (get-dpi frame)))
-    (cond ((< dpi 120) 110)
-          ((< dpi 150) 120)
-          ((< dpi 160) 130)
-          (t 140))))
+  (defun get-optimal-font-height (&optional frame)
+    "Get the optimal font-height for a given FRAME using DPI."
+    (let ((dpi (get-dpi frame)))
+      (cond ((< dpi 120) 110)
+            ((< dpi 150) 120)
+            ((< dpi 160) 130)
+            (t 140))))
 
-(defvar font-height (get-optimal-font-height))
-(defconst font-size (/ font-height 10))
-(defconst font-weight 'regular)
-(defconst fixed-font-family "Go Mono")
-(defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
-(defconst var-font-family "Baskerville")
-(defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
+  (setq font-height (get-optimal-font-height))
+  (defconst font-size (/ font-height 10))
+  (defconst font-weight 'regular)
+  (defconst fixed-font-family "Go Mono")
+  (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
+  (defconst var-font-family "Baskerville")
+  (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
 
-(defun set-fonts ()
-  "Set the fonts for the given FRAME."
-  (interactive)
-  (let* ((font-h (get-optimal-font-height (selected-frame)))
-         (font-size (/ font-height 10))
-         (font-weight font-weight)
-         (fixed-font-family fixed-font-family)
-         (font-str (format "%s-%s:%s"
-                           fixed-font-family
-                           font-size
-                           font-weight))
-         (font-fixed `(:family ,fixed-font-family
-                       :height ,font-h
-                       :weight ,font-weight))
-         (font-var `(:family ,var-font-family
-                     :height ,(+ font-height 20))))
-    (set-frame-font font-str nil t)
-    (apply 'set-face-attribute `(default nil ,@font-fixed))
-    (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
-    (apply 'set-face-attribute `(line-number nil ,@font-fixed))
-    (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
-    (setq line-spacing 0.1)))
+  (defun set-fonts ()
+    "Set the fonts for the given FRAME."
+    (interactive)
+    (let* ((font-h (get-optimal-font-height (selected-frame)))
+           (font-size (/ font-height 10))
+           (font-weight font-weight)
+           (fixed-font-family fixed-font-family)
+           (font-str (format "%s-%s:%s"
+                             fixed-font-family
+                             font-size
+                             font-weight))
+           (font-fixed `(:family ,fixed-font-family
+                         :height ,font-h
+                         :weight ,font-weight))
+           (font-var `(:family ,var-font-family
+                       :height ,(+ font-height 20))))
+      (set-frame-font font-str nil t)
+      (apply 'set-face-attribute `(default nil ,@font-fixed))
+      (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
+      (apply 'set-face-attribute `(line-number nil ,@font-fixed))
+      (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
+      (setq line-spacing 0.1)))
 
-;; (funcall-interactively #'set-fonts)
+  (funcall-interactively #'set-fonts))
 
 (setq inhibit-compacting-font-caches t)
 
@@ -497,7 +501,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (delight 'auto-revert-mode nil t)
 
 ;;;; Clipboard
-(when *is-linux*
+(when (and *is-linux*
+           (display-graphic-p))
   (setq x-select-enable-clipboard t))
 (setq select-active-regions t)
 (setq save-interprogram-paste-before-kill 1)
