@@ -7,18 +7,18 @@
 			             ("melpa" . "https://melpa.org/packages/")
 			             ("org" . "http://orgmode.org/elpa/")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
-      package-enable-at-startup nil
       package--init-file-ensured t
       package-check-signature nil)
 
 ;;;; Use-package
-;; Install use-package and its sub-packages/necessary packages for some of its extra features
 (require 'package)
 
 (when (eval-when-compile (version< emacs-version "27"))
+  (setq package-enable-at-startup nil)
   (unless package--initialized
     (package-initialize)))
 
+;; Install use-package and its sub-packages/necessary packages for some of its extra features
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package)
@@ -26,6 +26,7 @@
 
 (setq use-package-always-ensure nil)
 
+;; TODO: figure out why this is "slow"
 (use-package delight :ensure t)
 (use-package bind-key :ensure t)
 
@@ -77,14 +78,12 @@
 
 ;;; [ FUNCTIONS ]
 ;;;; General
-;;;###autoload
 (defun start-emacs ()
   "Start Emacs from within Emacs!"
   (interactive)
   (call-process (executable-find "emacs") nil 0 nil))
 (bind-key "C-c m" #'start-emacs global-map)
 
-;;;###autoload
 (defun open-init-file ()
   "Quickly jump to the Emacs init file."
   (interactive)
@@ -233,7 +232,8 @@ With universal ARG, splits it to the side."
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
           "LOMBOK_JAR"
-          "GOPATH"))
+          "GOPATH")
+        exec-path-from-shell-arguments nil)
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
@@ -285,10 +285,12 @@ With universal ARG, splits it to the side."
 
 ;;; [ UI ]
 ;;;; GUI
-;; Remove unnecessary cruft from the GUI application (and then add line-number cruft)
-(tool-bar-mode -1)
-(menu-bar-mode -1)
-(scroll-bar-mode -1)
+;; Remove unnecessary cruft from the GUI application
+;; Mode-based disabling, eg. `(tool-bar-mode -1)' seemed very slow when profiling
+;; so modifying the `default-frame-alist' is the alternative
+(push '(tool-bar-lines . 0) default-frame-alist)
+(push '(menu-bar-lines . 0) default-frame-alist)
+(push '(vertical-scroll-bars . nil) default-frame-alist)
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 
@@ -299,7 +301,7 @@ With universal ARG, splits it to the side."
 
 (column-number-mode)
 
-(setq inhibit-splash-screen nil)
+(setq inhibit-splash-screen t)
 (setq ring-bell-function 'ignore)
 
 (setq-default indicate-empty-lines t)
@@ -310,7 +312,6 @@ With universal ARG, splits it to the side."
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 
-
 (when (display-graphic-p)
   (setq x-gtk-use-system-tooltips nil))
 
@@ -320,58 +321,58 @@ With universal ARG, splits it to the side."
 
 ;;;; Fonts
 (defvar font-height (face-attribute 'default :height))
-(when (display-graphic-p)
-  (defun get-dpi (&optional frame)
-    "Get the dpi for the current FRAME."
-    (let* ((attrs (frame-monitor-attributes frame))
-           (size-x (cadr (assoc 'mm-size attrs)))
-           (res (cdr (assoc 'geometry attrs)))
-           (res-h (display-pixel-height)))
-      (when (or (not size-x)
-                (> size-x 1000))
-        nil)
-      (* (/ (float res-h) size-x) 25.4)))
+;; (when (display-graphic-p)
+;;   (defun get-dpi (&optional frame)
+;;     "Get the dpi for the current FRAME."
+;;     (let* ((attrs (frame-monitor-attributes frame))
+;;            (size-x (cadr (assoc 'mm-size attrs)))
+;;            (res (cdr (assoc 'geometry attrs)))
+;;            (res-h (display-pixel-height)))
+;;       (when (or (not size-x)
+;;                 (> size-x 1000))
+;;         nil)
+;;       (* (/ (float res-h) size-x) 25.4)))
 
-  (defun get-optimal-font-height (&optional frame)
-    "Get the optimal font-height for a given FRAME using DPI."
-    (let ((dpi (get-dpi frame)))
-      (cond ((< dpi 120) 110)
-            ((< dpi 150) 120)
-            ((< dpi 160) 130)
-            (t 140))))
+;;   (defun get-optimal-font-height (&optional frame)
+;;     "Get the optimal font-height for a given FRAME using DPI."
+;;     (let ((dpi (get-dpi frame)))
+;;       (cond ((< dpi 120) 110)
+;;             ((< dpi 150) 120)
+;;             ((< dpi 160) 130)
+;;             (t 140))))
 
-  (setq font-height (get-optimal-font-height))
-  (defconst font-size (/ font-height 10))
-  (defconst font-weight 'regular)
-  (defconst fixed-font-family "Go Mono")
-  (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
-  (defconst var-font-family "Baskerville")
-  (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
+;;   (setq font-height (get-optimal-font-height))
+;;   (defconst font-size (/ font-height 10))
+;;   (defconst font-weight 'regular)
+;;   (defconst fixed-font-family "Go Mono")
+;;   (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
+;;   (defconst var-font-family "Baskerville")
+;;   (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
 
-  (defun set-fonts ()
-    "Set the fonts for the given FRAME."
-    (interactive)
-    (let* ((font-h (get-optimal-font-height (selected-frame)))
-           (font-size (/ font-height 10))
-           (font-weight font-weight)
-           (fixed-font-family fixed-font-family)
-           (font-str (format "%s-%s:%s"
-                             fixed-font-family
-                             font-size
-                             font-weight))
-           (font-fixed `(:family ,fixed-font-family
-                         :height ,font-h
-                         :weight ,font-weight))
-           (font-var `(:family ,var-font-family
-                       :height ,(+ font-height 20))))
-      (set-frame-font font-str nil t)
-      (apply 'set-face-attribute `(default nil ,@font-fixed))
-      (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
-      (apply 'set-face-attribute `(line-number nil ,@font-fixed))
-      (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
-      (setq line-spacing 0.1)))
+;;   (defun set-fonts ()
+;;     "Set the fonts for the given FRAME."
+;;     (interactive)
+;;     (let* ((font-h (get-optimal-font-height (selected-frame)))
+;;            (font-size (/ font-height 10))
+;;            (font-weight font-weight)
+;;            (fixed-font-family fixed-font-family)
+;;            (font-str (format "%s-%s:%s"
+;;                              fixed-font-family
+;;                              font-size
+;;                              font-weight))
+;;            (font-fixed `(:family ,fixed-font-family
+;;                          :height ,font-h
+;;                          :weight ,font-weight))
+;;            (font-var `(:family ,var-font-family
+;;                        :height ,(+ font-height 20))))
+;;       (set-frame-font font-str nil t)
+;;       (apply 'set-face-attribute `(default nil ,@font-fixed))
+;;       (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
+;;       (apply 'set-face-attribute `(line-number nil ,@font-fixed))
+;;       (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
+;;       (setq line-spacing 0.1)))
 
-  (funcall-interactively #'set-fonts))
+;;   (funcall-interactively #'set-fonts))
 
 (setq inhibit-compacting-font-caches t)
 
@@ -420,7 +421,6 @@ With universal ARG, splits it to the side."
 (bind-key "C-, t" #'toggle-theme global-map)
 
 ;; (funcall-interactively #'disable-all-themes)
-;; (funcall-interactively #'load-dark-theme)
 
 (setq-default left-margin-width 2)
 (setq-default fringes-outside-margins t)
@@ -436,6 +436,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (which-function-mode)
 
 ;;;; Window/frame Management
+;; TODO: optimize by autoloading needed commands + binds
 (use-package eyebrowse
   :ensure t
   :config
@@ -491,6 +492,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;;; Undo/Redo
 (use-package undo-tree
   :ensure t
+  :defer 1
   :delight
   :config
   (global-undo-tree-mode +1))
@@ -1063,16 +1065,16 @@ This checks in turn:
 
 ;;; [ COMPLETION ]
 ;;;; Snippets
-;; (use-package yasnippet
-;;   :if (not noninteractive)
-;;   :ensure t
-;;   :delight yas-minor-mode
-;;   :commands (yas-reload-all yas-minor-mode)
-;;   :hook (prog-mode . yas-minor-mode))
+(use-package yasnippet
+  :if (not noninteractive)
+  :ensure t
+  :delight yas-minor-mode
+  :commands (yas-reload-all yas-minor-mode)
+  :hook (prog-mode . yas-minor-mode))
 
-;; (use-package yasnippet-snippets
-;;   :ensure t
-;;   :after yasnippet)
+(use-package yasnippet-snippets
+  :ensure t
+  :after yasnippet)
 
 ;;;; Company
 (use-package company
@@ -1238,6 +1240,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 ;;;; git diff
 ;; Visual diff feedback in the margin/gutter
+;; TODO: optimize by only loading in vc checked-in files
 (use-package diff-hl
   :ensure t
   :config
