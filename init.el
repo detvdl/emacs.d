@@ -15,14 +15,15 @@
 ;; Install use-package and its sub-packages/necessary packages for some of its extra features
 (require 'package)
 
-(unless package--initialized
-  (package-initialize))
+(when (eval-when-compile (version< emacs-version "27"))
+  (unless package--initialized
+    (package-initialize)))
 
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
-  (package-install 'use-package))
+  (package-install 'use-package)
+  (require 'use-package))
 
-(require 'use-package)
 (setq use-package-always-ensure nil)
 
 (use-package delight :ensure t)
@@ -76,10 +77,19 @@
 
 ;;; [ FUNCTIONS ]
 ;;;; General
+;;;###autoload
 (defun start-emacs ()
   "Start Emacs from within Emacs!"
   (interactive)
   (call-process (executable-find "emacs") nil 0 nil))
+(bind-key "C-c m" #'start-emacs global-map)
+
+;;;###autoload
+(defun open-init-file ()
+  "Quickly jump to the Emacs init file."
+  (interactive)
+  (find-file user-init-file))
+(bind-key "C-c i" #'open-init-file global-map)
 
 ;; Handy functions to URL-encode/-decode a region
 (defun url-encode-region (beg end)
@@ -230,6 +240,7 @@ With universal ARG, splits it to the side."
 ;;;; Multi-Term
 (use-package multi-term
   :ensure t
+  :commands (multi-term-get-buffer multi-term)
   :config
   (setq term-scroll-to-bottom-on-output t
         term-scroll-show-maximum-output t
@@ -244,12 +255,14 @@ With universal ARG, splits it to the side."
 (defun multi-term-popup (&optional arg)
   (interactive "P")
   (buffer-popup 'term-mode (buffer-name (multi-term-get-buffer)) 'display-buffer-fullframe-v1 'multi-term))
+
 (defun multi-term-toggle ()
   (interactive)
   (if (and (eq major-mode 'term-mode)
            (string-match "*terminal*" (buffer-name)))
       (funcall 'popup-bury-buffer)
     (funcall 'multi-term-popup)))
+
 (bind-key "C-c t" #'multi-term-toggle global-map)
 (with-eval-after-load 'term
   (bind-key "C-c t" #'multi-term-toggle term-raw-map)
@@ -260,12 +273,14 @@ With universal ARG, splits it to the side."
 (defun eshell-popup (&optional arg)
   (interactive "P")
   (buffer-popup 'eshell-mode "*eshell-mode*" 'display-buffer-fullframe-v1))
+
 (defun eshell-toggle ()
   (interactive)
   (if (eq (with-current-buffer (current-buffer) major-mode)
           'eshell-mode)
       (funcall 'popup-bury-buffer)
     (funcall 'eshell-popup)))
+
 (bind-key "C-x t" #'eshell-toggle global-map)
 
 ;;; [ UI ]
@@ -352,7 +367,7 @@ With universal ARG, splits it to the side."
     (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
     (setq line-spacing 0.1)))
 
-(funcall-interactively #'set-fonts)
+;; (funcall-interactively #'set-fonts)
 
 (setq inhibit-compacting-font-caches t)
 
@@ -368,12 +383,12 @@ With universal ARG, splits it to the side."
    'leuven
    '(org-hide ((t (:foreground "#FFFFFF"))))))
 
-(use-package zenburn-theme
-  :ensure t
-  :defer t
-  :custom
-  (zenburn-override-colors-alist '(("zenburn-bg" . "#151515")
-                                   ("zenburn-bg+1" . "#222222"))))
+;; (use-package zenburn-theme
+;;   :ensure t
+;;   :defer t
+;;   :custom
+;;   (zenburn-override-colors-alist '(("zenburn-bg" . "#151515")
+;;                                    ("zenburn-bg+1" . "#222222"))))
 
 (defun disable-all-themes ()
   "Disable all currently active themes."
@@ -400,7 +415,8 @@ With universal ARG, splits it to the side."
 
 (bind-key "C-, t" #'toggle-theme global-map)
 
-(funcall-interactively #'load-dark-theme)
+;; (funcall-interactively #'disable-all-themes)
+;; (funcall-interactively #'load-dark-theme)
 
 (setq-default left-margin-width 2)
 (setq-default fringes-outside-margins t)
@@ -639,15 +655,16 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
-(use-package ivy-rich
-  :ensure t
-  :after ivy
-  :init (setq ivy-rich-parse-remote-file-path t)
-  :config (ivy-rich-mode 1))
+;; (use-package ivy-rich
+;;   :ensure t
+;;   :after ivy
+;;   :init (setq ivy-rich-parse-remote-file-path t)
+;;   :config (ivy-rich-mode 1))
 
 ;;;; Shackle
 (use-package shackle
-  :ensure t)
+  :ensure t
+  :defer t)
 
 ;;;; Outlining
 (use-package outshine
@@ -719,7 +736,11 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;;; [ NEWS & IRC ]
 (use-package elfeed
   :ensure t
+  :defer t
   :bind ("C-x w" . #'elfeed--toggle-wconf)
+  :commands (elfeed-search-buffer
+             elfeed-search-mode
+             elfeed-search-show-entry)
   :config
   (setq elfeed-show-entry-switch #'elfeed--view-other-window
         elfeed-show-entry-delete #'delete-window))
@@ -733,8 +754,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 
 (use-package elfeed-org
   :ensure t
-  :config
-  (elfeed-org))
+  :commands (elfeed-org))
 
 (defvar my--previous-eyebrowse-wconf nil)
 
@@ -778,6 +798,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
         (eyebrowse-switch-to-window-config elfconf)
       (with-current-buffer (get-buffer-create (elfeed-search-buffer))
         (unless (eq major-mode 'elfeed-search-mode)
+          (elfeed-org)
           (elfeed-search-mode))
         (eyebrowse-create-window-config)
         (switch-to-buffer (current-buffer))
@@ -791,8 +812,9 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
       (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
     (elfeed--open-or-switch-to-wconf)))
 
-(bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
-(bind-key "q" #'delete-window elfeed-show-mode-map)
+(with-eval-after-load "elfeed"
+  (bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
+  (bind-key "q" #'delete-window elfeed-show-mode-map))
 
 ;;; [ PROGRAMMING TOOLS ]
 ;;;; Comment Keywords
@@ -1036,30 +1058,29 @@ This checks in turn:
 
 ;;; [ COMPLETION ]
 ;;;; Snippets
-(use-package yasnippet
-  :if (not noninteractive)
-  :ensure t
-  :delight yas-minor-mode
-  :commands (yas-reload-all yas-minor-mode)
-  :hook (prog-mode . yas-minor-mode))
+;; (use-package yasnippet
+;;   :if (not noninteractive)
+;;   :ensure t
+;;   :delight yas-minor-mode
+;;   :commands (yas-reload-all yas-minor-mode)
+;;   :hook (prog-mode . yas-minor-mode))
 
-(use-package yasnippet-snippets
-  :ensure t
-  :after yasnippet)
+;; (use-package yasnippet-snippets
+;;   :ensure t
+;;   :after yasnippet)
 
 ;;;; Company
 (use-package company
   :ensure t
   :delight company-mode
   :bind (("M-\\" . company-select-next))
-  :demand
+  :hook ((org-mode prog-mode) . company-mode)
   :config
   (setq company-idle-delay 0.5
         company-tooltip-limit 10
         company-minimum-prefix-length 2
         company-tooltip-flip-when-above t
-        company-tooltip-align-annotations t)
-  (global-company-mode 1))
+        company-tooltip-align-annotations t))
 
 (use-package company-quickhelp
   :ensure t
@@ -1225,6 +1246,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 ;; Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 (use-package ediff
   :ensure t
+  :defer t
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
@@ -1704,6 +1726,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (add-hook 'restclient-mode-hook (lambda () (company:add-local-backend 'company-restclient))))
 
 (use-package ob-restclient
+  :after org
   :ensure t)
 
 ;;; [ MISCELLANEOUS ]
