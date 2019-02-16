@@ -301,7 +301,9 @@ With universal ARG, splits it to the side."
 
 (column-number-mode)
 
-(setq inhibit-splash-screen t)
+(setq inhibit-splash-screen nil)
+(setq initial-major-mode 'fundamental-mode)
+(setq initial-scratch-message nil)
 (setq ring-bell-function 'ignore)
 
 (setq-default indicate-empty-lines t)
@@ -1238,11 +1240,11 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (magit-todos-mode +1)
   (setq magit-todos-auto-group-items 5))
 
-;;;; git diff
+;;;; Git Diff
 ;; Visual diff feedback in the margin/gutter
-;; TODO: optimize by only loading in vc checked-in files
 (use-package diff-hl
   :ensure t
+  :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
   (set-face-attribute 'diff-hl-delete nil :height font-height)
@@ -1250,6 +1252,9 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (global-diff-hl-mode +1)
   (diff-hl-flydiff-mode +1)
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+;; Only load the diff-hl package once we actually visit a file
+;; This hook gets added by global-diff-hl mode anyway
+(add-hook 'find-file-hook #'diff-hl-update)
 
 ;; Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 (use-package ediff
