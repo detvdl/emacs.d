@@ -322,80 +322,66 @@ With universal ARG, splits it to the side."
 (bind-key "C-+" #'text-scale-increase global-map)
 
 ;;;; Fonts
+(setq font-use-system-font t)
 (defvar font-height (face-attribute 'default :height))
-(when (display-graphic-p)
-  (defun get-dpi (&optional frame)
-    "Get the dpi for the current FRAME."
-    (let* ((attrs (frame-monitor-attributes frame))
-           (size-x (cadr (assoc 'mm-size attrs)))
-           (res (cdr (assoc 'geometry attrs)))
-           (res-h (display-pixel-height)))
-      (when (or (not size-x)
-                (> size-x 1000))
-        nil)
-      (* (/ (float res-h) size-x) 25.4)))
+;; (when (display-graphic-p)
+;;   (defun get-dpi (&optional frame)
+;;     "Get the dpi for the current FRAME."
+;;     (let* ((attrs (frame-monitor-attributes frame))
+;;            (size-x (cadr (assoc 'mm-size attrs)))
+;;            (res (cdr (assoc 'geometry attrs)))
+;;            (res-h (display-pixel-height)))
+;;       (when (or (not size-x)
+;;                 (> size-x 1000))
+;;         nil)
+;;       (* (/ (float res-h) size-x) 25.4)))
 
-  (defun get-optimal-font-height (&optional frame)
-    "Get the optimal font-height for a given FRAME using DPI."
-    (let ((dpi (get-dpi frame)))
-      (cond ((< dpi 120) 110)
-            ((< dpi 150) 120)
-            ((< dpi 160) 130)
-            (t 140))))
+;;   (defun get-optimal-font-height (&optional frame)
+;;     "Get the optimal font-height for a given FRAME using DPI."
+;;     (let ((dpi (get-dpi frame)))
+;;       (cond ((< dpi 120) 110)
+;;             ((< dpi 150) 120)
+;;             ((< dpi 160) 130)
+;;             (t 140))))
 
-  (setq font-height (get-optimal-font-height))
-  (defconst font-size (/ font-height 10))
-  (defconst font-weight 'regular)
-  (defconst fixed-font-family "Go Mono")
-  (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
-  (defconst var-font-family "Baskerville")
-  (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
+;;   (setq font-height (get-optimal-font-height))
+;;   (defconst font-size (/ font-height 10))
+;;   (defconst font-weight 'regular)
+;;   (defconst fixed-font-family "Go Mono")
+;;   (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
+;;   (defconst var-font-family "Baskerville")
+;;   (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
 
-  (defun set-fonts ()
-    "Set the fonts for the given FRAME."
-    (interactive)
-    (let* ((font-h (get-optimal-font-height (selected-frame)))
-           (font-size (/ font-height 10))
-           (font-weight font-weight)
-           (fixed-font-family fixed-font-family)
-           (font-str (format "%s-%s:%s"
-                             fixed-font-family
-                             font-size
-                             font-weight))
-           (font-fixed `(:family ,fixed-font-family
-                         :height ,font-h
-                         :weight ,font-weight))
-           (font-var `(:family ,var-font-family
-                       :height ,(+ font-height 20))))
-      (set-frame-font font-str nil t)
-      (apply 'set-face-attribute `(default nil ,@font-fixed))
-      ;; (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
-      ;; (apply 'set-face-attribute `(line-number nil ,@font-fixed))
-      (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
-      (setq line-spacing 0.1)))
+;;   (defun set-fonts ()
+;;     "Set the fonts for the given FRAME."
+;;     (interactive)
+;;     (let* ((font-h (get-optimal-font-height (selected-frame)))
+;;            (font-size (/ font-height 10))
+;;            (font-weight font-weight)
+;;            (fixed-font-family fixed-font-family)
+;;            (font-str (format "%s-%s:%s"
+;;                              fixed-font-family
+;;                              font-size
+;;                              font-weight))
+;;            (font-fixed `(:family ,fixed-font-family
+;;                          :height ,font-h
+;;                          :weight ,font-weight))
+;;            (font-var `(:family ,var-font-family
+;;                        :height ,(+ font-height 20))))
+;;       (set-frame-font font-str nil t)
+;;       (apply 'set-face-attribute `(default nil ,@font-fixed))
+;;       ;; (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
+;;       ;; (apply 'set-face-attribute `(line-number nil ,@font-fixed))
+;;       (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
+;;       (setq line-spacing 0.1)))
 
-  (funcall-interactively #'set-fonts))
+;;   (funcall-interactively #'set-fonts))
 
 (setq inhibit-compacting-font-caches t)
 
 ;;;; Theme
 (defconst light-theme 'default-improved)
-(defconst dark-theme 'zenburn)
-
-(use-package leuven-theme
-  :ensure t
-  :defer t
-  :config
-  (custom-theme-set-faces
-   'leuven
-   '(org-hide ((t (:foreground "#FFFFFF"))))))
-
-;; (use-package zenburn-theme
-;;   :ensure t
-;;   :defer t
-;;   :custom
-;;   (zenburn-override-colors-alist '(("zenburn-bg" . "#151515")
-;;                                    ("zenburn-bg+1" . "#222222"))))
+(defconst dark-theme 'manoj-dark)
 
 (defun disable-all-themes ()
   "Disable all currently active themes."
@@ -406,13 +392,15 @@ With universal ARG, splits it to the side."
   "Load the dark theme of the week."
   (interactive)
   (funcall-interactively #'disable-all-themes)
-  (load-theme 'zenburn t))
+  (load-theme dark-theme t)
+  (custom-theme-set-faces
+   'manoj-dark
+   '(hl-line ((t (:foreground nil :background "blue2"))))))
 
 (defun load-light-theme ()
   "Load the default light theme (disable all active themes)."
   (interactive)
-  (funcall-interactively #'disable-all-themes)
-  (load-theme 'default-improved t))
+  (funcall-interactively #'disable-all-themes))
 
 (defun toggle-theme ()
   (interactive)
