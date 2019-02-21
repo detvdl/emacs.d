@@ -45,6 +45,7 @@
 (defconst *line-numbers-on* -1)
 
 ;; Directories
+(setq default-directory "~/")
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 
@@ -227,13 +228,13 @@ With universal ARG, splits it to the side."
   :ensure t
   :config
   (setq exec-path-from-shell-variables
-        '("PATH" "MANPATH"
+        '("HOME" "PATH" "MANPATH"
           "PAGER" "TERM"
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
           "LOMBOK_JAR"
           "GOPATH")
-        exec-path-from-shell-arguments nil)
+        exec-path-from-shell-arguments '("-l" "-i"))
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
