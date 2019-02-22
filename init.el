@@ -494,9 +494,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (delight 'auto-revert-mode nil t)
 
 ;;;; Clipboard
-(when (and *is-linux*
-           (display-graphic-p))
-  (setq x-select-enable-clipboard t))
+(setq select-enable-clipboard t)
 (setq select-active-regions t)
 (setq save-interprogram-paste-before-kill 1)
 (setq yank-pop-change-selection t)
@@ -515,7 +513,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :bind ("M-o" . ace-window)
   :config
   (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
-        aw-scope 'frame
+        aw-scope 'global
         aw-ignore-current t
         aw-dispatch-always nil))
 
