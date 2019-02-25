@@ -380,39 +380,7 @@ With universal ARG, splits it to the side."
 
 (setq inhibit-compacting-font-caches t)
 
-;;;; Theme
-(defconst light-theme 'default-improved)
-(defconst dark-theme 'manoj-dark)
-
-(defun disable-all-themes ()
-  "Disable all currently active themes."
-  (interactive)
-  (mapc #'disable-theme custom-enabled-themes))
-
-(defun load-dark-theme ()
-  "Load the dark theme of the week."
-  (interactive)
-  (funcall-interactively #'disable-all-themes)
-  (load-theme dark-theme t)
-  (custom-theme-set-faces
-   'manoj-dark
-   '(hl-line ((t (:foreground nil :background "blue2"))))))
-
-(defun load-light-theme ()
-  "Load the default light theme (disable all active themes)."
-  (interactive)
-  (funcall-interactively #'disable-all-themes))
-
-(defun toggle-theme ()
-  (interactive)
-  (if (memq dark-theme custom-enabled-themes)
-      (funcall-interactively #'load-light-theme)
-    (funcall-interactively #'load-dark-theme)))
-
-(bind-key "C-, t" #'toggle-theme global-map)
-
-;; (funcall-interactively #'disable-all-themes)
-
+;;;; GUI
 (setq-default left-margin-width 2)
 (setq-default fringes-outside-margins t)
 (defun refresh-new-frame-buffer (frame)
@@ -1728,6 +1696,35 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (use-package ob-restclient
   :after org
   :ensure t)
+
+;;; [ THEMING ]
+;;;; Theme
+(defconst light-theme 'default-improved)
+(defconst dark-theme 'manoj-dark-improved)
+
+(defun disable-all-themes ()
+  "Disable all currently active themes."
+  (interactive)
+  (mapc #'disable-theme custom-enabled-themes))
+
+(defun load-dark-theme ()
+  "Load the dark theme of the week."
+  (interactive)
+  (funcall-interactively #'disable-all-themes)
+  (load-theme dark-theme t))
+
+(defun load-light-theme ()
+  "Load the default light theme (disable all active themes)."
+  (interactive)
+  (funcall-interactively #'disable-all-themes))
+
+(defun toggle-theme ()
+  (interactive)
+  (if (memq dark-theme custom-enabled-themes)
+      (funcall-interactively #'load-light-theme)
+    (funcall-interactively #'load-dark-theme)))
+
+(bind-key "C-, t" #'toggle-theme global-map)
 
 ;;; [ MISCELLANEOUS ]
 (defun insert-agenda-week (&optional arg)
