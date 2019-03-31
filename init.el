@@ -1,6 +1,6 @@
 ;; -*- lexical-binding: t -*-
 
-;;; [ PACKAGING ]
+;;; [== PACKAGING ==]
 ;;;; Package archives
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
@@ -36,7 +36,7 @@
 (use-package dash
   :ensure t)
 
-;;; [ ENVIRONMENT ]
+;;; [== ENVIRONMENT ==]
 ;;;; Custom Variables
 ;; Constants
 (defconst *is-mac* (eq system-type 'darwin))
@@ -64,7 +64,7 @@
                '(ns-transparent-titlebar . t)))
 
 
-;;; [ PATHS & FILES ]
+;;; [== PATHS & FILES ==]
 ;;;; Load path initialization
 (push emacs-theme-dir custom-theme-load-path)
 (dolist (dir (directory-files emacs-theme-dir))
@@ -77,7 +77,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;;; [ FUNCTIONS ]
+;;; [== FUNCTIONS ==]
 ;;;; General
 (defun start-emacs ()
   "Start Emacs from within Emacs!"
@@ -221,7 +221,7 @@ With universal ARG, splits it to the side."
   (interactive "P")
   (funcall popup--bury-buffer-function kill-buffer))
 
-;;; [ SHELL ]
+;;; [== SHELL ==]
 ;;;; Environment Variables
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -284,7 +284,7 @@ With universal ARG, splits it to the side."
 
 (bind-key "C-x t" #'eshell-toggle global-map)
 
-;;; [ UI ]
+;;; [== UI ==]
 ;;;; GUI
 ;; Remove unnecessary cruft from the GUI application
 ;; Mode-based disabling, eg. `(tool-bar-mode -1)' seemed very slow when profiling
@@ -377,7 +377,7 @@ With universal ARG, splits it to the side."
 ;;       (setq line-spacing 0.1)))
 
 ;;   (funcall-interactively #'set-fonts))
-
+(set-frame-font "Terminus-14:regular")
 (setq inhibit-compacting-font-caches t)
 
 ;;;; GUI
@@ -402,7 +402,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (setq eyebrowse-new-workspace #'delete-other-windows)
   (eyebrowse-mode t))
 
-;;; [ EDITOR ]
+;;; [== EDITOR ==]
 ;;;; General
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
@@ -642,7 +642,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :config
   (setq outshine-startup-folded-p nil))
 
-;;; [ ORG-MODE ]
+;;; [== ORG-MODE ==]
 ;;;; General
 ;; Install org from org-plus-contrib!
 (use-package org
@@ -697,7 +697,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
-;;; [ NEWS & IRC ]
+;;; [== NEWS & IRC ==]
 (use-package elfeed
   :ensure t
   :defer t
@@ -780,7 +780,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   (bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
   (bind-key "q" #'delete-window elfeed-show-mode-map))
 
-;;; [ PROGRAMMING TOOLS ]
+;;; [== PROGRAMMING TOOLS ==]
 ;;;; Comment Keywords
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
@@ -870,7 +870,17 @@ This functions should be added to the hooks of major modes for programming."
   :ensure t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
 
-;;;; Documentation
+;;;; Movement
+(use-package avy
+  :ensure t
+  :bind (("M-n l" . avy-goto-line)
+         ("M-n c" . avy-goto-char)
+         ("M-n f" . avy-goto-char-2)
+         ("M-n w" . avy-goto-word-1))
+  :config
+  (avy-setup-default))
+
+;;;; Documentationp
 ;; Always enable eldoc
 (global-eldoc-mode +1)
 (delight 'eldoc-mode nil t)
@@ -1020,7 +1030,7 @@ This checks in turn:
 (bind-key "M-?" 'xref-find-references prog-mode-map)
 (bind-key "M-[" 'describe-thing-at-point prog-mode-map)
 
-;;; [ COMPLETION ]
+;;; [== COMPLETION ==]
 ;;;; Snippets
 (use-package yasnippet
   :if (not noninteractive)
@@ -1163,7 +1173,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :ensure t
   :after (lsp-mode company)  )
 
-;;; [ GIT ]
+;;; [== GIT ==]
 ;;;; Magit
 (use-package magit
   :ensure t
@@ -1218,7 +1228,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
-;;; [ LANGUAGES ]
+;;; [== LANGUAGES ==]
 ;;;; Shell Script
 ;; Enable shell-script mode for zshell configuration files
 (let ((shell-files '("zprofile" "zshenv" "zshrc" "zlogin" "zlogout" "zpreztorc")))
@@ -1621,7 +1631,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (defun my--js2-mode-hook ()
     (setq-local electric-layout-rules '((?\; . after)))
     (setq mode-name "JS2"
-          js-indent-level 2))
+          js-indent-level 4))
   (add-hook 'js2-mode-hook 'my--js2-mode-hook)
   (js2-imenu-extras-mode +1))
 
@@ -1658,7 +1668,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
          ("C-; i" . tide-organize-imports)
          ("C-; f" . tide-fix))
   :config
-  (setq typescript-indent-level 2))
+  (setq typescript-indent-level 4))
 
 ;;;; Markdown
 (use-package markdown-mode
@@ -1697,9 +1707,10 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :after org
   :ensure t)
 
-;;; [ THEMING ]
+;;; [== THEMING ==]
 ;;;; Theme
-(defconst light-theme 'default-improved)
+(global-font-lock-mode -1)
+(defconst light-theme 'default-acme-improved)
 (defconst dark-theme 'manoj-dark-improved)
 
 (defun disable-all-themes ()
@@ -1714,9 +1725,10 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (load-theme dark-theme t))
 
 (defun load-light-theme ()
-  "Load the default light theme (disable all active themes)."
+  "Load the default light theme."
   (interactive)
-  (funcall-interactively #'disable-all-themes))
+  (funcall-interactively #'disable-all-themes)
+  (load-theme 'default-improved t))
 
 (defun toggle-theme ()
   (interactive)
@@ -1726,7 +1738,9 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (bind-key "C-, t" #'toggle-theme global-map)
 
-;;; [ MISCELLANEOUS ]
+(load-light-theme)
+
+;;; [== MISCELLANEOUS ==]
 (defun insert-agenda-week (&optional arg)
   "Insert a new week at point.  Used in personal time-clocking agenda.
 When ARG is specified, prompts for a file to add it to."
