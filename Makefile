@@ -3,6 +3,12 @@ MKFILE_DIR := $(dir $(MKFILE_PATH))
 PROF_DIR := $(abspath git/profile-dotemacs)
 PROF_FILE := $(addprefix $(PROF_DIR)/,profile-dotemacs.el)
 
+.PHONY: help
+help:
+	@echo "Please use \`make <target>' where <target> is one of"
+	@echo "  profile    to profile the current init.el startup file"
+
+.PHONY: profile
 profile: | $(PROF_FILE)
 	emacs -Q -l $(PROF_FILE) \
 	--eval "(progn (package-initialize) \
@@ -10,13 +16,8 @@ profile: | $(PROF_FILE)
 		(setq load-file-name \"$(abspath init.el)\")))" \
 	-f profile-dotemacs
 
-.ONESHELL:
-$(PROF_FILE): | $(PROF_DIR)
+$(PROF_FILE):
 ifeq (,$(wildcard $(PROF_FILE)))
-	cd $(PROF_DIR) ; \
-	curl "http://www.randomsample.de/profile-dotemacs.el" -o profile-dotemacs.el ; \
-	cd $(MKFILE_DIR)
-endif
-
-$(PROF_DIR):
 	mkdir -p $(PROF_DIR)
+	wget -O $(PROF_FILE) "http://www.randomsample.de/profile-dotemacs.el"
+endif

@@ -187,13 +187,13 @@ Optionally takes a DISPLAY-FUNCTION to be run."
     (unless (eq old-frame new-frame)
       (select-frame-set-input-focus new-frame))))
 
-(defun buffer-popup (mode name &optional display-function post-function arg)
-  "Pop up a buffer with mode MODE and a given NAME.
+(defun buffer-popup (mode &optional buf-create display-function post-function arg)
+  "Pop up a buffer with mode MODE and a given NAME-FUNC to generate new buffer names.
 With universal ARG, splits it to the side."
   (let ((buffer (or (--first (with-current-buffer it
                                (eq major-mode mode))
                              (buffer-list))
-                    (generate-new-buffer name))))
+                    (buf-create))))
     (with-current-buffer buffer
       (unless (eq major-mode mode)
         (if post-function
@@ -255,7 +255,7 @@ With universal ARG, splits it to the side."
 
 (defun multi-term-popup (&optional arg)
   (interactive "P")
-  (buffer-popup 'term-mode (buffer-name (multi-term-get-buffer)) 'display-buffer-fullframe-v1 'multi-term))
+  (buffer-popup 'term-mode 'multi-term-get-buffer 'display-buffer-fullframe-v1 'multi-term))
 
 (defun multi-term-toggle ()
   (interactive)
@@ -377,6 +377,7 @@ With universal ARG, splits it to the side."
 ;;       (setq line-spacing 0.1)))
 
 ;;   (funcall-interactively #'set-fonts))
+(set-face-attribute 'default nil :family "Terminus" :height 140 :weight 'regular)
 (set-frame-font "Terminus-14:regular")
 (setq inhibit-compacting-font-caches t)
 
@@ -581,6 +582,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
          ("C-h f" . counsel-describe-function)
          ("C-x 8" . counsel-unicode-char)
          ("C-x b" . ivy-switch-buffer)
+         ("C-'" . counsel-imenu)
 	     ("C-c C-r" . ivy-resume)
          ("C-c C-u" . swiper-all)
          :map ivy-occur-mode-map
@@ -619,12 +621,6 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
-;; (use-package ivy-rich
-;;   :ensure t
-;;   :after ivy
-;;   :init (setq ivy-rich-parse-remote-file-path t)
-;;   :config (ivy-rich-mode 1))
-
 ;;;; Shackle
 (use-package shackle
   :ensure t
@@ -653,6 +649,8 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
          ("C-c a" . org-agenda)
          ("C-c b" . org-iswitchb))
   :config
+  (when (version<= "9.2" (org-version))
+    (require 'org-tempo))
   (setq org-log-done t
         org-startup-indented t
         org-hide-leading-stars t
@@ -696,6 +694,16 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
+
+;;; [== ReStructuredText ==]
+(use-package rst
+  :ensure t
+  :mode (("\\.txt\\'" . rst-mode)
+         ("\\.rst\\'" . rst-mode)))
+
+(use-package sphinx-mode
+  :ensure t
+  :hook (rst-mode . sphinx-mode))
 
 ;;; [== NEWS & IRC ==]
 (use-package elfeed
@@ -990,12 +998,12 @@ Lisp function does not specify a special indentation."
           (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
 
 ;;;; Imenu
-(use-package imenu-list
-  :ensure t
-  :commands imenu-list
-  :bind (("C-'" . imenu-list)
-         :map imenu-list-major-mode-map
-         ("C-'" . imenu-list-quit-window)))
+;; (use-package imenu-list
+;;   :ensure t
+;;   :commands imenu-list
+;;   :bind (("C-'" . imenu-list)
+;;          :map imenu-list-major-mode-map
+;;          ("C-'" . imenu-list-quit-window)))
 
 ;;;; Describe thing at point
 ;; handy function from https://www.emacswiki.org/emacs/DescribeThingAtPoint
@@ -1231,7 +1239,13 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 ;;; [== LANGUAGES ==]
 ;;;; Shell Script
 ;; Enable shell-script mode for zshell configuration files
-(let ((shell-files '("zprofile" "zshenv" "zshrc" "zlogin" "zlogout" "zpreztorc")))
+(let ((shell-files '("zprofile"
+                     "zshenv"
+                     "zshrc"
+                     "zlogin"
+                     "zlogout"
+                     "zfunc"
+                     "zalias")))
   (mapc (lambda (file)
           (add-to-list 'auto-mode-alist `(,(format "\\%s\\'" file) . sh-mode)))
         shell-files))
@@ -1709,7 +1723,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 ;;; [== THEMING ==]
 ;;;; Theme
-(global-font-lock-mode -1)
 (defconst light-theme 'default-acme-improved)
 (defconst dark-theme 'manoj-dark-improved)
 
@@ -1728,7 +1741,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   "Load the default light theme."
   (interactive)
   (funcall-interactively #'disable-all-themes)
-  (load-theme 'default-improved t))
+  (load-theme light-theme t))
 
 (defun toggle-theme ()
   (interactive)
@@ -1769,3 +1782,4 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
+(put 'downcase-region 'disabled nil)
