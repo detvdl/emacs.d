@@ -193,7 +193,7 @@ With universal ARG, splits it to the side."
   (let ((buffer (or (--first (with-current-buffer it
                                (eq major-mode mode))
                              (buffer-list))
-                    (buf-create))))
+                    (funcall buf-create))))
     (with-current-buffer buffer
       (unless (eq major-mode mode)
         (if post-function
@@ -637,6 +637,11 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
          ("<backtab>" . outshine-cycle-buffer))
   :config
   (setq outshine-startup-folded-p nil))
+
+;;;; Symbol Highlighting
+(use-package symbol-overlay
+  :ensure t
+  :hook (prog-mode . symbol-overlay-mode))
 
 ;;; [== ORG-MODE ==]
 ;;;; General
@@ -1430,6 +1435,28 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :bind (:map go-mode-map
          ("C-c C-l" . go-impl)))
 
+;;;; Rust
+(use-package rust-mode
+  :ensure t
+  :mode ("\\.rs\\'")
+  :config
+  (defun my--rust-mode-hook ()
+    (lsp)
+    (company:add-local-backend 'company-lsp))
+  (add-hook 'rust-mode-hook #'my--rust-mode-hook))
+
+(use-package toml-mode
+  :ensure t)
+
+(use-package cargo
+  :ensure t
+  :hook (rust-mode . cargo-minor-mode))
+
+(use-package flycheck-rust
+  :ensure t
+  :config
+  (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
+
 ;;;; Java
 ;; NOTE: possibly dap-java needs to be byte-compiled separately, to account for the following snippet:
 ;; (eval-when-compile
@@ -1724,7 +1751,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 ;;; [== THEMING ==]
 ;;;; Theme
 (defconst light-theme 'default-acme-improved)
-(defconst dark-theme 'manoj-dark-improved)
+(defconst dark-theme 'ir-black)
 
 (defun disable-all-themes ()
   "Disable all currently active themes."
@@ -1748,6 +1775,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (if (memq dark-theme custom-enabled-themes)
       (funcall-interactively #'load-light-theme)
     (funcall-interactively #'load-dark-theme)))
+
+(call-interactively #'load-light-theme)
 
 (bind-key "C-, t" #'toggle-theme global-map)
 

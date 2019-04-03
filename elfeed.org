@@ -29,6 +29,7 @@
 ***** [[https://p6weekly.wordpress.com/feed/][Weekly changes in and around Perl 6]]                        :weekly:
 ***** [[https://perl6advent.wordpress.com][Perl6 Advent]]
 **** Rust                                                           :rust:
+***** [[https://readrust.net/all/feed.rss][ReadRust]]
 ***** [[http://smallcultfollowing.com/babysteps/atom.xml][Baby Steps]]
 ***** [[https://this-week-in-rust.org/rss.xml][This Week in Rust]]
 *** Emacs                                                  :emacs:mustread:

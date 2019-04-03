@@ -7,3 +7,6 @@
 [submodule "themes/poet"]
 	path = themes/poet
 	url = https://github.com/kunalb/poet
+[submodule "themes/ir-black-theme.el"]
+	path = themes/ir-black-theme.el
+	url = https://github.com/jmdeldin/ir-black-theme.el.git
