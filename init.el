@@ -381,8 +381,8 @@ With universal ARG, splits it to the side."
 ;;       (setq line-spacing 0.1)))
 
 ;;   (funcall-interactively #'set-fonts))
-(set-face-attribute 'default nil :family "Terminus" :height 140 :weight 'regular)
-(set-frame-font "Terminus-14:regular")
+(set-face-attribute 'default nil :family "Fira Code" :height 120 :weight 'light)
+(set-frame-font "Fira Code-12:light")
 (setq inhibit-compacting-font-caches t)
 
 ;;;; GUI
@@ -1280,7 +1280,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 
 ;;;; Common Lisp
-;; the SBCL configuration file is in Common Lisp
+;; the SBCL configuration file is written in Common Lisp
 (add-to-list 'auto-mode-alist '("\\.sbclrc\\'" . lisp-mode))
 
 ;; Open files with .cl extension in lisp-mode
@@ -1450,7 +1450,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   (add-hook 'rust-mode-hook #'my--rust-mode-hook))
 
 (use-package toml-mode
-  :ensure t)
+  :ensure t
+  :mode ("\\.toml\\'"))
 
 (use-package cargo
   :ensure t
@@ -1458,6 +1459,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (use-package flycheck-rust
   :ensure t
+  :after rust-mode
   :config
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
@@ -1754,7 +1756,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 ;;; [== THEMING ==]
 ;;;; Theme
-(defconst light-theme 'default-acme-improved)
+(defconst light-theme 'default-improved)
 (defconst dark-theme 'ir-black)
 
 (defun disable-all-themes ()
