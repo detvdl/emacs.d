@@ -176,7 +176,7 @@ Optionally specify a KILL-BUFFER function to be run when burying."
   "Display function to handle a popup BUFFER for a certain MODE.
 Optionally takes a DISPLAY-FUNCTION to be run."
   (with-current-buffer buffer
-    (apply 'run-hooks popup--pre-display-buffer-hook))
+    (run-hooks 'popup--pre-display-buffer-hook))
   (let* ((window (or (get-buffer-window buffer (selected-window))
                      (funcall (or display-function
                                   popup--default-display-buffer-function)
@@ -271,9 +271,13 @@ With universal ARG, splits it to the side."
   (bind-key "M-." #'completion-at-point term-raw-map))
 
 ;;;; Eshell
+(defun eshell--get-buffer ()
+  "Dummy function to satisfy `buffer-popup' API."
+  (get-buffer-create "*eshell-mode*"))
+
 (defun eshell-popup (&optional arg)
   (interactive "P")
-  (buffer-popup 'eshell-mode "*eshell-mode*" 'display-buffer-fullframe-v1))
+  (buffer-popup 'eshell-mode 'eshell--get-buffer 'display-buffer-fullframe-v1))
 
 (defun eshell-toggle ()
   (interactive)
