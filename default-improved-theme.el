@@ -5,9 +5,9 @@
  'default-improved
  '(default ((t (:underline nil :overline nil :strike-through nil :box nil :inverse-video nil :foreground "#323232" :background "#f8f8f8" :stipple nil :inherit nil))))
  '(cursor ((((background light)) (:background "#323232" :foreground nil)) (((background dark)) (:background "white"))))
- '(highlight ((t (:background "#d2d2d2"))))
+ '(highlight ((t (:background "#d2d2d2" :foreground "#323232"))))
  '(hl-line ((t (:background "#e2e2e2"))))
- '(region ((t (:background "DarkSeaGreen1"))))
+ '(region ((t (:background "DodgerBlue" :foreground "#f8f8f8"))))
  '(shadow ((((class color grayscale) (min-colors 88) (background light)) (:foreground "grey50")) (((class color grayscale) (min-colors 88) (background dark)) (:foreground "grey70")) (((class color) (min-colors 8) (background light)) (:foreground "green")) (((class color) (min-colors 8) (background dark)) (:foreground "yellow"))))
  '(secondary-selection ((((class color) (min-colors 88) (background light)) (:background "yellow1")) (((class color) (min-colors 88) (background dark)) (:background "SkyBlue4")) (((class color) (min-colors 16) (background light)) (:background "yellow")) (((class color) (min-colors 16) (background dark)) (:background "SkyBlue4")) (((class color) (min-colors 8)) (:foreground "black" :background "cyan")) (t (:inverse-video t))))
  '(font-lock-keyword-face ((default (:inherit (default)))))

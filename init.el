@@ -83,13 +83,11 @@
   "Start Emacs from within Emacs!"
   (interactive)
   (call-process (executable-find "emacs") nil 0 nil))
-(bind-key "C-c m" #'start-emacs global-map)
 
 (defun open-init-file ()
   "Quickly jump to the Emacs init file."
   (interactive)
   (find-file user-init-file))
-(bind-key "C-c i" #'open-init-file global-map)
 
 ;; Handy functions to URL-encode/-decode a region
 (defun url-encode-region (beg end)
@@ -233,42 +231,10 @@ With universal ARG, splits it to the side."
           "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
           "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
           "LOMBOK_JAR"
-          "GOPATH")
+          "GOPATH" "GOROOT")
         exec-path-from-shell-arguments '("-l" "-i"))
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
-
-;;;; Multi-Term
-(use-package multi-term
-  :ensure t
-  :commands (multi-term-get-buffer multi-term)
-  :config
-  (setq term-scroll-to-bottom-on-output t
-        term-scroll-show-maximum-output t
-        term-completion-addsuffix t)
-  (add-to-list 'term-bind-key-alist '("M-." . completion-at-point)))
-
-(add-hook 'term-mode-hook
-          (lambda()
-            (setq bidi-paragraph-direction 'left-to-right)
-            (yas-minor-mode -1)))
-
-(defun multi-term-popup (&optional arg)
-  (interactive "P")
-  (buffer-popup 'term-mode 'multi-term-get-buffer 'display-buffer-fullframe-v1 'multi-term))
-
-(defun multi-term-toggle ()
-  (interactive)
-  (if (and (eq major-mode 'term-mode)
-           (string-match "*terminal*" (buffer-name)))
-      (funcall 'popup-bury-buffer)
-    (funcall 'multi-term-popup)))
-
-(bind-key "C-c t" #'multi-term-toggle global-map)
-(with-eval-after-load 'term
-  (bind-key "C-c t" #'multi-term-toggle term-raw-map)
-  (bind-key "C-c C-y" #'term-paste term-raw-map)
-  (bind-key "M-." #'completion-at-point term-raw-map))
 
 ;;;; Eshell
 (defun eshell--get-buffer ()
@@ -574,7 +540,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (use-package ivy
   :ensure t
   :delight ivy-mode
-  :bind (("C-s" . counsel-grep-or-swiper)
+  :bind (("C-s" . swiper-isearch)
          ("C-x C-f" . counsel-find-file)
 	     ("M-x" . counsel-M-x)
 	     ("M-X" . smex-major-mode-commands)
@@ -609,6 +575,7 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
                                 (counsel-ag-function . ivy--regex-plus)
                                 (counsel-grep-function . ivy--regex-plus)
                                 (swiper-all . ivy--regex-plus)
+                                (swiper-isearch . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
   (use-package smex
     :ensure t
@@ -1053,8 +1020,7 @@ This checks in turn:
   :if (not noninteractive)
   :ensure t
   :delight yas-minor-mode
-  :commands (yas-reload-all yas-minor-mode)
-  :hook (prog-mode . yas-minor-mode))
+  :commands (yas-reload-all yas-minor-mode))
 
 (use-package yasnippet-snippets
   :ensure t
@@ -1527,6 +1493,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
          ([remap xref-find-references] . anaconda-mode-find-references)
          ([remap describe-thing-at-point] . anaconda-mode-show-doc))
   :config
+  (setq python-shell-interpreter "python3")
   (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir))
   (when *is-mac*
     (setq anaconda-mode-localhost-address "localhost")))
