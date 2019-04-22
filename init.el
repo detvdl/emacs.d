@@ -318,7 +318,7 @@ With universal ARG, splits it to the side."
 ;;   (setq font-height (get-optimal-font-height))
 ;;   (defconst font-size (/ font-height 10))
 ;;   (defconst font-weight 'regular)
-;;   (defconst fixed-font-family "Go Mono")
+;;   (defconst fixed-font-family "Fira Code")
 ;;   (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
 ;;   (defconst var-font-family "Baskerville")
 ;;   (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
@@ -412,7 +412,7 @@ static char * data[] = {
         ((eq state 'added) "blue")
         ((memq state '(removed conflict unregistered)) "red")
         ((memq state '(needs-update needs-merge)) "purple")
-        ((eq state 'up-to-date) "GreenYellow")
+        ((eq state 'up-to-date) "yellow")
         ((eq state 'staged) "yellow")
         ((memq state '(ignored unknown)) "gray50")
         (t "gray50")))
@@ -430,9 +430,10 @@ static char * data[] = {
                         :ascent center))))
 
 (defun mode-line-fill (&optional reserve)
-  "Return empty space using FACE and leaving RESERVE space on the right."
-  (let ((reserve (or reserve 20)))
-    (when (and window-system (eq 'right (get-scroll-bar-mode)))
+  "Return empty space, leaving RESERVE space on the right."
+  (let ((reserve (or reserve 20))
+        (scroll-bar (alist-get 'vertical-scroll-bars default-frame-alist)))
+    (when (and window-system (eq scroll-bar 'right))
       (setq reserve (+ reserve 3)))
     (propertize " "
                 'display `((space :align-to (- (+ right right-fringe right-margin) ,reserve))))))
@@ -451,7 +452,7 @@ static char * data[] = {
                 mode-line-position
                 " "
                 (:eval (format "(%s)" mode-name))
-                (:eval (mode-line-fill (length vc-mode)))
+                (:eval (mode-line-fill (+ 2 (length vc-mode))))
                 (:eval (when (vc-backend (buffer-file-name))
                          (concat "[" (string-trim-left vc-mode) "]")))
                 mode-line-misc-info
