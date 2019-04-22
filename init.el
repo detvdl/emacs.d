@@ -363,7 +363,99 @@ Doing this allows the `fringes-outside-margins' setting to take effect."
 (add-to-list 'after-make-frame-functions #'refresh-new-frame-buffer)
 
 ;;;; Modeline
-(which-function-mode)
+(which-function-mode -1)
+(setq mode-line-position
+      '((line-number-mode ("%l" (column-number-mode ":%c")))))
+
+(setq-default mode-line-buffer-identification
+              (propertized-buffer-identification " %b "))
+
+(defconst git--state-small-dot
+  "/* XPM */
+static char * data[] = {
+\"14 7 3 1\",
+\" 	c None\",
+\"+	c #202020\",
+\".	c %s\",
+\"      +++     \",
+\"     +...+    \",
+\"    +.....+   \",
+\"    +.....+   \",
+\"    +.....+   \",
+\"     +...+    \",
+\"      +++     \"};")
+
+(defconst git--state-large-dot
+  "/* XPM */
+static char * data[] = {
+\"18 13 3 1\",
+\" 	c None\",
+\"+	c #000000\",
+\".	c %s\",
+\"                  \",
+\"       +++++      \",
+\"      +.....+     \",
+\"     +.......+    \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"     +.......+    \",
+\"      +.....+     \",
+\"       +++++      \",
+\"                  \"};")
+
+(defun git--state-color (state)
+  "Return an appropriate color string for the given Git STATE."
+  (cond ((eq state 'edited) "green")
+        ((eq state 'added) "blue")
+        ((memq state '(removed conflict unregistered)) "red")
+        ((memq state '(needs-update needs-merge)) "purple")
+        ((eq state 'up-to-date) "GreenYellow")
+        ((eq state 'staged) "yellow")
+        ((memq state '(ignored unknown)) "gray50")
+        (t "gray50")))
+
+(defun git--state-dot (&optional state)
+  "Return the appropriate bitmap dot for the given Git STATE."
+  (let* ((backend (vc-backend buffer-file-name))
+         (state (or state (vc-state buffer-file-name backend)))
+         (color (git--state-color state)))
+    (propertize "   "
+                'help-echo (format "VC state: %s" state)
+                'display
+                `(image :type xpm
+                        :data ,(format git--state-large-dot color)
+                        :ascent center))))
+
+(defun mode-line-fill (&optional reserve)
+  "Return empty space using FACE and leaving RESERVE space on the right."
+  (let ((reserve (or reserve 20)))
+    (when (and window-system (eq 'right (get-scroll-bar-mode)))
+      (setq reserve (+ reserve 3)))
+    (propertize " "
+                'display `((space :align-to (- (+ right right-fringe right-margin) ,reserve))))))
+
+(setq-default mode-line-format
+              '("%e"
+                mode-line-front-space
+                (:eval (git--state-dot))
+                " "
+                mode-line-mule-info
+                mode-line-client
+                mode-line-modified
+                " "
+                mode-line-buffer-identification
+                " "
+                mode-line-position
+                " "
+                (:eval (format "(%s)" mode-name))
+                (:eval (mode-line-fill (length vc-mode)))
+                (:eval (when (vc-backend (buffer-file-name))
+                         (concat "[" (string-trim-left vc-mode) "]")))
+                mode-line-misc-info
+                mode-line-end-spaces))
 
 ;;;; Window/frame Management
 ;; TODO: optimize by autoloading needed commands + binds
@@ -1375,8 +1467,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 2)
     (subword-mode +1)
-    (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
-    (company:add-local-backend 'company-lsp)
+    ;; (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
+    ;; (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
@@ -1439,7 +1531,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
               dap-debug
               dap-eval
               dap-eval-region
-              dap-eval-thing-at-point
+              dap-eval-thing-atp-point
               dap-step-in
               dap-step-out
               dap-next
@@ -1724,7 +1816,11 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 ;;; [== THEMING ==]
 ;;;; Theme
 (defconst light-theme 'default-improved)
-(defconst dark-theme 'ir-black)
+(defconst dark-theme 'gruvbox-dark-soft)
+
+(use-package gruvbox-theme
+  :ensure t
+  :defer t)
 
 (defun disable-all-themes ()
   "Disable all currently active themes."
