@@ -446,6 +446,7 @@ static char * data[] = {
                 mode-line-mule-info
                 mode-line-client
                 mode-line-modified
+                mode-line-remote
                 " "
                 mode-line-buffer-identification
                 " "
@@ -589,6 +590,9 @@ static char * data[] = {
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
+(use-package hydra
+  :ensure t)
+
 ;; Does what it says: multiple cursors!
 (use-package multiple-cursors
   :ensure t
@@ -598,12 +602,39 @@ static char * data[] = {
          ("C-M->" . mc/unmark-next-like-this)
          ("C-. C->" . mc/skip-to-next-like-this)
          ("C-. C-<" . mc/skip-to-previous-like-this)
-         ("C-. >" . mc/mark-all-like-this)
          ("C-; w" . mc/mark-all-words-like-this)
+         ("C-; M-w" . mc/mark-all-words-like-this-in-defun)
          :map global-map
          ("C-S-<mouse-1>" . mc/add-cursor-on-click))
   :init
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
+
+(defhydra hydra-multiple-cursors (:hint nil)
+  "
+ Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
+------------------------------------------------------------------
+ [_p_]   Next     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
+ [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
+ [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search
+ [Click] Cursor at point       [_q_] Quit"
+  ("l" mc/edit-lines :exit t)
+  ("a" mc/mark-all-like-this :exit t)
+  ("n" mc/mark-next-like-this)
+  ("N" mc/skip-to-next-like-this)
+  ("M-n" mc/unmark-next-like-this)
+  ("p" mc/mark-previous-like-this)
+  ("P" mc/skip-to-previous-like-this)
+  ("M-p" mc/unmark-previous-like-this)
+  ("s" mc/mark-all-in-region-regexp :exit t)
+  ("0" mc/insert-numbers :exit t)
+  ("A" mc/insert-letters :exit t)
+  ("<mouse-1>" mc/add-cursor-on-click)
+  ;; Help with click recognition in this hydra
+  ("<down-mouse-1>" ignore)
+  ("<drag-mouse-1>" ignore)
+  ("q" nil))
+
+(bind-key (kbd "C-. >") 'hydra-multiple-cursors/body global-map)
 
 ;;;; Writeroom (zen-mode)
 (use-package writeroom-mode
