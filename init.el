@@ -347,8 +347,8 @@ With universal ARG, splits it to the side."
 ;;       (setq line-spacing 0.1)))
 
 ;;   (funcall-interactively #'set-fonts))
-(set-face-attribute 'default nil :family "Fira Code" :height 120 :weight 'light)
-(set-frame-font "Fira Code-12:light")
+(set-face-attribute 'default nil :family "Fira Code" :height 140 :weight 'light)
+(set-frame-font "Fira Code-14:light")
 (setq inhibit-compacting-font-caches t)
 
 ;;;; GUI
@@ -769,8 +769,22 @@ static char * data[] = {
    '(org-level-2 ((t (:inherit outline-2 :height 1.00))))
    '(org-level-3 ((t (:inherit outline-3 :height 1.00))))
    '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
-   '(org-level-5 ((t (:inherit outline-5 :height 1.00))))
-   )
+   '(org-level-5 ((t (:inherit outline-5 :height 1.00)))))
+  (add-hook 'org-mode-hook (lambda ()
+                             "Beautify Org Checkbox Symbol"
+                             (push '("[ ]" .  "☐") prettify-symbols-alist)
+                             (push '("[X]" . "☑" ) prettify-symbols-alist)
+                             (push '("[-]" . "❍" ) prettify-symbols-alist)
+                             (prettify-symbols-mode)))
+  (defface org-checkbox-done-text
+    '((t (:foreground "#71696A" :strike-through t)))
+    "Face for the text part of a checked org-mode checkbox.")
+
+  (font-lock-add-keywords
+   'org-mode
+   `(("^[ \t]*\\(?:[-+*]\\|[0-9]+[).]\\)[ \t]+\\(\\(?:\\[@\\(?:start:\\)?[0-9]+\\][ \t]*\\)?\\[\\(?:X\\|\\([0-9]+\\)/\\2\\)\\][^\n]*\n\\)"
+      1 'org-checkbox-done-text prepend))
+   'append)
   (delight 'org-indent-mode nil t))
 
 ;; Org-mode buffer-local variables
@@ -1499,7 +1513,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 2)
     (subword-mode +1)
-    ;; (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
+    (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
     ;; (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
@@ -1847,8 +1861,12 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 ;;; [== THEMING ==]
 ;;;; Theme
-(defconst light-theme 'default-improved)
+(defconst light-theme 'eclipse)
 (defconst dark-theme 'gruvbox-dark-soft)
+
+(use-package eclipse-theme
+  :load-path "themes/eclipse-theme"
+  :defer t)
 
 (use-package gruvbox-theme
   :ensure t
@@ -1912,4 +1930,3 @@ When ARG is specified, prompts for a file to add it to."
         (cond ((= arg 1) (goto-char (point-max)))
               (t (goto-char arg)))
         (insert text)))))
-(put 'downcase-region 'disabled nil)
