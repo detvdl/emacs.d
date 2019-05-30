@@ -737,6 +737,13 @@ static char * data[] = {
   :ensure t
   :hook (prog-mode . symbol-overlay-mode))
 
+;;;; Dired
+(use-package dired-subtree
+  :ensure t
+  :bind (:map dired-mode-map
+         ("i" . dired-subtree-insert)
+         (";" . dired-subtree-remove)))
+
 ;;; [== ORG-MODE ==]
 ;;;; General
 ;; Install org from org-plus-contrib!
