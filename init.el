@@ -604,37 +604,36 @@ static char * data[] = {
          ("C-. C-<" . mc/skip-to-previous-like-this)
          ("C-; w" . mc/mark-all-words-like-this)
          ("C-; M-w" . mc/mark-all-words-like-this-in-defun)
+         ("C-. >" . hydra-multiple-cursors/body)
          :map global-map
          ("C-S-<mouse-1>" . mc/add-cursor-on-click))
   :init
-  (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
-
-(defhydra hydra-multiple-cursors (:hint nil)
-  "
+  (defhydra hydra-multiple-cursors (:hint nil)
+    "
  Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
 ------------------------------------------------------------------
  [_p_]   Next     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
  [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
  [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search
  [Click] Cursor at point       [_q_] Quit"
-  ("l" mc/edit-lines :exit t)
-  ("a" mc/mark-all-like-this :exit t)
-  ("n" mc/mark-next-like-this)
-  ("N" mc/skip-to-next-like-this)
-  ("M-n" mc/unmark-next-like-this)
-  ("p" mc/mark-previous-like-this)
-  ("P" mc/skip-to-previous-like-this)
-  ("M-p" mc/unmark-previous-like-this)
-  ("s" mc/mark-all-in-region-regexp :exit t)
-  ("0" mc/insert-numbers :exit t)
-  ("A" mc/insert-letters :exit t)
-  ("<mouse-1>" mc/add-cursor-on-click)
-  ;; Help with click recognition in this hydra
-  ("<down-mouse-1>" ignore)
-  ("<drag-mouse-1>" ignore)
-  ("q" nil))
+    ("l" mc/edit-lines :exit t)
+    ("a" mc/mark-all-like-this :exit t)
+    ("n" mc/mark-next-like-this)
+    ("N" mc/skip-to-next-like-this)
+    ("M-n" mc/unmark-next-like-this)
+    ("p" mc/mark-previous-like-this)
+    ("P" mc/skip-to-previous-like-this)
+    ("M-p" mc/unmark-previous-like-this)
+    ("s" mc/mark-all-in-region-regexp :exit t)
+    ("0" mc/insert-numbers :exit t)
+    ("A" mc/insert-letters :exit t)
+    ("<mouse-1>" mc/add-cursor-on-click)
+    ;; Help with click recognition in this hydra
+    ("<down-mouse-1>" ignore)
+    ("<drag-mouse-1>" ignore)
+    ("q" nil))
+  (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
 
-(bind-key (kbd "C-. >") 'hydra-multiple-cursors/body global-map)
 
 ;;;; Writeroom (zen-mode)
 (use-package writeroom-mode
@@ -823,7 +822,7 @@ static char * data[] = {
 (use-package elfeed
   :ensure t
   :defer t
-  :bind ("C-x w" . #'elfeed--toggle-wconf)
+  :bind ("C-x w" . #'elfeed)
   :commands (elfeed-search-buffer
              elfeed-search-mode
              elfeed-search-show-entry)
@@ -841,66 +840,6 @@ static char * data[] = {
 (use-package elfeed-org
   :ensure t
   :commands (elfeed-org))
-
-(defvar my--previous-eyebrowse-wconf nil)
-
-(defun eyebrowse--match-buffer-name (wconf buffer-name &optional tag)
-  "Walk over an existing window configuration WCONF and match its active buffer to BUFFER-NAME.  Optionally pass the original window configuration TAG along to be able to restore it."
-  (cl-dolist (item wconf)
-    (when (consp item)
-      (if (and (symbolp (car item))
-               (eq (car item) 'buffer)
-               (string-match buffer-name (cadr item)))
-          (cl-return tag)
-        (when (and (consp (cdr item))
-                   (not (eyebrowse--dotted-list-p (cdr item)))
-                   (eyebrowse--match-buffer-name (cdr item) buffer-name tag))
-          (cl-return tag))))))
-
-(defun eyebrowse--match-elfeed-buffer (wconf)
-  (eyebrowse--match-buffer-name wconf "*elfeed*" (car wconf)))
-
-(defun elfeed--inhibiting-quit ()
-  "Save the database, then `quit-window'."
-  (interactive)
-  (elfeed-db-save))
-
-(defun elfeed--view-other-window (buf)
-  "View the selected entry BUF in another window."
-  (with-current-buffer buf
-    (let ((window (or (get-buffer-window buf)
-                      (get-vertical-split))))
-      (set-window-buffer window buf)
-      (select-window window))))
-
-(defun elfeed--open-or-switch-to-wconf ()
-  "Open elfeed in a new eyebrowse config or switch to an existing one."
-  (interactive)
-  (let* ((wconfs (eyebrowse--get 'window-configs))
-         (elfconf (cl-some #'eyebrowse--match-elfeed-buffer wconfs)))
-    (setq my--previous-eyebrowse-wconf
-          (eyebrowse--get 'current-slot))
-    (if elfconf
-        (eyebrowse-switch-to-window-config elfconf)
-      (with-current-buffer (get-buffer-create (elfeed-search-buffer))
-        (unless (eq major-mode 'elfeed-search-mode)
-          (elfeed-org)
-          (elfeed-search-mode))
-        (eyebrowse-create-window-config)
-        (switch-to-buffer (current-buffer))
-        (set-window-dedicated-p (selected-window) t)
-        (call-interactively #'elfeed-search-show-entry)))))
-
-(defun elfeed--toggle-wconf ()
-  "Toggle between elfeed wconf and current one."
-  (interactive)
-  (if (eq major-mode 'elfeed-search-mode)
-      (eyebrowse-switch-to-window-config my--previous-eyebrowse-wconf)
-    (elfeed--open-or-switch-to-wconf)))
-
-(with-eval-after-load "elfeed"
-  (bind-key "q" #'elfeed--inhibiting-quit elfeed-search-mode-map)
-  (bind-key "q" #'delete-window elfeed-show-mode-map))
 
 ;;; [== PROGRAMMING TOOLS ==]
 ;;;; Comment Keywords
