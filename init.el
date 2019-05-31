@@ -420,7 +420,9 @@ static char * data[] = {
 (defun git--state-dot (&optional state)
   "Return the appropriate bitmap dot for the given Git STATE."
   (let* ((backend (vc-backend buffer-file-name))
-         (state (or state (vc-state buffer-file-name backend)))
+         (state (or state (if (and backend buffer-file-name)
+                              (vc-state buffer-file-name backend)
+                            'unknown)))
          (color (git--state-color state)))
     (propertize "   "
                 'help-echo (format "VC state: %s" state)
