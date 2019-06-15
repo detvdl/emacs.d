@@ -61,7 +61,9 @@
 ;; Prettify Emacs appearance to match colour scheme
 (when (and *is-mac* *pretty-mode*)
   (add-to-list 'default-frame-alist
-               '(ns-transparent-titlebar . t)))
+               ;; '(ns-transparent-titlebar . t)
+               '(ns-appearance . light)
+               ))
 
 
 ;;; [== PATHS & FILES ==]
@@ -746,6 +748,11 @@ static char * data[] = {
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
 
+;;;; Annotate
+(use-package annotate
+  :ensure t
+  :commands (annotate-mode))
+
 ;;; [== ORG-MODE ==]
 ;;;; General
 ;; Install org from org-plus-contrib!
@@ -1240,7 +1247,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 
 (use-package company-lsp
   :ensure t
-  :after (lsp-mode company)  )
+  :after (lsp-mode company))
 
 ;;; [== GIT ==]
 ;;;; Magit
@@ -1395,6 +1402,18 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :config
   (with-eval-after-load 'yasnippet
     (clojure-snippets-initialize)))
+
+(use-package clj-refactor
+  :ensure t
+  :after clojure-mode
+  :config
+  (defun my-clojure-mode-hook ()
+    (clj-refactor-mode 1)
+    (yas-minor-mode 1) ; for adding require/use/import statements
+    ;; This choice of keybinding leaves cider-macroexpand-1 unbound
+    (cljr-add-keybindings-with-prefix "C-c C-m"))
+  (add-hook 'clojure-mode-hook #'my-clojure-mode-hook)
+  )
 
 ;;;; Scheme
 (use-package geiser
@@ -1810,7 +1829,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 ;;; [== THEMING ==]
 ;;;; Theme
 (defconst light-theme 'eclipse)
-(defconst dark-theme 'gruvbox-dark-soft)
+(defconst dark-theme 'default-dark)
 
 (use-package eclipse-theme
   :load-path "themes/eclipse-theme"
