@@ -1,7 +1,5 @@
-;; -*- lexical-binding: t -*-
+;; -*- lexical-binding; t -*-
 
-;;; [== PACKAGING ==]
-;;;; Package archives
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 			             ("melpa" . "https://melpa.org/packages/")
@@ -10,15 +8,11 @@
       package--init-file-ensured t
       package-check-signature nil)
 
-;;;; Use-package
-(require 'package)
-
 (when (eval-when-compile (version< emacs-version "27"))
   (setq package-enable-at-startup nil)
   (unless package--initialized
     (package-initialize)))
 
-;; Install use-package and its sub-packages/necessary packages for some of its extra features
 (unless (package-installed-p 'use-package)
   (package-refresh-contents)
   (package-install 'use-package)
@@ -26,48 +20,17 @@
 
 (setq use-package-always-ensure nil)
 
-;; TODO: figure out why this is "slow"
-(use-package delight :ensure t)
-(use-package bind-key :ensure t)
-
-;;;; Development packages
-(require 'cl-lib)
-
-(use-package dash
-  :ensure t)
-
-;;; [== ENVIRONMENT ==]
-;;;; Custom Variables
-;; Constants
-(defconst *is-mac* (eq system-type 'darwin))
-(defconst *is-linux* (eq system-type 'gnu/linux))
-(defconst *pretty-mode* t)
-(defconst *line-numbers-on* -1)
-
-;; Directories
-(setq default-directory "~/")
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 
-;;;; MacOS specifics
-;;;; Modifiers
-;; Switch up modifier keys to fit the MacOS keyboard layout better
+(defconst *is-mac* (eq system-type 'darwin))
+(defconst *is-linux* (eq system-type 'gnu/linux))
+
 (when *is-mac*
   (setq mac-command-modifier 'meta
         mac-option-modifier 'alt)
   (global-set-key [kp-delete] 'delete-char))
 
-;;;; Looks
-;; Prettify Emacs appearance to match colour scheme
-(when (and *is-mac* *pretty-mode*)
-  (add-to-list 'default-frame-alist
-               ;; '(ns-transparent-titlebar . t)
-               '(ns-appearance . light)
-               ))
-
-
-;;; [== PATHS & FILES ==]
-;;;; Load path initialization
 (push emacs-theme-dir custom-theme-load-path)
 (dolist (dir (directory-files emacs-theme-dir))
   (let ((dirpath (expand-file-name dir emacs-theme-dir)))
@@ -79,150 +42,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;;; [== FUNCTIONS ==]
-;;;; General
-(defun start-emacs ()
-  "Start Emacs from within Emacs!"
-  (interactive)
-  (call-process (executable-find "emacs") nil 0 nil))
-
-(defun open-init-file ()
-  "Quickly jump to the Emacs init file."
-  (interactive)
-  (find-file user-init-file))
-
-;; Handy functions to URL-encode/-decode a region
-(defun url-encode-region (beg end)
-  "URL encode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (encoded-text (url-hexify-string selected-text)))
-        (kill-region beg end)
-        (insert encoded-text))))
-
-(defun url-decode-region (beg end)
-  "URL decode the region between BEG and END."
-  (interactive "r")
-  (if (use-region-p)
-      (let* ((selected-text (buffer-substring beg end))
-             (decoded-text (url-unhex-string selected-text)))
-        (kill-region beg end)
-        (insert decoded-text))))
-
-(defun raw-prefix-arg-p (arg)
-  (and (listp arg) (car arg)))
-
-(defun file-in-project? (project-dir)
-  "Return whether the current buffer is part of the project at PROJECT-DIR."
-  (string-prefix-p
-   (expand-file-name project-dir)
-   (buffer-file-name (current-buffer))))
-
-;;;; Window Management
-(defun window-side (&optional window)
-  "Return the side of the frame WINDOW is on."
-  (let ((window (or window (selected-window))))
-    (cl-some (lambda (side)
-               (when (window-at-side-p window side)
-                 side))
-             '(left top right bottom))))
-
-(defun get-vertical-split (&optional window)
-  (let* ((window (or window (selected-window)))
-         (side (window-side window))
-         (split-side (if (>= (frame-pixel-width) (/ (* 3 (display-pixel-width)) 4))
-                         'right
-                       'below)))
-    (if (one-window-p)
-        (split-window (selected-window) nil split-side)
-      (cond ((eq side 'bottom) (window-in-direction 'above window))
-            ((eq side 'top) (window-in-direction 'below window))
-            ((eq side 'left) (window-in-direction 'right window))
-            ((eq side 'right) (window-in-direction 'left window))
-            (t (window-next-sibling window))))))
-
-;;;; Popup-Buffers
-(defvar popup--bury-buffer-function 'restore-window-configuration)
-(defvar popup--default-display-buffer-function 'display-buffer-same-window-v1)
-(defvar-local previous-window-configuration nil)
-(put 'previous-window-configuration 'permanent-local t)
-(defcustom popup--pre-display-buffer-hook '(save-window-configuration)
-  "Hook run by `popup-display-buffer' before displaying it."
-  :type 'hook)
-
-(defun save-window-configuration ()
-  "Save the current window configuration."
-  ;; A hook, when executed with run-hooks, is not executed in the
-  ;; context of a buffer, so this code-fragment returns nil
-  (unless (get-buffer-window (current-buffer) (selected-frame))
-    (setq previous-window-configuration
-          (current-window-configuration))))
-
-(defun restore-window-configuration (&optional kill-buffer)
-  "Restore the previous window configuration.
-Optionally specify a KILL-BUFFER function to be run when burying."
-  (let ((winconf previous-window-configuration)
-        (buffer (current-buffer))
-        (frame (selected-frame)))
-    (quit-window kill-buffer (selected-window))
-    (when (and winconf (equal frame (window-configuration-frame winconf)))
-      (set-window-configuration winconf)
-      (when (buffer-live-p buffer)
-        (with-current-buffer buffer
-          (setq previous-window-configuration nil))))))
-
-(defun popup-display-buffer (buffer mode &optional display-function)
-  "Display function to handle a popup BUFFER for a certain MODE.
-Optionally takes a DISPLAY-FUNCTION to be run."
-  (with-current-buffer buffer
-    (run-hooks 'popup--pre-display-buffer-hook))
-  (let* ((window (or (get-buffer-window buffer (selected-window))
-                     (funcall (or display-function
-                                  popup--default-display-buffer-function)
-                              buffer mode)))
-         (old-frame (selected-frame))
-         (new-frame (window-frame window)))
-    (select-window window)
-    (unless (eq old-frame new-frame)
-      (select-frame-set-input-focus new-frame))))
-
-(defun buffer-popup (mode &optional buf-create display-function post-function arg)
-  "Pop up a buffer with mode MODE and a given NAME-FUNC to generate new buffer names.
-With universal ARG, splits it to the side."
-  (let ((buffer (or (--first (with-current-buffer it
-                               (eq major-mode mode))
-                             (buffer-list))
-                    (funcall buf-create))))
-    (with-current-buffer buffer
-      (unless (eq major-mode mode)
-        (if post-function
-            (funcall post-function)
-          (funcall-interactively mode))))
-    (popup-display-buffer buffer mode display-function)))
-
-(defun display-buffer-fullframe (buffer alist)
-  (when-let ((window (or (display-buffer-reuse-window buffer alist)
-                         (display-buffer-same-window buffer alist)
-                         (display-buffer-pop-up-window buffer alist)
-                         (display-buffer-use-some-window buffer alist))))
-    (delete-other-windows window)
-    window))
-
-(defun display-buffer-fullframe-v1 (buffer mode)
-  (if (eq (with-current-buffer buffer major-mode) mode)
-      (display-buffer buffer '(display-buffer-fullframe))
-    (display-buffer buffer '(display-buffer-same-window))))
-
-(defun display-buffer-same-window-v1 (buffer &optional mode)
-  (display-buffer buffer '(popup--default-display-buffer-function)))
-
-(defun popup-bury-buffer (&optional kill-buffer)
-  (interactive "P")
-  (funcall popup--bury-buffer-function kill-buffer))
-
-;;; [== SHELL ==]
-;;;; Environment Variables
+;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
   :ensure t
@@ -238,139 +58,34 @@ With universal ARG, splits it to the side."
   (when (memq window-system '(mac ns))
     (exec-path-from-shell-initialize)))
 
-;;;; Eshell
-(defun eshell--get-buffer ()
-  "Dummy function to satisfy `buffer-popup' API."
-  (get-buffer-create "*eshell-mode*"))
-
-(defun eshell-popup (&optional arg)
-  (interactive "P")
-  (buffer-popup 'eshell-mode 'eshell--get-buffer 'display-buffer-fullframe-v1))
-
-(defun eshell-toggle ()
-  (interactive)
-  (if (eq (with-current-buffer (current-buffer) major-mode)
-          'eshell-mode)
-      (funcall 'popup-bury-buffer)
-    (funcall 'eshell-popup)))
-
-(bind-key "C-x t" #'eshell-toggle global-map)
-
-;;; [== UI ==]
-;;;; GUI
-;; Remove unnecessary cruft from the GUI application
-;; Mode-based disabling, eg. `(tool-bar-mode -1)' seemed very slow when profiling
-;; so modifying the `default-frame-alist' is the alternative
 (push '(tool-bar-lines . 0) default-frame-alist)
+(push '(tool-bar-lines . 0) initial-frame-alist)
 (push '(menu-bar-lines . 0) default-frame-alist)
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 
-(global-display-line-numbers-mode *line-numbers-on*)
-(setq-default display-line-numbers-width 4
-              display-line-numbers-current-absolute t
-              display-line-numbers-widen t)
-
 (column-number-mode)
-
-(setq inhibit-splash-screen nil)
-(setq initial-major-mode 'fundamental-mode)
-(setq initial-scratch-message nil)
-(setq ring-bell-function 'ignore)
 
 (setq-default indicate-empty-lines t)
 
-(setq frame-resize-pixelwise t)
-
-(setq scroll-margin 0
+(setq frame-resize-pixelwise t
+      scroll-margin 0
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
 
-(when (display-graphic-p)
+(when (and (display-graphic-p) *is-linux*)
   (setq x-gtk-use-system-tooltips nil))
 
 ;; Zoom in and out using text-scale commands
 (bind-key "C--" #'text-scale-decrease global-map)
 (bind-key "C-+" #'text-scale-increase global-map)
 
-;;;; Fonts
-(setq font-use-system-font t)
 (defvar font-height (face-attribute 'default :height))
-;; (when (display-graphic-p)
-;;   (defun get-dpi (&optional frame)
-;;     "Get the dpi for the current FRAME."
-;;     (let* ((attrs (frame-monitor-attributes frame))
-;;            (size-x (cadr (assoc 'mm-size attrs)))
-;;            (res (cdr (assoc 'geometry attrs)))
-;;            (res-h (display-pixel-height)))
-;;       (when (or (not size-x)
-;;                 (> size-x 1000))
-;;         nil)
-;;       (* (/ (float res-h) size-x) 25.4)))
-
-;;   (defun get-optimal-font-height (&optional frame)
-;;     "Get the optimal font-height for a given FRAME using DPI."
-;;     (let ((dpi (get-dpi frame)))
-;;       (cond ((< dpi 120) 110)
-;;             ((< dpi 150) 120)
-;;             ((< dpi 160) 130)
-;;             (t 140))))
-
-;;   (setq font-height (get-optimal-font-height))
-;;   (defconst font-size (/ font-height 10))
-;;   (defconst font-weight 'regular)
-;;   (defconst fixed-font-family "Fira Code")
-;;   (defconst fixed-font-string (format "%s-%s:%s" fixed-font-family font-size font-weight))
-;;   (defconst var-font-family "Baskerville")
-;;   (defconst var-font-string (format "%s-%s:%s" var-font-family (+ 2 font-size) font-weight))
-
-;;   (defun set-fonts ()
-;;     "Set the fonts for the given FRAME."
-;;     (interactive)
-;;     (let* ((font-h (get-optimal-font-height (selected-frame)))
-;;            (font-size (/ font-height 10))
-;;            (font-weight font-weight)
-;;            (fixed-font-family fixed-font-family)
-;;            (font-str (format "%s-%s:%s"
-;;                              fixed-font-family
-;;                              font-size
-;;                              font-weight))
-;;            (font-fixed `(:family ,fixed-font-family
-;;                          :height ,font-h
-;;                          :weight ,font-weight))
-;;            (font-var `(:family ,var-font-family
-;;                        :height ,(+ font-height 20))))
-;;       (set-frame-font font-str nil t)
-;;       (apply 'set-face-attribute `(default nil ,@font-fixed))
-;;       ;; (apply 'set-face-attribute `(fixed-pitch nil ,@font-fixed))
-;;       ;; (apply 'set-face-attribute `(line-number nil ,@font-fixed))
-;;       (apply 'set-face-attribute `(variable-pitch nil ,@font-var))
-;;       (setq line-spacing 0.1)))
-
-;;   (funcall-interactively #'set-fonts))
-(set-face-attribute 'default nil :family "Fira Code" :height 140 :weight 'light)
-(set-frame-font "Fira Code-14:light")
+;; (set-face-attribute 'default nil :family "Fira Code" :height 140 :weight 'light)
+;; (set-frame-font "Fira Code-14:light")
 (setq inhibit-compacting-font-caches t)
 
-;;;; GUI
-(setq-default left-margin-width 2)
-(setq-default fringes-outside-margins t)
-(defun refresh-new-frame-buffer (frame)
-  "Refresh all windows in the given FRAME.
-Doing this allows the `fringes-outside-margins' setting to take effect."
-  (mapc (lambda (w)
-          (set-window-buffer w (window-buffer w)))
-        (cons (minibuffer-window frame) (window-list frame))))
-(add-to-list 'after-make-frame-functions #'refresh-new-frame-buffer)
-
-;;;; Modeline
-(which-function-mode -1)
-(setq mode-line-position
-      '((line-number-mode ("%l" (column-number-mode ":%c")))))
-
-(setq-default mode-line-buffer-identification
-              (propertized-buffer-identification " %b "))
 
 (defconst git--state-small-dot
   "/* XPM */
@@ -433,46 +148,24 @@ static char * data[] = {
                         :data ,(format git--state-large-dot color)
                         :ascent center))))
 
-(defun mode-line-fill (&optional reserve)
-  "Return empty space, leaving RESERVE space on the right."
-  (let ((reserve (or reserve 20))
-        (scroll-bar (alist-get 'vertical-scroll-bars default-frame-alist)))
-    (when (and window-system (eq scroll-bar 'right))
-      (setq reserve (+ reserve 3)))
-    (propertize " "
-                'display `((space :align-to (- (+ right right-fringe right-margin) ,reserve))))))
-
 (setq-default mode-line-format
-              '("%e"
-                mode-line-front-space
-                (:eval (git--state-dot))
-                " "
-                mode-line-mule-info
-                mode-line-client
-                mode-line-modified
-                mode-line-remote
-                " "
-                mode-line-buffer-identification
-                " "
-                mode-line-position
-                " "
-                (:eval (format "(%s)" mode-name))
-                (:eval (mode-line-fill (+ 2 (length vc-mode))))
-                (:eval (when (vc-backend (buffer-file-name))
-                         (concat "[" (string-trim-left vc-mode) "]")))
-                mode-line-misc-info
-                mode-line-end-spaces))
+	          '("%e"
+		        mode-line-front-space
+		        (:eval (git--state-dot))
+		        mode-line-mule-info
+		        mode-line-client
+		        mode-line-modified
+		        mode-line-remote
+		        mode-line-frame-identification
+		        mode-line-buffer-identification
+		        "   "
+		        mode-line-position
+		        (vc-mode vc-mode)
+		        "  "
+		        mode-line-modes
+		        mode-line-misc-info
+		        mode-line-end-spaces))
 
-;;;; Window/frame Management
-;; TODO: optimize by autoloading needed commands + binds
-(use-package eyebrowse
-  :ensure t
-  :config
-  (setq eyebrowse-new-workspace #'delete-other-windows)
-  (eyebrowse-mode t))
-
-;;; [== EDITOR ==]
-;;;; General
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
@@ -517,7 +210,6 @@ static char * data[] = {
 ;;;; Buffers
 (bind-key "C-x C-b" #'ibuffer global-map)
 
-;;;; Undo/Redo
 (use-package undo-tree
   :ensure t
   :defer 1
@@ -536,14 +228,6 @@ static char * data[] = {
 (setq save-interprogram-paste-before-kill 1)
 (setq yank-pop-change-selection t)
 
-;;;; General Utilities
-;; Easily select regions.
-(use-package expand-region
-  :ensure t
-  :bind (("C-=" . er/expand-region)
-         ("C-. e" . er/expand-region)))
-
-;; Quickly switch windows, with visual help
 (use-package ace-window
   :ensure t
   :delight ace-window-mode
@@ -582,17 +266,12 @@ static char * data[] = {
   :config
   (which-key-mode))
 
-;; Great regex-based find-and-replace.
-(use-package anzu
-  :ensure t
-  :bind (("C-, r" . anzu-query-replace)
-         ("C-, R" . anzu-query-replace-regexp)))
-
 ;; Quickly select expanding regions and put them in the kill-ring.
 (use-package easy-kill
   :ensure t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
+
 
 (use-package hydra
   :ensure t)
@@ -638,31 +317,6 @@ static char * data[] = {
     ("q" nil))
   (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
 
-
-;;;; Writeroom (zen-mode)
-(use-package writeroom-mode
-  :ensure t
-  :commands writeroom-mode
-  :bind ("C-c w" . writeroom-mode)
-  :config
-  (defun writeroom-disable-line-numbers (arg)
-    (cond
-     ((= arg 1) (display-line-numbers-mode -1))
-     ((= arg -1) (display-line-numbers-mode *line-numbers-on*))))
-  (defun writeroom-refresh-frame-contents ()
-    (mapc (lambda (w)
-            (with-selected-window w
-              (set-window-margins (selected-window) 2 0)
-              (set-window-fringes (selected-window) 8 4 t)))
-          (get-buffer-window-list (current-buffer) nil))
-    (refresh-new-frame-buffer (selected-frame)))
-  (setq writeroom-fringes-outside-margins t
-        writeroom-fullscreen-effect 'maximized
-        writeroom-restore-window-config t
-        writeroom-width 120)
-  (add-to-list 'writeroom-global-effects 'writeroom-disable-line-numbers)
-  (advice-add 'writeroom--disable :after #'writeroom-refresh-frame-contents))
-
 ;;;; Ivy
 (use-package ivy
   :ensure t
@@ -679,7 +333,6 @@ static char * data[] = {
          ("C-h f" . counsel-describe-function)
          ("C-x 8" . counsel-unicode-char)
          ("C-x b" . ivy-switch-buffer)
-         ("C-'" . counsel-imenu)
 	     ("C-c C-r" . ivy-resume)
          ("C-c C-u" . swiper-all)
          :map ivy-occur-mode-map
@@ -719,22 +372,20 @@ static char * data[] = {
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
-;;;; Shackle
-(use-package shackle
+(use-package ggtags
   :ensure t
-  :defer t)
-
-;;;; Outlining
-(use-package outshine
-  :ensure t
-  :delight
-  :commands outshine-mode
-  :hook (emacs-lisp-mode . outshine-mode)
-  :bind (:map outshine-mode-map
-         ("S-<tab>" . outshine-cycle-buffer)
-         ("<backtab>" . outshine-cycle-buffer))
   :config
-  (setq outshine-startup-folded-p nil))
+  (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
+  ;; ensure ace-window keybind doesn't get overridden in ggtags-mode buffers
+  (unbind-key "M-o" ggtags-navigation-map))
+
+(use-package imenu-list
+  :ensure t
+  :bind ("C-'" . imenu-list-smart-toggle)
+  :config
+  (setq imenu-list-focus-after-activation t
+        imenu-list-auto-resize t
+        imenu-list-position 'right))
 
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
@@ -748,14 +399,6 @@ static char * data[] = {
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
 
-;;;; Annotate
-(use-package annotate
-  :ensure t
-  :commands (annotate-mode))
-
-;;; [== ORG-MODE ==]
-;;;; General
-;; Install org from org-plus-contrib!
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -824,40 +467,6 @@ static char * data[] = {
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
 
-;;; [== ReStructuredText ==]
-(use-package rst
-  :ensure t
-  :mode (("\\.txt\\'" . rst-mode)
-         ("\\.rst\\'" . rst-mode)))
-
-(use-package sphinx-mode
-  :ensure t
-  :hook (rst-mode . sphinx-mode))
-
-;;; [== NEWS & IRC ==]
-(use-package elfeed
-  :ensure t
-  :defer t
-  :bind ("C-x w" . #'elfeed)
-  :commands (elfeed-search-buffer
-             elfeed-search-mode
-             elfeed-search-show-entry)
-  :config
-  (setq elfeed-show-entry-switch #'elfeed--view-other-window
-        elfeed-show-entry-delete #'delete-window))
-
-;; FIXME: find a different way to re-use the show-buffer when cycling entries
-;; (defun elfeed--no-kill-next/prev (orig-fun &rest args)
-;;   (let ((elfeed-show-entry-delete #'ignore))
-;;     (apply orig-fun args)))
-;; (advice-add 'elfeed-show-next :around #'elfeed--no-kill-next/prev)
-;; (advice-add 'elfeed-show-prev :around #'elfeed--no-kill-next/prev)
-
-(use-package elfeed-org
-  :ensure t
-  :commands (elfeed-org))
-
-;;; [== PROGRAMMING TOOLS ==]
 ;;;; Comment Keywords
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
@@ -873,36 +482,12 @@ This functions should be added to the hooks of major modes for programming."
                             (local-comment-auto-fill)
                             (font-lock-comment-annotations)))
 
-;;;; Compilation mode
-;; colorize the output of the compilation mode.
-(require 'ansi-color)
-(defun colorize-compilation-buffer ()
-  (toggle-read-only)
-  (ansi-color-apply-on-region (point-min) (point-max))
-
-  ;; mocha seems to output some non-standard control characters that
-  ;; aren't recognized by ansi-color-apply-on-region, so we'll
-  ;; manually convert these into the newlines they should be.
-  (goto-char (point-min))
-  (while (re-search-forward "\\[2K\\[0G" nil t)
-    (progn
-      (replace-match "")))
-  (toggle-read-only))
-(add-hook 'compilation-filter-hook 'colorize-compilation-buffer)
-
-;;;; Encoding & Transient buffers
-(put 'encoding 'safe-local-variable (lambda (val) #'stringp))
-
-;; Don't replace existing buffers with transient ones, keep them persistent.
-(use-package dedicated
-  :ensure t
-  :commands dedicated-mode)
-
 ;;;; Smartparens
 (use-package smartparens
   :ensure t
   :delight smartparens-mode
   :hook ((prolog-mode prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :functions (sp-wrap-with-pair)
   :bind (("C-. )" . sp-rewrap-sexp)
          ("C-. (" . sp-rewrap-sexp))
   :config
@@ -927,6 +512,14 @@ This functions should be added to the hooks of major modes for programming."
            '(("||\n[i]" "RET")
              ("| " "SPC"))))
 
+(defun wrap-with (s)
+  `(lambda (&optional arg)
+     (interactive "P")
+     (sp-wrap-with-pair ,s)))
+
+(bind-key "M-(" (lambda () (wrap-with "(")) lisp-mode-shared-map)
+(bind-key "M-\"" (lambda () (wrap-with "\"")) lisp-mode-shared-map)
+
 ;;;; Projectile
 (use-package projectile
   :ensure t
@@ -934,7 +527,9 @@ This functions should be added to the hooks of major modes for programming."
   :bind (("C-c p p" . projectile-switch-project)
          ("C-c p f" . projectile-find-file))
   :config
-  (setq projectile-completion-system 'ivy)
+  (setq projectile-completion-system 'ivy
+        projectile-sort-order 'recentf
+        projectile-indexing-method 'hybrid)
   (with-eval-after-load 'ivy
     (ivy-set-actions 'projectile-find-file
                      '(("j" find-file-other-window "other window")))
@@ -957,7 +552,149 @@ This functions should be added to the hooks of major modes for programming."
   :config
   (avy-setup-default))
 
-;;;; Documentationp
+(use-package all-the-icons
+  :ensure t
+  :config
+  (setq all-the-icons-scale-factor 1.0))
+
+;;; Treemacs
+(use-package treemacs
+  :ensure t
+  :bind (("M-0" . treemacs-select-window)
+         ("M-'" . treemacs)
+         :map treemacs-mode-map
+         ([mouse-1] . treemacs-single-click-expand-action))
+  :config
+  (setq treemacs-fringe-indicator-mode nil
+        treemacs-no-png-images nil
+        treemacs-width 30
+        treemacs-silent-refresh t
+        treemacs-silent-filewatch t
+        treemacs-show-hidden-files t
+        treemacs-file-event-delay 1000
+        treemacs-file-follow-delay 0.1)
+  ;; (add-hook 'treemacs-mode-hook #'hide-mode-line-mode)
+  (add-hook 'treemacs-mode-hook (lambda ()
+                                  (linum-mode -1)
+                                  (when (display-graphic-p)
+                                    (set-window-fringes nil 00))
+                                  (setq tab-width 1)
+                                  (setq mode-line-format nil)
+                                  (buffer-face-mode 1)))
+  ;; Improve treemacs icons
+  (with-eval-after-load 'treemacs
+    (unless (require 'all-the-icons nil t)
+      (error "all-the-icons isn't installed"))
+    ;; minimalistic atom-inspired icon theme
+    (treemacs-create-theme "doom"
+      :config
+      (let ((face-spec '(:inherit font-lock-doc-face :slant normal)))
+        (treemacs-create-icon
+         :icon (format " %s\t" (all-the-icons-octicon "repo" :v-adjust -0.1 :face face-spec))
+         :extensions (root))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
+         :extensions (dir-open))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
+         :extensions (dir-closed))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec)) :extensions (tag-open))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec))
+         :extensions (tag-closed))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "tag" :height 0.9 :v-adjust 0 :face face-spec))
+         :extensions (tag-leaf))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "flame" :v-adjust 0 :face face-spec))
+         :extensions (error))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "stop" :v-adjust 0 :face face-spec))
+         :extensions (warning))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "info" :height 0.75 :v-adjust 0.1 :face face-spec))
+         :extensions (info))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-media" :v-adjust 0 :face face-spec))
+         :extensions ("png" "jpg" "jpeg" "gif" "ico" "tif" "tiff" "svg" "bmp"
+                      "psd" "ai" "eps" "indd" "mov" "avi" "mp4" "webm" "mkv"
+                      "wav" "mp3" "ogg" "midi"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-code" :v-adjust 0 :face face-spec))
+         :extensions ("yml" "yaml" "sh" "zsh" "fish" "c" "h" "cpp" "cxx" "hpp"
+                      "tpp" "cc" "hh" "hs" "lhs" "cabal" "py" "pyc" "rs" "el"
+                      "elc" "clj" "cljs" "cljc" "ts" "tsx" "vue" "css" "html"
+                      "htm" "dart" "java" "kt" "scala" "sbt" "go" "js" "jsx"
+                      "hy" "json" "jl" "ex" "exs" "eex" "ml" "mli" "pp" "dockerfile"
+                      "vagrantfile" "j2" "jinja2" "tex" "racket" "rkt" "rktl" "rktd"
+                      "scrbl" "scribble" "plt" "makefile" "elm" "xml" "xsl" "rb"
+                      "scss" "lua" "lisp" "scm" "sql" "toml" "nim" "pl" "pm" "perl"
+                      "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"
+                      "cask" "r" "re" "rei" "bashrc" "zshrc" "inputrc" "editorconfig"
+                      "gitconfig"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "book" :v-adjust 0 :face face-spec))
+         :extensions ("lrf" "lrx" "cbr" "cbz" "cb7" "cbt" "cba" "chm" "djvu"
+                      "doc" "docx" "pdb" "pdb" "fb2" "xeb" "ceb" "inf" "azw"
+                      "azw3" "kf8" "kfx" "lit" "prc" "mobi" "exe" "or" "html"
+                      "pkg" "opf" "txt" "pdb" "ps" "rtf" "pdg" "xml" "tr2"
+                      "tr3" "oxps" "xps"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
+         :extensions ("md" "markdown" "rst" "log" "org" "txt"
+                      "CONTRIBUTE" "LICENSE" "README" "CHANGELOG"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-binary" :v-adjust 0 :face face-spec))
+         :extensions ("exe" "dll" "obj" "so" "o" "out"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-pdf" :v-adjust 0 :face face-spec))
+         :extensions ("pdf"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-zip" :v-adjust 0 :face face-spec))
+         :extensions ("zip" "7z" "tar" "gz" "rar" "tgz"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
+         :extensions (fallback))))
+    )
+  (treemacs-load-theme "doom"))
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
+
+;; TODO: set correct faces to properly use solaire-mode
+(use-package solaire-mode
+  :hook (((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+         (minibuffer-setup . solaire-mode-in-minibuffer))
+  :config
+  (solaire-global-mode)
+  (solaire-mode-swap-bg))
+
+;;; Centaur tabs
+(use-package centaur-tabs
+  :ensure t
+  :bind (("C-S-<tab>" . centaur-tabs-backward)
+         ("C-<tab>" . centaur-tabs-forward))
+  :init
+  (setq centaur-tabs-set-bar 'over)
+  :config
+  (centaur-tabs-mode)
+  (setq centaur-tabs-set-modified-marker t
+        centaur-tabs-modified-marker "●"
+        centaur-tabs-cycle-scope 'tabs
+        centaur-tabs-height 20
+        centaur-tabs-set-icons nil
+        centaur-tabs-gray-out-icons 'buffer))
+
 ;; Always enable eldoc
 (global-eldoc-mode +1)
 (delight 'eldoc-mode nil t)
@@ -1066,14 +803,6 @@ Lisp function does not specify a special indentation."
 (add-hook 'emacs-lisp-mode-hook
           (lambda () (setq-local lisp-indent-function #'Fuco1/lisp-indent-function)))
 
-;;;; Imenu
-;; (use-package imenu-list
-;;   :ensure t
-;;   :commands imenu-list
-;;   :bind (("C-'" . imenu-list)
-;;          :map imenu-list-major-mode-map
-;;          ("C-'" . imenu-list-quit-window)))
-
 ;;;; Describe thing at point
 ;; handy function from https://www.emacswiki.org/emacs/DescribeThingAtPoint
 (defun describe-thing-at-point ()
@@ -1107,8 +836,6 @@ This checks in turn:
 (bind-key "M-?" 'xref-find-references prog-mode-map)
 (bind-key "M-[" 'describe-thing-at-point prog-mode-map)
 
-;;; [== COMPLETION ==]
-;;;; Snippets
 (use-package yasnippet
   :if (not noninteractive)
   :ensure t
@@ -1153,7 +880,7 @@ This checks in turn:
 ;;;; Language Server Protocol (LSP)
 (use-package lsp-mode
   :ensure t
-  :commands lsp
+  :commands (lsp lsp-deferred)
   :config
   (setq lsp-eldoc-enable-hover t
         lsp-eldoc-render-all t))
@@ -1168,88 +895,14 @@ This checks in turn:
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
   (setq lsp-ui-doc-include-signature nil
-        lsp-ui-doc-use-childframe nil
-        lsp-ui-sideline-update-mode 'point)
-  (add-hook 'lsp-ui-mode-hook (lambda () (lsp-ui-doc-mode -1)))
-  ;; Very Projectile-like way to handle short-file-names (sfn)
-  ;; in lsp-ui-peek on a project-basis
-  ;; Currently just copied functions from `projectile.el'
-  ;; TODO: integrate with Projectile itself
-  (defvar lsp-ui--sfn-projects-file
-    (expand-file-name "lsp-ui--sfn.eld" user-emacs-directory))
-  (defvar lsp-ui--sfn-projects nil)
-  (defvar lsp-ui--sfn-projects-on-file nil)
-  (defun lsp-ui--sfn-diff (list1 list2)
-    (cl-remove-if
-     (lambda (x) (member x list2))
-     list1))
-  (defun lsp-ui--sfn-serialize (data file)
-    (when (file-writable-p file)
-      (with-temp-file file
-        (insert (let (print-length) (prin1-to-string data))))))
-  (defun lsp-ui--sfn-deserialize (file)
-    (with-demoted-errors
-        "Error during file deserialization: %S"
-      (when (file-exists-p file)
-        (with-temp-buffer
-          (insert-file-contents file)
-          (read (buffer-string))))))
-  (defun lsp-ui--sfn-load-projects ()
-    (setq lsp-ui--sfn-projects (lsp-ui--sfn-deserialize lsp-ui--sfn-projects-file))
-    (setq lsp-ui--sfn-projects-on-file
-          (and (sequencep lsp-ui--sfn-projects)
-               (copy-sequence lsp-ui--sfn-projects))))
-  (defun lsp-ui--sfn-add-project (project-root)
-    (interactive (list (read-directory-name "Add to sfn-projects: ")))
-    (setq lsp-ui--sfn-projects
-          (delete-dups
-           (cons (file-name-as-directory (abbreviate-file-name project-root))
-                 lsp-ui--sfn-projects)))
-    (lsp-ui--sfn-merge-projects))
-  (defun lsp-ui--sfn-save-projects ()
-    (lsp-ui--sfn-serialize lsp-ui--sfn-projects
-                           lsp-ui--sfn-projects-file)
-    (setq lsp-ui--sfn-projects-on-file
-          (and (sequencep lsp-ui--sfn-projects)
-               (copy-sequence lsp-ui--sfn-projects))))
-  (defun lsp-ui--sfn-merge-projects ()
-    (let* ((known-now lsp-ui--sfn-projects)
-           (known-on-last-sync lsp-ui--sfn-projects-on-file)
-           (known-on-file
-            (lsp-ui--sfn-deserialize lsp-ui--sfn-projects-file))
-           (removed-after-sync (lsp-ui--sfn-diff known-on-last-sync known-now))
-           (removed-in-other-process
-            (lsp-ui--sfn-diff known-on-last-sync known-on-file))
-           (result (delete-dups
-                    (lsp-ui--sfn-diff
-                     (append known-now known-on-file)
-                     (append removed-after-sync
-                             removed-in-other-process)))))
-      (setq lsp-ui--sfn-projects result)
-      (lsp-ui--sfn-save-projects)))
-  (lsp-ui--sfn-load-projects)
-  (defun lsp-ui-peek--truncate-filepath (orig-fun &rest args)
-    "Advisory function to only keep the filename from the path
-when using lsp-ui-peek functionality.
-Used for a pre-defined list of modes to mitigate large, unreadable filepaths in lsp-ui-peek-find-references.
-Applies ORIG-FUN to ARGS first, and then truncates the path."
-    (if (seq-some #'file-in-project?
-                  lsp-ui--sfn-projects)
-        (let ((res (apply orig-fun args)))
-          (file-name-nondirectory res))
-      (apply orig-fun args)))
-  (advice-add 'lsp-ui--workspace-path :around 'lsp-ui-peek--truncate-filepath))
-
-;; lsp-ui-sideline does not clean up its overlays when a buffer is reverted
-(add-hook 'before-revert-hook (lambda ()
-                                (when (bound-and-true-p lsp-ui-sideline-mode)
-                                  (lsp-ui-sideline--delete-ov))))
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'top
+        lsp-ui-sideline-update-mode 'line))
 
 (use-package company-lsp
   :ensure t
   :after (lsp-mode company))
 
-;;; [== GIT ==]
 ;;;; Magit
 (use-package magit
   :ensure t
@@ -1303,31 +956,6 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
   :defer t
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
-
-;;; [== LANGUAGES ==]
-;;;; Shell Script
-;; Enable shell-script mode for zshell configuration files
-(let ((shell-files '("zprofile"
-                     "zshenv"
-                     "zshrc"
-                     "zlogin"
-                     "zlogout"
-                     "zfunc"
-                     "zalias")))
-  (mapc (lambda (file)
-          (add-to-list 'auto-mode-alist `(,(format "\\%s\\'" file) . sh-mode)))
-        shell-files))
-
-;;;; Lisp
-;; Some common functionality for all lisp-like languages (akin to smartparens)
-(defun wrap-with (s)
-  `(lambda (&optional arg)
-     (interactive "P")
-     (sp-wrap-with-pair ,s)))
-
-(bind-key "TAB" #'completion-at-point read-expression-map)
-(bind-key "M-(" (lambda () (wrap-with "(")) lisp-mode-shared-map)
-(bind-key "M-\"" (lambda () (wrap-with "\"")) lisp-mode-shared-map)
 
 ;;;; Emacs Lisp
 (use-package elisp-slime-nav
@@ -1480,7 +1108,8 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 2)
     (subword-mode +1)
-    (lsp) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
+    (yas-minor-mode)
+    (lsp-deferred) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
     ;; (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
@@ -1496,13 +1125,10 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
          ("C-c ." . go-test-current-test)
          ("C-c b" . go-run)))
 
-(use-package flycheck-gometalinter
+(use-package flycheck-golangci-lint
   :ensure t
   :after flycheck
-  :config
-  (setq flycheck-gometalinter-fast t
-        flycheck-gometalinter-disable-linters '("gotype"))
-  (add-hook 'go-mode-hook #'flycheck-gometalinter-setup))
+  :hook (go-mode . flycheck-golangci-lint-setup))
 
 (use-package go-impl
   :ensure t
@@ -1584,9 +1210,7 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (add-hook 'java-mode-hook 'my--java-mode-hook)
 
 ;;;; Python
-(defun my--install-python-dependencies ()
-  (when (executable-find "pip")
-    (start-process "Python deps" nil "pip install" "jedi flake8 autopep8 yapf")))
+;; System dependencies for the following packages: jedi flake8 autopep8 yap
 
 (add-hook 'python-mode-hook #'subword-mode)
 
@@ -1825,75 +1449,3 @@ Applies ORIG-FUN to ARGS first, and then truncates the path."
 (use-package ob-restclient
   :after org
   :ensure t)
-
-;;; [== THEMING ==]
-;;;; Theme
-(defconst light-theme 'eclipse)
-(defconst dark-theme 'default-dark)
-
-(use-package eclipse-theme
-  :load-path "themes/eclipse-theme"
-  :defer t)
-
-(use-package gruvbox-theme
-  :ensure t
-  :defer t)
-
-(defun disable-all-themes ()
-  "Disable all currently active themes."
-  (interactive)
-  (mapc #'disable-theme custom-enabled-themes))
-
-(defun load-dark-theme ()
-  "Load the dark theme of the week."
-  (interactive)
-  (funcall-interactively #'disable-all-themes)
-  (load-theme dark-theme t))
-
-(defun load-light-theme ()
-  "Load the default light theme."
-  (interactive)
-  (funcall-interactively #'disable-all-themes)
-  (load-theme light-theme t))
-
-(defun toggle-theme ()
-  (interactive)
-  (if (memq dark-theme custom-enabled-themes)
-      (funcall-interactively #'load-light-theme)
-    (funcall-interactively #'load-dark-theme)))
-
-(call-interactively #'load-light-theme)
-
-(bind-key "C-, t" #'toggle-theme global-map)
-
-(load-light-theme)
-
-;;; [== MISCELLANEOUS ==]
-(defun insert-agenda-week (&optional arg)
-  "Insert a new week at point.  Used in personal time-clocking agenda.
-When ARG is specified, prompts for a file to add it to."
-  (interactive "P")
-  (let* ((raw (raw-prefix-arg-p arg))
-         (arg (prefix-numeric-value arg))
-         (use-file-dialog nil)
-         (file (when raw (read-file-name "Agenda file: " "~")))
-         (start (org-read-date t t nil "Starting" (current-time)))
-         (end (time-add start (days-to-time 4)))
-         (text (with-temp-buffer
-                 (org-insert-time-stamp start nil t "* Week " "--")
-                 (org-insert-time-stamp end  nil t nil "\n")
-                 (dotimes (i 5)
-                   (let ((day (time-add start (days-to-time i))))
-                     (org-insert-time-stamp day nil t (format-time-string "** %A " day) "\n")))
-                 (insert "\n#+BEGIN: clocktable :scope file :maxlevel 2 :link t"
-                         " :tstart " (format-time-string "\"<%F %a>\"" start)
-                         " :tend "(format-time-string "\"<%F %a>\"" (time-add end (days-to-time 1)))
-                         "\n#+END:")
-                 (org-clock-report)
-                 (buffer-string))))
-    (if file
-        (write-region text nil file t)
-      (save-excursion
-        (cond ((= arg 1) (goto-char (point-max)))
-              (t (goto-char arg)))
-        (insert text)))))
