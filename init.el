@@ -210,6 +210,15 @@ static char * data[] = {
 ;;;; Buffers
 (bind-key "C-x C-b" #'ibuffer global-map)
 
+;;;; Dired
+(use-package dired-subtree
+  :ensure t
+  :config
+  (bind-keys :map dired-mode-map
+    ("i" . dired-subtree-insert)
+    (";" . dired-subtree-remove)))
+
+;;;; Undo/Redo
 (use-package undo-tree
   :ensure t
   :defer 1
@@ -1010,7 +1019,11 @@ This checks in turn:
 (use-package cider
   :ensure t
   :defer t
-  :commands cider-jack-in
+  :commands (cider-jack-in-clj&cljs
+             cider-jack-in
+             cider-jack-in-cljs
+             cider-connect
+             cider-connect-cljs)
   :config
   (progn
     (setq nrepl-log-messages t
