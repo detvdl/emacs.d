@@ -8,7 +8,7 @@
       package--init-file-ensured t
       package-check-signature nil)
 
-(when (eval-when-compile (version< emacs-version "27"))
+(when (version< emacs-version "27")
   (setq package-enable-at-startup nil)
   (unless package--initialized
     (package-initialize)))
@@ -17,6 +17,9 @@
   (package-refresh-contents)
   (package-install 'use-package)
   (require 'use-package))
+
+(use-package delight :ensure t)
+(use-package bind-key :ensure t)
 
 (setq use-package-always-ensure nil)
 
@@ -682,6 +685,7 @@ This functions should be added to the hooks of major modes for programming."
 
 ;; TODO: set correct faces to properly use solaire-mode
 (use-package solaire-mode
+  :ensure t
   :hook (((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
          (minibuffer-setup . solaire-mode-in-minibuffer))
   :config
