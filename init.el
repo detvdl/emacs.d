@@ -1466,3 +1466,12 @@ This checks in turn:
 (use-package ob-restclient
   :after org
   :ensure t)
+
+(use-package kubernetes
+  :ensure t
+  :commands (kubernetes-overview))
+
+(use-package docker
+  :ensure t
+  :bind ("C-c d" . docker))
+
