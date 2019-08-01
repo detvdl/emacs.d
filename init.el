@@ -288,6 +288,9 @@ static char * data[] = {
 (use-package hydra
   :ensure t)
 
+(use-package iedit
+  :ensure t)
+
 ;; Does what it says: multiple cursors!
 (use-package multiple-cursors
   :ensure t
@@ -297,8 +300,6 @@ static char * data[] = {
          ("C-M->" . mc/unmark-next-like-this)
          ("C-. C->" . mc/skip-to-next-like-this)
          ("C-. C-<" . mc/skip-to-previous-like-this)
-         ("C-; w" . mc/mark-all-words-like-this)
-         ("C-; M-w" . mc/mark-all-words-like-this-in-defun)
          ("C-. >" . hydra-multiple-cursors/body)
          :map global-map
          ("C-S-<mouse-1>" . mc/add-cursor-on-click))
@@ -739,7 +740,7 @@ This functions should be added to the hooks of major modes for programming."
 (defun indent-whole-file ()
   (interactive)
   (indent-region (point-min) (point-max)))
-(bind-key "C-; l" #'indent-whole-file global-map)
+(bind-key "C-c i l" #'indent-whole-file global-map)
 
 ;; Emacs-lisp does not indent keyword-plists correctly. This function fixes that
 ;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
@@ -1126,7 +1127,7 @@ This checks in turn:
     (setq-local tab-width 2)
     (subword-mode +1)
     (yas-minor-mode)
-    (lsp-deferred) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
+    ;; (lsp-deferred) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
     ;; (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
@@ -1475,3 +1476,4 @@ This checks in turn:
   :ensure t
   :bind ("C-c d" . docker))
 
+(load-theme 'default-improved t)
