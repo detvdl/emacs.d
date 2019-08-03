@@ -397,7 +397,8 @@ static char * data[] = {
   :bind ("C-'" . imenu-list-smart-toggle)
   :config
   (setq imenu-list-focus-after-activation t
-        imenu-list-auto-resize t
+        imenu-list-auto-resize nil
+        imenu-list-size 0.25
         imenu-list-position 'right))
 
 ;;;; Symbol Highlighting
