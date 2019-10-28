@@ -580,6 +580,8 @@ This functions should be added to the hooks of major modes for programming."
          ([mouse-1] . treemacs-single-click-expand-action))
   :config
   (setq treemacs-fringe-indicator-mode nil
+        treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
+        treemacs-indentation 1
         treemacs-no-png-images nil
         treemacs-width 30
         treemacs-silent-refresh t
@@ -741,7 +743,7 @@ This functions should be added to the hooks of major modes for programming."
 (defun indent-whole-file ()
   (interactive)
   (indent-region (point-min) (point-max)))
-(bind-key "C-c i l" #'indent-whole-file global-map)
+(bind-key "C-c i f" #'indent-whole-file global-map)
 
 ;; Emacs-lisp does not indent keyword-plists correctly. This function fixes that
 ;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
@@ -996,17 +998,15 @@ This checks in turn:
 
 (use-package slime
   :ensure t
-  :commands slime
   :bind (:map slime-mode-map
          ("C-c C-s" . slime-selector))
   :config
-  (setq slime-lisp-implementations '((ccl ("/usr/local/bin/ccl"))
-                                     (sbcl ("/usr/local/bin/sbcl"))
-                                     (pico ("/usr/local/bin/pil")))
+  (setq inferior-lisp-program "/usr/bin/sbcl"
         slime-contribs '(slime-fancy slime-company slime-indentation)
         slime-autodoc-use-multiline-p t
         slime-enable-evaluate-in-emacs t
         common-lisp-style-default "sbcl")
+  (add-hook 'slime-load-hook (lambda () (require 'slime-fancy)))
   (defun slime-enable-concurrent-hints ()
     (interactive)
     (setf slime-inhibit-pipelining nil)))
@@ -1015,8 +1015,14 @@ This checks in turn:
   :ensure t
   :after slime
   :config
-  (add-hook 'slime-mode-hook (lambda () (company:add-local-backend 'company-slime)))
   (setq slime-company-completion 'fuzzy))
+
+(add-hook 'slime-mode-hook (lambda ()
+                             (setq lisp-indent-function 'common-lisp-indent-function
+                                   lisp-loop-indent-subclauses nil
+                                   lisp-loop-indent-forms-like-keywords t
+                                   lisp-lambda-list-keyword-parameter-alignment t)
+                             (company:add-local-backend 'company-slime)))
 
 ;;;; Clojure
 (use-package clojure-mode
