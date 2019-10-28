@@ -916,7 +916,8 @@ This checks in turn:
 
 (use-package company-lsp
   :ensure t
-  :after (lsp-mode company))
+  :after (lsp-mode company)
+  :init (yas-minor-mode 1))
 
 ;;;; Magit
 (use-package magit
