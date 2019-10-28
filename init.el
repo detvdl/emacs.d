@@ -973,6 +973,11 @@ This checks in turn:
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
+(use-package editorconfig
+  :ensure t
+  :config
+  (editorconfig-mode 1))
+
 ;;;; Emacs Lisp
 (use-package elisp-slime-nav
   :ensure t
