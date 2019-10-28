@@ -1411,7 +1411,22 @@ This checks in turn:
 
 (use-package json-mode
   :ensure t
-  :mode ("\\.json\\'"))
+  :mode ("\\.json\\'")
+  :config
+  (add-hook 'json-mode-hook (lambda ()
+                              (make-local-variable 'js-indent-level)
+                              (setq js-indent-level 2)))
+  (defun json-to-single-line (beg end)
+    "Collapse prettified json in region between BEG and END to a single line"
+    (interactive "r")
+    (if (use-region-p)
+        (save-excursion
+          (save-restriction
+            (narrow-to-region beg end)
+            (goto-char (point-min))
+            (while (re-search-forward "\\s-+\\|\n" nil t)
+              (replace-match " "))))
+      (print "This function operates on a region"))))
 
 ;;;; Typescript
 (use-package typescript-mode
@@ -1431,7 +1446,7 @@ This checks in turn:
          ("C-; i" . tide-organize-imports)
          ("C-; f" . tide-fix))
   :config
-  (setq typescript-indent-level 4))
+  (setq typescript-indent-level 2))
 
 ;;;; Markdown
 (use-package markdown-mode
