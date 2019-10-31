@@ -29,10 +29,34 @@
 (defconst *is-mac* (eq system-type 'darwin))
 (defconst *is-linux* (eq system-type 'gnu/linux))
 
-(when *is-mac*
-  (setq mac-command-modifier 'meta
-        mac-option-modifier 'alt)
-  (global-set-key [kp-delete] 'delete-char))
+(defun list-init-files (directory)
+  "List all .init.el files inside DIRECTORY."
+  (if (not (file-exists-p directory))
+      '()
+    (let (init-files-list
+          (current-dir-list (directory-files-and-attributes directory t)))
+      (dolist (dir-item current-dir-list init-files-list)
+        (if (equal ".init.el" (substring (car dir-item) -8))
+            (let ((dir-item-base (substring (car dir-item) 0 -3)))
+              (setq init-files-list
+                    (cons dir-item-base
+                          init-files-list))))))))
+
+(defun platform-init-path ()
+  "Return path to directory containing platform-specific init files."
+  (let* ((platform-dir (symbol-name system-type))
+         (sanitized-platform-dir
+          (if (s-contains? "/" platform-dir)
+              (car (last (s-split "/" platform-dir)))
+            platform-dir)))
+    (concat user-emacs-directory
+            sanitized-platform-dir)))
+
+;; If there are any customizations per-machine, per-user, load them as
+;; well
+(mapc 'load
+      (sort (list-init-files (platform-init-path))
+            'string-lessp))
 
 (push emacs-theme-dir custom-theme-load-path)
 (dolist (dir (directory-files emacs-theme-dir))
@@ -76,9 +100,6 @@
       scroll-margin 0
       scroll-conservatively 100000
       scroll-preserve-screen-position 1)
-
-(when (and (display-graphic-p) *is-linux*)
-  (setq x-gtk-use-system-tooltips nil))
 
 ;; Zoom in and out using text-scale commands
 (bind-key "C--" #'text-scale-decrease global-map)
@@ -1195,6 +1216,26 @@ This checks in turn:
 ;; NOTE: possibly dap-java needs to be byte-compiled separately, to account for the following snippet:
 ;; (eval-when-compile
 ;;   (require 'cl))
+;; (setq lsp-java-vmargs
+;;       (list "-noverify"
+;;             "-Xmx2G"
+;;             "-XX:+UseG1GC"
+;;             "-XX:+UseStringDeduplication"
+;;             (concat "-javaagent:" jmi/lombok-jar)
+;;             (concat "-Xbootclasspath/a:" jmi/lombok-jar))
+;;       lsp-file-watch-ignored
+;;       '(".idea" ".ensime_cache" ".eunit" "node_modules"
+;;         ".git" ".hg" ".fslckout" "_FOSSIL_"
+;;         ".bzr" "_darcs" ".tox" ".svn" ".stack-work"
+;;         "build")
+
+;;       lsp-java-import-order '["" "java" "javax" "#"]
+;;       ;; Don't organize imports on save
+;;       lsp-java-save-action-organize-imports nil
+
+;;       ;; Formatter profile
+;;       lsp-java-format-settings-url
+;;       (concat "file://" jmi/java-format-settings-file))
 (use-package dap-mode
   :ensure t
   :functions (dap-breakpoint-toggle
