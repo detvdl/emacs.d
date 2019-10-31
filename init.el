@@ -708,25 +708,26 @@ This functions should be added to the hooks of major modes for programming."
   :after treemacs projectile
   :ensure t)
 
-;; TODO: set correct faces to properly use solaire-mode
 (use-package solaire-mode
   :ensure t
   :hook (((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
          (minibuffer-setup . solaire-mode-in-minibuffer))
   :config
-  (solaire-global-mode)
+  (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
 ;;; Centaur tabs
 (use-package centaur-tabs
   :ensure t
+  :demand
   :bind (("C-S-<tab>" . centaur-tabs-backward)
          ("C-<tab>" . centaur-tabs-forward))
-  :init
-  (setq centaur-tabs-set-bar 'over)
   :config
-  (centaur-tabs-mode)
-  (setq centaur-tabs-set-modified-marker t
+  (centaur-tabs-headline-match)
+  (centaur-tabs-mode t)
+  (setq centaur-tabs-style "bar"
+        centaur-tabs-set-bar 'over
+        centaur-tabs-set-modified-marker t
         centaur-tabs-modified-marker "●"
         centaur-tabs-cycle-scope 'tabs
         centaur-tabs-height 20
