@@ -41,7 +41,7 @@
               (setq init-files-list
                     (cons dir-item-base
                           init-files-list))))))))
-
+(use-package s :ensure t)
 (defun platform-init-path ()
   "Return path to directory containing platform-specific init files."
   (let* ((platform-dir (symbol-name system-type))
