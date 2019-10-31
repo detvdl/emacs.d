@@ -736,12 +736,13 @@ This functions should be added to the hooks of major modes for programming."
   :demand
   :bind (("C-S-<tab>" . centaur-tabs-backward)
          ("C-<tab>" . centaur-tabs-forward))
+  :init
+  (setq centaur-tabs-style "bar"
+        centaur-tabs-set-bar 'over)
   :config
   (centaur-tabs-headline-match)
   (centaur-tabs-mode t)
-  (setq centaur-tabs-style "bar"
-        centaur-tabs-set-bar 'over
-        centaur-tabs-set-modified-marker t
+  (setq centaur-tabs-set-modified-marker t
         centaur-tabs-modified-marker "●"
         centaur-tabs-cycle-scope 'tabs
         centaur-tabs-height 20
