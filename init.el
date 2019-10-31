@@ -413,6 +413,9 @@ static char * data[] = {
   ;; ensure ace-window keybind doesn't get overridden in ggtags-mode buffers
   (unbind-key "M-o" ggtags-navigation-map))
 
+;; ensure no stale imenu tags in treemacs or otherwise
+(setq imenu-auto-rescan t)
+
 (use-package imenu-list
   :ensure t
   :bind ("C-'" . imenu-list-smart-toggle)
@@ -600,17 +603,28 @@ This functions should be added to the hooks of major modes for programming."
          :map treemacs-mode-map
          ([mouse-1] . treemacs-single-click-expand-action))
   :config
-  (setq treemacs-fringe-indicator-mode nil
-        treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
+  (setq treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
         treemacs-indentation 1
         treemacs-no-png-images nil
+        treemacs-display-in-side-window t
         treemacs-width 30
         treemacs-silent-refresh t
         treemacs-silent-filewatch t
         treemacs-show-hidden-files t
+        treemacs-sorting 'alphabetic-case-insensitive-desc
+        treemacs-follow-after-init t
+        treemacs-project-follow-cleanup t
+        treemacs-tag-follow-cleanup t
+        treemacs-tag-follow-delay 1.0
+        treemacs-recenter-distance 0.1
+        treemacs-recenter-after-tag-follow 'on-distance
+        treemacs-recenter-after-file-follow 'on-distance
         treemacs-file-event-delay 1000
         treemacs-file-follow-delay 0.1)
-  ;; (add-hook 'treemacs-mode-hook #'hide-mode-line-mode)
+  (treemacs-follow-mode t)
+  (treemacs-tag-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode t)
   (add-hook 'treemacs-mode-hook (lambda ()
                                   (linum-mode -1)
                                   (when (display-graphic-p)
