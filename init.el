@@ -1038,7 +1038,7 @@ This checks in turn:
   :bind (:map slime-mode-map
          ("C-c C-s" . slime-selector))
   :config
-  (setq inferior-lisp-program "/usr/bin/sbcl"
+  (setq inferior-lisp-program (executable-find "sbcl")
         slime-contribs '(slime-fancy slime-company slime-indentation)
         slime-autodoc-use-multiline-p t
         slime-enable-evaluate-in-emacs t
