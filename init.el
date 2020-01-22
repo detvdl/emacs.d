@@ -110,6 +110,11 @@
 ;; (set-frame-font "Fira Code-14:light")
 (setq inhibit-compacting-font-caches t)
 
+;; PATCHing stuff
+(use-package el-patch
+  :ensure t
+  :config
+  (setq el-patch-enable-use-package-integration t))
 
 (defconst git--state-small-dot
   "/* XPM */
@@ -355,6 +360,7 @@ static char * data[] = {
 (use-package ivy
   :ensure t
   :delight ivy-mode
+  :hook (after-init . ivy-mode)
   :bind (("C-s" . swiper-isearch)
          ("C-x C-f" . counsel-find-file)
 	     ("M-x" . counsel-M-x)
@@ -374,15 +380,16 @@ static char * data[] = {
          :map ivy-minibuffer-map
          ("RET" . ivy-alt-done)
          ("C-m" . ivy-alt-done)
-         ("C-j" . ivy-done))
+         ("C-j" . ivy-done)
+         ("<escape>" . minibuffer-keyboard-quit))
   :config
   ;; Fuzzy matching
   (use-package flx :ensure t)
   (setq ivy-use-virtual-buffers t
         ivy-use-selectable-prompt t
         enable-recursive-minibuffers t
-        ivy-display-style 'fancy
-        ivy-height 8
+        ivy-display-style nil
+        ivy-height 8 ;; used when posframe is not available
         ivy-virtual-abbreviate 'full
         ivy-extra-directories nil
         ivy-re-builders-alist '((swiper . ivy--regex-plus)
@@ -397,14 +404,64 @@ static char * data[] = {
     (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"
-        counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s .")
-  (ivy-mode 1))
+        counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s ."))
 
 (use-package swiper :ensure t :after ivy)
 (use-package counsel :ensure t
   :after swiper
+  :hook (ivy-mode . counsel-mode)
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
+
+(use-package ivy-posframe
+  :after ivy
+  :ensure t
+  :delight
+  :config
+  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
+        ivy-posframe-height-alist '((t . 20)))
+  (setq ivy-posframe-width 80)
+  (ivy-posframe-mode +1))
+
+(use-package ivy-rich
+  :ensure t
+  :delight
+  :preface
+  (defun ivy-rich-switch-buffer-icon (candidate)
+    (with-current-buffer
+        (get-buffer candidate)
+      (all-the-icons-icon-for-mode major-mode)))
+  :init
+  (setq ivy-rich-display-transformers-list ; max column width sum = (ivy-poframe-width - 1)
+        '(ivy-switch-buffer
+          (:columns
+           ((ivy-rich-switch-buffer-icon (:width 2))
+            (ivy-rich-candidate (:width 35))
+            (ivy-rich-switch-buffer-project (:width 15 :face success))
+            (ivy-rich-switch-buffer-major-mode (:width 13 :face warning)))
+           :predicate
+           (lambda (cand) (get-buffer cand)))
+          counsel-M-x
+          (:columns
+           ((counsel-M-x-transformer (:width 35))
+            (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
+          counsel-describe-function
+          (:columns
+           ((counsel-describe-function-transformer (:width 35))
+            (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
+          counsel-describe-variable
+          (:columns
+           ((counsel-describe-variable-transformer (:width 35))
+            (ivy-rich-counsel-variable-docstring (:width 34 :face font-lock-doc-face))))
+          package-install
+          (:columns
+           ((ivy-rich-candidate (:width 25))
+            (ivy-rich-package-version (:width 12 :face font-lock-comment-face))
+            (ivy-rich-package-archive-summary (:width 7 :face font-lock-builtin-face))
+            (ivy-rich-package-install-summary (:width 23 :face font-lock-doc-face))))))
+  :config
+  (ivy-rich-mode +1)
+  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 
 (use-package ggtags
   :ensure t
@@ -429,6 +486,15 @@ static char * data[] = {
 (use-package symbol-overlay
   :ensure t
   :hook (prog-mode . symbol-overlay-mode))
+
+(use-package highlight-indent-guides
+  :ensure t
+  :hook (prog-mode . highlight-indent-guides-mode)
+  :delight
+  :config
+  (setq highlight-indent-guides-method 'character)
+  (setq highlight-indent-guides-character 9615) ; left-align vertical bar
+  (setq highlight-indent-guides-auto-character-face-perc 20))
 
 ;;;; Dired
 (use-package dired-subtree
@@ -730,25 +796,6 @@ This functions should be added to the hooks of major modes for programming."
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
-;;; Centaur tabs
-(use-package centaur-tabs
-  :ensure t
-  :demand
-  :bind (("C-S-<tab>" . centaur-tabs-backward)
-         ("C-<tab>" . centaur-tabs-forward))
-  :init
-  (setq centaur-tabs-style "bar"
-        centaur-tabs-set-bar 'over)
-  :config
-  (centaur-tabs-headline-match)
-  (centaur-tabs-mode t)
-  (setq centaur-tabs-set-modified-marker t
-        centaur-tabs-modified-marker "●"
-        centaur-tabs-cycle-scope 'tabs
-        centaur-tabs-height 20
-        centaur-tabs-set-icons nil
-        centaur-tabs-gray-out-icons 'buffer))
-
 ;; Always enable eldoc
 (global-eldoc-mode +1)
 (delight 'eldoc-mode nil t)
@@ -937,7 +984,8 @@ This checks in turn:
   :commands (lsp lsp-deferred)
   :config
   (setq lsp-eldoc-enable-hover t
-        lsp-eldoc-render-all t))
+        lsp-eldoc-render-all t
+        lsp-prefer-flymake nil))
 
 (use-package lsp-ui
   :ensure t
@@ -948,7 +996,8 @@ This checks in turn:
          ([remap xref-find-references] . lsp-ui-peek-find-references)
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
   :config
-  (setq lsp-ui-doc-include-signature nil
+  (setq lsp-ui-flycheck-enable t
+        lsp-ui-doc-include-signature t
         lsp-ui-doc-use-childframe t
         lsp-ui-doc-position 'top
         lsp-ui-sideline-update-mode 'line))
@@ -983,8 +1032,6 @@ This checks in turn:
   :ensure t
   :after magit
   :demand t
-  :bind (:map magit-status-mode-map
-         ("j l" . magit-todos-list))
   :config
   (magit-todos-mode +1)
   (setq magit-todos-auto-group-items 5))
@@ -1560,7 +1607,87 @@ This checks in turn:
 
 (use-package intero
   :ensure t
-  :hook (haskell-mode . intero-mode))
+  :hook (haskell-mode . intero-mode)
+  :config/el-patch
+  (el-patch-defun intero-ghci-output-flags ()
+    "Get the appropriate ghci output flags for the current GHC version"
+    (with-current-buffer (intero-buffer 'backend)
+      (let ((current-version (mapcar #'string-to-number (split-string (el-patch-swap intero-ghc-version (intero-ghc-version)) "\\."))))
+        (if (intero-version>= '(8 4 1) current-version)
+            '("-fno-code" "-fwrite-interface")
+          '("-fobject-code")))))
+  (el-patch-defun intero-start-process-in-buffer (buffer &optional targets source-buffer stack-yaml)
+    "Start an Intero worker in BUFFER.
+Uses the specified TARGETS if supplied.
+Automatically performs initial actions in SOURCE-BUFFER, if specified.
+Uses the default stack config file, or STACK-YAML file if given."
+    (if (buffer-local-value 'intero-give-up buffer)
+        buffer
+      (let* ((process-info (intero-start-piped-process buffer targets stack-yaml))
+             (arguments (plist-get process-info :arguments))
+             (options (plist-get process-info :options))
+             (process (plist-get process-info :process)))
+        (set-process-query-on-exit-flag process nil)
+        (mapc
+         (lambda (flag)
+           (process-send-string process ((el-patch-swap append concat) ":set " flag "\n")))
+         (intero-ghci-output-flags))
+        (process-send-string process ":set -fdefer-type-errors\n")
+        (process-send-string process ":set -fdiagnostics-color=never\n")
+        (process-send-string process ":set prompt \"\\4\"\n")
+        (with-current-buffer buffer
+          (erase-buffer)
+          (when stack-yaml
+            (setq intero-stack-yaml stack-yaml))
+          (setq intero-targets targets)
+          (setq intero-start-time (current-time))
+          (setq intero-source-buffer source-buffer)
+          (setq intero-arguments arguments)
+          (setq intero-starting t)
+          (setq intero-callbacks
+                (list (list (cons source-buffer
+                                  buffer)
+                            (lambda (buffers msg)
+                              (let ((source-buffer (car buffers))
+                                    (process-buffer (cdr buffers)))
+                                (with-current-buffer process-buffer
+                                  (when (string-match "^Intero-Service-Port: \\([0-9]+\\)\n" msg)
+                                    (setq intero-service-port (string-to-number (match-string 1 msg))))
+                                  (setq-local intero-starting nil))
+                                (when source-buffer
+                                  (with-current-buffer source-buffer
+                                    (when flycheck-mode
+                                      (run-with-timer 0 nil
+                                                      'intero-call-in-buffer
+                                                      (current-buffer)
+                                                      'intero-flycheck-buffer)))))
+                              (message "Booted up intero!"))))))
+        (set-process-filter
+         process
+         (lambda (process string)
+           (when intero-debug
+             (message "[Intero] <- %s" string))
+           (when (buffer-live-p (process-buffer process))
+             (with-current-buffer (process-buffer process)
+               (goto-char (point-max))
+               (insert string)
+               (when (and intero-try-with-build
+                          intero-starting)
+                 (let ((last-line (buffer-substring-no-properties
+                                   (line-beginning-position)
+                                   (line-end-position))))
+                   (if (string-match-p "^Progress" last-line)
+                       (message "Booting up intero (building dependencies: %s)"
+                                (downcase
+                                 (or (car (split-string (replace-regexp-in-string
+                                                         "\u0008+" "\n"
+                                                         last-line)
+                                                        "\n" t))
+                                     "...")))
+                     (message "Booting up intero ..."))))
+               (intero-read-buffer)))))
+        (set-process-sentinel process 'intero-sentinel)
+        buffer))))
 
 (use-package kubernetes
   :ensure t
@@ -1575,3 +1702,4 @@ This checks in turn:
 
 (load-theme 'zenburn t)
 ;; (load-theme 'default-dark t)
+(put 'narrow-to-region 'disabled nil)
