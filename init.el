@@ -493,7 +493,7 @@ static char * data[] = {
   :delight
   :config
   (setq highlight-indent-guides-method 'character)
-  (setq highlight-indent-guides-character 9615) ; left-align vertical bar
+  (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
   (setq highlight-indent-guides-auto-character-face-perc 20))
 
 ;;;; Dired
