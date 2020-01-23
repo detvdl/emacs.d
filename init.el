@@ -310,7 +310,6 @@ static char * data[] = {
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
-
 (use-package hydra
   :ensure t)
 
@@ -485,7 +484,9 @@ static char * data[] = {
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
   :ensure t
-  :hook (prog-mode . symbol-overlay-mode))
+  :hook (prog-mode . symbol-overlay-mode)
+  :config
+  (set-face-attribute 'symbol-overlay-default-face nil :background "DarkOrchid" :foreground "white"))
 
 (use-package highlight-indent-guides
   :ensure t
