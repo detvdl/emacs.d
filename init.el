@@ -219,6 +219,7 @@ static char * data[] = {
 (setq-default tab-width 4
 	          make-backup-files nil
 	          indent-tabs-mode nil
+              ring-bell-function 'ignore
 	          visible-bell nil)
 
 (add-hook 'prog-mode-hook (lambda () (setq-local show-trailing-whitespace t)))
