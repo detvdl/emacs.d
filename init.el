@@ -69,6 +69,8 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
+(setq x-select-request-type 'STRING)
+
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -491,9 +493,10 @@ static char * data[] = {
 
 (use-package highlight-indent-guides
   :ensure t
-  :hook (prog-mode . highlight-indent-guides-mode)
+  :defer 2
   :delight
   :config
+  (add-hook 'prog-mode-hook #'highlight-indent-guides-mode)
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
   (setq highlight-indent-guides-auto-character-face-perc 20))
@@ -1223,7 +1226,7 @@ This checks in turn:
   (add-hook 'before-save-hook 'gofmt-before-save)
   (defun my--go-mode-hook ()
     (setq-local indent-tabs-mode 1)
-    (setq-local tab-width 2)
+    (setq-local tab-width 4)
     (subword-mode +1)
     (yas-minor-mode)
     ;; (lsp-deferred) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
@@ -1699,9 +1702,14 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-(use-package zenburn-theme
-  :ensure t)
+;; (use-package zenburn-theme
+;; :ensure t)
 
-(load-theme 'zenburn t)
+(use-package modus-operandi-theme
+  :ensure t
+  :demand t)
+
+(load-theme 'modus-operandi t)
+;; (load-theme 'zenburn t)
 ;; (load-theme 'default-dark t)
 (put 'narrow-to-region 'disabled nil)
