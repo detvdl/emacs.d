@@ -493,10 +493,9 @@ static char * data[] = {
 
 (use-package highlight-indent-guides
   :ensure t
-  :defer 2
+  :hook (prog-mode . highlight-indent-guides-mode)
   :delight
   :config
-  (add-hook 'prog-mode-hook #'highlight-indent-guides-mode)
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
   (setq highlight-indent-guides-auto-character-face-perc 20))
@@ -795,9 +794,11 @@ This functions should be added to the hooks of major modes for programming."
 
 (use-package solaire-mode
   :ensure t
-  :hook (((change-major-mode after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+  :defer 2
+  :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
          (minibuffer-setup . solaire-mode-in-minibuffer))
   :config
+  (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
   (solaire-global-mode +1)
   (solaire-mode-swap-bg))
 
