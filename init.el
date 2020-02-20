@@ -673,7 +673,7 @@ This functions should be added to the hooks of major modes for programming."
          :map treemacs-mode-map
          ([mouse-1] . treemacs-single-click-expand-action))
   :config
-  (setq treemacs-indentation-string (propertize " ⫶ " 'face 'font-lock-comment-face)
+  (setq treemacs-indentation-string (propertize " \| " 'face 'font-lock-comment-face)
         treemacs-indentation 1
         treemacs-no-png-images nil
         treemacs-display-in-side-window t
@@ -792,15 +792,15 @@ This functions should be added to the hooks of major modes for programming."
   :after treemacs projectile
   :ensure t)
 
-(use-package solaire-mode
-  :ensure t
-  :defer 2
-  :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
-         (minibuffer-setup . solaire-mode-in-minibuffer))
-  :config
-  (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
-  (solaire-global-mode +1)
-  (solaire-mode-swap-bg))
+;; (use-package solaire-mode
+;;   :ensure t
+;;   :defer 2
+;;   :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+;;          (minibuffer-setup . solaire-mode-in-minibuffer))
+;;   :config
+;;   (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
+;;   (solaire-global-mode +1)
+;;   (solaire-mode-swap-bg))
 
 ;; Always enable eldoc
 (global-eldoc-mode +1)
@@ -1707,8 +1707,7 @@ Uses the default stack config file, or STACK-YAML file if given."
 ;; :ensure t)
 
 (use-package modus-operandi-theme
-  :ensure t
-  :demand t)
+  :ensure t)
 
 (load-theme 'modus-operandi t)
 ;; (load-theme 'zenburn t)
