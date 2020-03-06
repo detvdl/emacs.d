@@ -1,5 +1,3 @@
-;; -*- lexical-binding; t -*-
-
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 			             ("melpa" . "https://melpa.org/packages/")
@@ -22,6 +20,8 @@
 (use-package bind-key :ensure t)
 
 (setq use-package-always-ensure nil)
+
+(use-package use-package-ensure-system-package :ensure t)
 
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
@@ -408,7 +408,11 @@ static char * data[] = {
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"
         counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s ."))
 
-(use-package swiper :ensure t :after ivy)
+(use-package swiper
+  :ensure t
+  :after ivy
+  :config
+  (setq swiper-use-visual-line-p #'ignore))
 (use-package counsel :ensure t
   :after swiper
   :hook (ivy-mode . counsel-mode)
@@ -1471,10 +1475,17 @@ This checks in turn:
          "\\.erb\\'"
          "\\.html?\\'"
          "\\.eex\\'"
+         "\\.vue\\'"
          "/\\(views\\|html\\|theme\\|templates\\)/.*\\.php\\'")
+  :init
+  (defun my/web-mode-hook ()
+    (setq web-mode-markup-indent-offset 2
+          web-mode-css-indent-offset 2
+          web-mode-code-indent-offset 2))
   :config
   (setq web-mode-enable-auto-pairing nil
         web-mode-enable-current-element-highlight t)
+  (add-hook 'web-mode-hook #'my/web-mode-hook)
   (eval-after-load 'smartparens
     (sp-with-modes '(web-mode)
       (sp-local-pair "%" "%"
@@ -1486,6 +1497,16 @@ This checks in turn:
       (sp-local-tag "%" "<% "  " %>")
       (sp-local-tag "=" "<%= " " %>")
       (sp-local-tag "#" "<%# " " %>"))))
+
+(use-package prettier-js
+  :ensure t
+  :ensure-system-package (prettier . "npm i -g prettier")
+  :commands prettier-js
+  :init
+  (defun my/prettier-js-hook ()
+    (setq-local indent-region-function #'prettier-js)
+    (prettier-js-mode))
+  :hook ((typescript-mode js2-mode) . my/prettier-js-hook))
 
 (use-package emmet-mode
   :ensure t
@@ -1515,14 +1536,14 @@ This checks in turn:
   (defun my--js2-mode-hook ()
     (setq-local electric-layout-rules '((?\; . after)))
     (setq mode-name "JS2"
-          js-indent-level 4))
+          js-indent-level 2))
   (add-hook 'js2-mode-hook 'my--js2-mode-hook)
   (js2-imenu-extras-mode +1))
 
 (use-package tern
   :ensure t
   :delight
-  :hook js2-mode)
+  :hook (js2-mode . tern-mode))
 
 (use-package company-tern
   :ensure t
@@ -1566,6 +1587,21 @@ This checks in turn:
          ([remap describe-thing-at-point] . tide-documentation-at-point)
          ("C-; i" . tide-organize-imports)
          ("C-; f" . tide-fix))
+  :init
+  (defun setup-tide-mode ()
+    (interactive)
+    (tide-setup)
+    (flycheck-mode +1)
+    ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (eldoc-mode +1)
+    (tide-hl-identifier-mode +1)
+    ;; company is an optional dependency. You have to
+    ;; install it separately via package-install
+    ;; `M-x package-install [ret] company`
+    (company-mode +1))
+  (defun my/setup-tsx-mode ()
+    (when (string-equal "tsx" (file-name-extension buffer-file-name))
+      (setup-tide-mode)))
   :config
   (setq typescript-indent-level 2))
 
@@ -1703,13 +1739,13 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-;; (use-package zenburn-theme
-;; :ensure t)
-
-(use-package modus-operandi-theme
+(use-package zenburn-theme
   :ensure t)
 
-(load-theme 'modus-operandi t)
-;; (load-theme 'zenburn t)
+;; (use-package modus-operandi-theme
+;; :ensure t)
+
+;; (load-theme 'modus-operandi t)
+(load-theme 'zenburn t)
 ;; (load-theme 'default-dark t)
 (put 'narrow-to-region 'disabled nil)
