@@ -93,6 +93,7 @@
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (blink-cursor-mode -1)
 (show-paren-mode 1)
+(global-display-line-numbers-mode +1)
 
 (column-number-mode)
 
@@ -429,45 +430,45 @@ static char * data[] = {
   (setq ivy-posframe-width 80)
   (ivy-posframe-mode +1))
 
-(use-package ivy-rich
-  :ensure t
-  :delight
-  :preface
-  (defun ivy-rich-switch-buffer-icon (candidate)
-    (with-current-buffer
-        (get-buffer candidate)
-      (all-the-icons-icon-for-mode major-mode)))
-  :init
-  (setq ivy-rich-display-transformers-list ; max column width sum = (ivy-poframe-width - 1)
-        '(ivy-switch-buffer
-          (:columns
-           ((ivy-rich-switch-buffer-icon (:width 2))
-            (ivy-rich-candidate (:width 35))
-            (ivy-rich-switch-buffer-project (:width 15 :face success))
-            (ivy-rich-switch-buffer-major-mode (:width 13 :face warning)))
-           :predicate
-           (lambda (cand) (get-buffer cand)))
-          counsel-M-x
-          (:columns
-           ((counsel-M-x-transformer (:width 35))
-            (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
-          counsel-describe-function
-          (:columns
-           ((counsel-describe-function-transformer (:width 35))
-            (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
-          counsel-describe-variable
-          (:columns
-           ((counsel-describe-variable-transformer (:width 35))
-            (ivy-rich-counsel-variable-docstring (:width 34 :face font-lock-doc-face))))
-          package-install
-          (:columns
-           ((ivy-rich-candidate (:width 25))
-            (ivy-rich-package-version (:width 12 :face font-lock-comment-face))
-            (ivy-rich-package-archive-summary (:width 7 :face font-lock-builtin-face))
-            (ivy-rich-package-install-summary (:width 23 :face font-lock-doc-face))))))
-  :config
-  (ivy-rich-mode +1)
-  (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
+;; (use-package ivy-rich
+;;   :ensure t
+;;   :delight
+;;   :preface
+;;   (defun ivy-rich-switch-buffer-icon (candidate)
+;;     (with-current-buffer
+;;         (get-buffer candidate)
+;;       (all-the-icons-icon-for-mode major-mode)))
+;;   :init
+;;   (setq ivy-rich-display-transformers-list ; max column width sum = (ivy-poframe-width - 1)
+;;         '(ivy-switch-buffer
+;;           (:columns
+;;            ((ivy-rich-switch-buffer-icon (:width 2))
+;;             (ivy-rich-candidate (:width 35))
+;;             (ivy-rich-switch-buffer-project (:width 15 :face success))
+;;             (ivy-rich-switch-buffer-major-mode (:width 13 :face warning)))
+;;            :predicate
+;;            (lambda (cand) (get-buffer cand)))
+;;           counsel-M-x
+;;           (:columns
+;;            ((counsel-M-x-transformer (:width 35))
+;;             (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
+;;           counsel-describe-function
+;;           (:columns
+;;            ((counsel-describe-function-transformer (:width 35))
+;;             (ivy-rich-counsel-function-docstring (:width 34 :face font-lock-doc-face))))
+;;           counsel-describe-variable
+;;           (:columns
+;;            ((counsel-describe-variable-transformer (:width 35))
+;;             (ivy-rich-counsel-variable-docstring (:width 34 :face font-lock-doc-face))))
+;;           package-install
+;;           (:columns
+;;            ((ivy-rich-candidate (:width 25))
+;;             (ivy-rich-package-version (:width 12 :face font-lock-comment-face))
+;;             (ivy-rich-package-archive-summary (:width 7 :face font-lock-builtin-face))
+;;             (ivy-rich-package-install-summary (:width 23 :face font-lock-doc-face))))))
+;;   :config
+;;   (ivy-rich-mode +1)
+;;   (setcdr (assq t ivy-format-functions-alist) #'ivy-format-function-line))
 
 (use-package ggtags
   :ensure t
@@ -502,7 +503,8 @@ static char * data[] = {
   :config
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
-  (setq highlight-indent-guides-auto-character-face-perc 20))
+  (setq highlight-indent-guides-auto-enabled nil)
+  (set-face-foreground 'highlight-indent-guides-character-face "darkgray"))
 
 ;;;; Dired
 (use-package dired-subtree
@@ -1122,7 +1124,8 @@ This checks in turn:
 (use-package clojure-mode
   :ensure t
   :mode ("\\.clj[xc]?\\'"
-         "build\\.boot\\'")
+         "build\\.boot\\'"
+         "project\\.clj\\'")
   :config
   (add-hook 'clojure-mode-hook #'subword-mode))
 
@@ -1739,13 +1742,13 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-(use-package zenburn-theme
+(use-package parchment-theme
   :ensure t)
 
-;; (use-package modus-operandi-theme
+;; (use-package modus-vivendi-theme
 ;; :ensure t)
 
-;; (load-theme 'modus-operandi t)
-(load-theme 'zenburn t)
+(load-theme 'parchment t)
+;; (load-theme 'zenburn t)
 ;; (load-theme 'default-dark t)
 (put 'narrow-to-region 'disabled nil)
