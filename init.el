@@ -318,7 +318,12 @@ static char * data[] = {
   :ensure t)
 
 (use-package iedit
-  :ensure t)
+  :ensure t
+  :bind ("C-;" . iedit-mode))
+
+(use-package expand-region
+  :ensure t
+  :bind ("C-=" . er/expand-region))
 
 ;; Does what it says: multiple cursors!
 (use-package multiple-cursors
@@ -521,6 +526,13 @@ static char * data[] = {
 
 ;; Org-mode buffer-local variables
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
+
+;; Poporg is a useful package to edit comments in code as an org-mode buffer
+;; By the way, it works amazingly
+(use-package poporg
+  :ensure t
+  :commands poporg-dwim
+  :bind (("C-c \"" . poporg-dwim)))
 
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
@@ -783,7 +795,7 @@ This functions should be added to the hooks of major modes for programming."
 (use-package aggressive-indent
   :ensure t
   :delight
-  :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode clojure-mode) . aggressive-indent-mode)
+  :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode) . aggressive-indent-mode)
   :config
   (defvar aggressive-indent/excluded '())
   (setq aggressive-indent/excluded '(html-mode ruby-mode python-mode yaml-mode))
@@ -1001,14 +1013,6 @@ This checks in turn:
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
 
-(use-package magit-todos
-  :ensure t
-  :after magit
-  :demand t
-  :config
-  (magit-todos-mode +1)
-  (setq magit-todos-auto-group-items 5))
-
 ;;;; Git Diff
 ;; Visual diff feedback in the margin/gutter
 (use-package diff-hl
@@ -1101,12 +1105,17 @@ This checks in turn:
              cider-connect
              cider-connect-cljs)
   :config
+  (defun cider-jack-in-with-profile (profile)
+    (interactive "sEnter profile name: ")
+    (letrec ((lein-params (concat "with-profile +" profile " repl :headless")))
+      (message "lein-params set to: %s" lein-params)
+      (set-variable 'cider-lein-parameters lein-params)
+      (cider-jack-in '())))
   (progn
     (setq nrepl-log-messages t
-          ;; cider-boot-parameters "dev"
           cider-eldoc-display-context-dependent-info t
           cider-eldoc-display-for-symbol-at-point t
-          cider-dynamic-indentation nil)
+          cider-dynamic-indentation t)
     (add-hook 'cider-mode-hook #'subword-mode)
     (add-hook 'cider-mode-hook #'eldoc-mode)
     (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
