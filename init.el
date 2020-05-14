@@ -534,6 +534,40 @@ static char * data[] = {
   :commands poporg-dwim
   :bind (("C-c \"" . poporg-dwim)))
 
+(use-package org-roam
+  :ensure t
+  :hook
+  (after-init . org-roam-mode)
+  :custom
+  (org-roam-directory "/path/to/org-files/")
+  (org-roam-completion-system 'ivy)
+  :bind (:map org-roam-mode-map
+         (("C-c n l" . org-roam)
+          ("C-c n f" . org-roam-find-file)
+          ("C-c n j" . org-roam-jump-to-index)
+          ("C-c n b" . org-roam-switch-to-buffer)
+          ("C-c n g" . org-roam-graph))
+         :map org-mode-map
+         (("C-c n i" . org-roam-insert))))
+
+(use-package org-journal
+  :ensure t
+  :bind
+  ("C-c n j" . org-journal-new-entry)
+  :custom
+  (org-journal-date-prefix "#+TITLE: ")
+  (org-journal-file-format "%Y-%m-%d.org")
+  (org-journal-dir "/path/to/org-roam-files/")
+  (org-journal-date-format "%A, %d %B %Y"))
+
+(use-package org-download
+  :ensure t
+  :after org
+  :bind
+  (:map org-mode-map
+   (("s-Y" . org-download-screenshot)
+    ("s-y" . org-download-yank))))
+
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
 (use-package org-bullets
@@ -1427,15 +1461,6 @@ This checks in turn:
   :ensure t
   :mode (("\\.feature$" . feature-mode)))
 
-;;;; Perl6
-(use-package perl6-mode
-  :ensure t
-  :defer t)
-
-(use-package flycheck-perl6
-  :ensure t
-  :after flycheck perl6-mode)
-
 ;;;; (X)HTML & CSS
 (use-package web-mode
   :ensure t
@@ -1719,6 +1744,4 @@ Uses the default stack config file, or STACK-YAML file if given."
 ;; :ensure t)
 
 (load-theme 'parchment t)
-;; (load-theme 'zenburn t)
-;; (load-theme 'default-dark t)
 (put 'narrow-to-region 'disabled nil)
