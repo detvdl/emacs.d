@@ -578,6 +578,14 @@ static char * data[] = {
    (("s-Y" . org-download-screenshot)
     ("s-y" . org-download-yank))))
 
+(use-package company-org-roam
+  :ensure t
+  :after org-roam
+  :load-path "elisp/company-org-roam"
+  :config
+  (add-hook 'org-roam-mode-hook (lambda ()
+                                  (company:add-local-backend 'company-org-roam))))
+
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
 (use-package org-bullets
