@@ -509,7 +509,7 @@ static char * data[] = {
    '(org-level-5 ((t (:inherit outline-5 :height 1.00)))))
   (add-hook 'org-mode-hook (lambda ()
                              "Beautify Org Checkbox Symbol"
-                             (push '("[ ]" .  "☐") prettify-symbols-alist)
+                             (push '("[ ]" . "☐") prettify-symbols-alist)
                              (push '("[X]" . "☑" ) prettify-symbols-alist)
                              (push '("[-]" . "❍" ) prettify-symbols-alist)
                              (prettify-symbols-mode)))
@@ -595,6 +595,32 @@ static char * data[] = {
   :config
   (setq org-bullets-bullet-list '("●"
                                   "○")))
+
+;; DEFT
+(use-package deft
+  :ensure t
+  :bind (("C-c n d" . deft)
+         ("C-x C-g". deft-find-file))
+  :commands (deft)
+  :custom
+  (deft-directory "~/stack/Documents/roam")
+  (deft-extensions '("txt" "org" "md"))
+  (deft-default-extension "org")
+  (deft-use-filter-string-for-filename t)
+  (deft-recursive t)
+  :config/el-patch
+  (defun deft-parse-title (file contents)
+    "Parse the given FILE and CONTENTS and determine the title.
+If `deft-use-filename-as-title' is nil, the title is taken to
+be the first non-empty line of the FILE.  Else the base name of the FILE is
+used as title."
+    (el-patch-swap (if deft-use-filename-as-title
+                       (deft-base-filename file)
+                     (let ((begin (string-match "^.+$" contents)))
+                       (if begin
+                           (funcall deft-parse-title-function
+                                    (substring contents begin (match-end 0))))))
+                   (org-roam--get-title-or-slug file))))
 
 (use-package adaptive-wrap
   :ensure t
