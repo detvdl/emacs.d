@@ -478,6 +478,10 @@ static char * data[] = {
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
 
+;; TEXT
+;;; Apply variable-pitch font to all text-related buffers
+(add-hook 'text-mode-hook (lambda() (variable-pitch-mode 1)))
+
 (use-package org
   :ensure org-plus-contrib
   :pin org
@@ -488,6 +492,18 @@ static char * data[] = {
   :config
   (when (version<= "9.2" (org-version))
     (require 'org-tempo))
+  (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
+    (let ((list (if (not (listp list-or-symbol))
+                    (list list-or-symbol)
+                  list-or-symbol)))
+      (require 'cl-lib)
+      (cl-adjoin element list)))
+  ;; Apply fixed-pitch font to all org text that is in code blocks or tables
+  '(mapc (lambda (face)
+           (set-face-attribute face nil :inherit
+                               (my-adjoin-to-list-or-symbol 'fixed-pitch
+                                                            (face-attribute face :inherit))))
+         (list 'org-code 'org-block 'org-table))
   (setq org-log-done t
         org-startup-indented t
         org-hide-leading-stars t
@@ -538,6 +554,14 @@ static char * data[] = {
   :ensure t
   :hook
   (after-init . org-roam-mode)
+  :init
+  (use-package company-org-roam
+    :ensure t
+    :after org
+    :load-path "elisp/company-org-roam"
+    :config
+    (add-hook 'org-mode-hook (lambda ()
+                               (company:add-local-backend 'company-org-roam))))
   :custom
   (org-roam-directory "~/stack/Documents/roam")
   (org-roam-completion-system 'ivy)
@@ -578,14 +602,6 @@ static char * data[] = {
    (("s-Y" . org-download-screenshot)
     ("s-y" . org-download-yank))))
 
-(use-package company-org-roam
-  :ensure t
-  :after org-roam
-  :load-path "elisp/company-org-roam"
-  :config
-  (add-hook 'org-roam-mode-hook (lambda ()
-                                  (company:add-local-backend 'company-org-roam))))
-
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
 (use-package org-bullets
@@ -598,6 +614,7 @@ static char * data[] = {
 
 ;; DEFT
 (use-package deft
+  :after org
   :ensure t
   :bind (("C-c n d" . deft)
          ("C-x C-g". deft-find-file))
@@ -1654,7 +1671,17 @@ This checks in turn:
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
-  :config (setq markdown-command "multimarkdown"))
+  :config
+  (setq markdown-command "multimarkdown")
+  '(mapc
+    (lambda (face)
+      (set-face-attribute
+       face nil
+       :inherit
+       (my-adjoin-to-list-or-symbol
+        'fixed-pitch
+        (face-attribute face :inherit))))
+    (list 'markdown-pre-face 'markdown-inline-code-face)))
 
 (use-package pandoc-mode
   :ensure t
