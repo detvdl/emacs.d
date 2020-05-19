@@ -69,7 +69,7 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-(setq x-select-request-type 'STRING)
+;; (setq x-select-request-type 'STRING)
 
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
@@ -93,7 +93,6 @@
 (push '(vertical-scroll-bars . nil) default-frame-alist)
 (blink-cursor-mode -1)
 (show-paren-mode 1)
-(global-display-line-numbers-mode +1)
 
 (column-number-mode)
 
@@ -110,7 +109,8 @@
 
 (defvar font-height (face-attribute 'default :height))
 ;; (set-face-attribute 'default nil :family "Fira Code" :height 140 :weight 'light)
-;; (set-frame-font "Fira Code-14:light")
+;; (set-face-attribute 'variable-pitch nil :family "Baskerville")
+;; (set-frame-font "Fira Code-11:light")
 (setq inhibit-compacting-font-caches t)
 
 ;; PATCHing stuff
@@ -480,7 +480,10 @@ static char * data[] = {
 
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
-(add-hook 'text-mode-hook (lambda() (variable-pitch-mode 1)))
+(use-package variable-pitch
+  :ensure nil
+  :after org
+  :hook (org-mode . variable-pitch-mode))
 
 (use-package org
   :ensure org-plus-contrib
@@ -488,8 +491,51 @@ static char * data[] = {
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
-         ("C-c b" . org-iswitchb))
+         :map org-mode-map
+         ("C-c C-o" . org-open-maybe))
+  :custom
+  (org-log-done t)
+  (org-startup-folded nil)
+  (org-startup-indented t)
+  (org-list-indent-offset 4)
+  (org-hide-leading-stars t)
+  (org-ellipsis " \u25bc" )
+  (org-hide-emphasis-markers t)
+  (org-hidden-keywords '())
+  (org-src-tab-acts-natively t)
+  (org-src-window-setup 'current-window)
+  (org-src-strip-leading-and-trailing-blank-lines t)
+  (org-src-preserve-indentation t)
+  ;; LaTeX preview size is a bit too small for comfort
+  ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
+  (org-highlight-latex-and-related '(latex))
+  :custom-face
+  (org-document-title ((t (:inherit outline-1 :height 1.20 :underline t))))
+  (org-document-info ((t (:inherit outline-1 :height 1.15))))
+  (org-document-info-keyword ((t (:inherit outline-1 :height 1.10))))
+  (org-warning ((t (:weight bold :foreground "#CC9393" :height 1.05))))
+  (org-level-1 ((t (:inherit outline-1 :height 1.05))))
+  (org-level-2 ((t (:inherit outline-2 :height 1.00))))
+  (org-level-3 ((t (:inherit outline-3 :height 1.00))))
+  (org-level-4 ((t (:inherit outline-4 :height 1.00))))
+  (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   :config
+  ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
+  (defun org-force-open-current-window ()
+    (interactive)
+    (let ((org-link-frame-setup (quote
+                                 ((vm . vm-visit-folder)
+                                  (vm-imap . vm-visit-imap-folder)
+                                  (gnus . gnus)
+                                  (file . find-file)
+                                  (wl . wl)))))
+      (org-open-at-point)))
+  ;; Depending on universal argument try opening link
+  (defun org-open-maybe (&optional arg)
+    (interactive "P")
+    (if arg
+        (org-open-at-point)
+      (org-force-open-current-window)))
   (when (version<= "9.2" (org-version))
     (require 'org-tempo))
   (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
@@ -499,40 +545,28 @@ static char * data[] = {
       (require 'cl-lib)
       (cl-adjoin element list)))
   ;; Apply fixed-pitch font to all org text that is in code blocks or tables
-  '(mapc (lambda (face)
-           (set-face-attribute face nil :inherit
-                               (my-adjoin-to-list-or-symbol 'fixed-pitch
-                                                            (face-attribute face :inherit))))
-         (list 'org-code 'org-block 'org-table))
-  (setq org-log-done t
-        org-startup-indented t
-        org-hide-leading-stars t
-        org-hidden-keywords '()
-        ;; LaTeX preview size is a bit too small for comfort
-        org-format-latex-options (plist-put org-format-latex-options :scale 2.0)
-        org-highlight-latex-and-related '(latex))
-  ;; I *kinda* like distinctive header sizes
-  (custom-set-faces
-   '(org-document-title ((t (:inherit outline-1 :height 1.30 :underline t))))
-   '(org-document-info ((t (:inherit outline-1 :height 1.20))))
-   '(org-document-info-keyword ((t (:inherit outline-1 :height 1.20))))
-   '(org-warning ((t (:weight bold :foreground "#CC9393" :height 1.20))))
-
-   '(org-level-1 ((t (:inherit outline-1 :height 1.05))))
-   '(org-level-2 ((t (:inherit outline-2 :height 1.00))))
-   '(org-level-3 ((t (:inherit outline-3 :height 1.00))))
-   '(org-level-4 ((t (:inherit outline-4 :height 1.00))))
-   '(org-level-5 ((t (:inherit outline-5 :height 1.00)))))
+  (mapc (lambda (face)
+          (set-face-attribute face nil :inherit
+                              (my-adjoin-to-list-or-symbol 'fixed-pitch
+                                                           (face-attribute face :inherit))))
+        (list 'org-code 'org-block 'org-table))
   (add-hook 'org-mode-hook (lambda ()
+                             (setq line-spacing .2)
                              "Beautify Org Checkbox Symbol"
                              (push '("[ ]" . "☐") prettify-symbols-alist)
                              (push '("[X]" . "☑" ) prettify-symbols-alist)
                              (push '("[-]" . "❍" ) prettify-symbols-alist)
+                             (push '("-->" . "⟶") prettify-symbols-alist)
+                             (push '("<--" . "⟵") prettify-symbols-alist)
                              (prettify-symbols-mode)))
   (defface org-checkbox-done-text
     '((t (:foreground "#71696A" :strike-through t)))
     "Face for the text part of a checked org-mode checkbox.")
-
+  (font-lock-add-keywords 'org-mode
+                          '(("^ *\\([-]\\) "
+                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2022"))))
+                            ("^ *\\([+]\\) "
+                             0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2023")))))
   (font-lock-add-keywords
    'org-mode
    `(("^[ \t]*\\(?:[-+*]\\|[0-9]+[).]\\)[ \t]+\\(\\(?:\\[@\\(?:start:\\)?[0-9]+\\][ \t]*\\)?\\[\\(?:X\\|\\([0-9]+\\)/\\2\\)\\][^\n]*\n\\)"
@@ -565,6 +599,8 @@ static char * data[] = {
   :custom
   (org-roam-directory "~/stack/Documents/roam")
   (org-roam-completion-system 'ivy)
+  :custom-face
+  (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   :bind (:map org-roam-mode-map
          (("C-c n l" . org-roam)
           ("C-c n f" . org-roam-find-file)
@@ -578,12 +614,16 @@ static char * data[] = {
   :ensure t
   :bind
   ("C-c n j" . org-journal-new-entry)
+  ("C-c n t" . org-journal-today)
   :custom
   (org-journal-date-prefix "#+TITLE: ")
   (org-journal-file-format "%Y-%m-%d.org")
   (org-journal-dir "~/stack/Documents/roam")
-  (org-journal-date-format "%A, %d %B %Y")
+  (org-journal-date-format "%Y-%m-%d")
   :config
+  (defun org-journal-today ()
+    (interactive)
+    (org-journal-new-entry t))
   (defun org-journal-find-location ()
     ;; Open today's journal, but specify a non-nil prefix argument in order to
     ;; inhibit inserting the heading; org-capture will insert the heading.
@@ -602,6 +642,14 @@ static char * data[] = {
    (("s-Y" . org-download-screenshot)
     ("s-y" . org-download-yank))))
 
+(use-package org-cliplink
+  :ensure t
+  :after org
+  :bind
+  (:map org-mode-map
+   (("C-c c" . org-cliplink))))
+
+
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
 (use-package org-bullets
@@ -609,7 +657,8 @@ static char * data[] = {
   :after org
   :hook (org-mode . org-bullets-mode)
   :config
-  (setq org-bullets-bullet-list '("●"
+  (setq org-bullets-bullet-list '("◉"
+                                  "●"
                                   "○")))
 
 ;; DEFT
@@ -620,6 +669,7 @@ static char * data[] = {
          ("C-x C-g". deft-find-file))
   :commands (deft)
   :custom
+  (deft-auto-save-interval 5)
   (deft-directory "~/stack/Documents/roam")
   (deft-extensions '("txt" "org" "md"))
   (deft-default-extension "org")
@@ -866,15 +916,15 @@ This functions should be added to the hooks of major modes for programming."
   :after treemacs projectile
   :ensure t)
 
-(use-package solaire-mode
-  :ensure t
-  :defer 2
-  :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
-         (minibuffer-setup . solaire-mode-in-minibuffer))
-  :config
-  (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
-  (solaire-global-mode +1)
-  (solaire-mode-swap-bg))
+;; (use-package solaire-mode
+;;   :ensure t
+;;   :defer 2
+;;   :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
+;;          (minibuffer-setup . solaire-mode-in-minibuffer))
+;;   :config
+;;   (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
+;;   (solaire-global-mode +1)
+;;   (solaire-mode-swap-bg))
 
 ;; Always enable eldoc
 (global-eldoc-mode +1)
@@ -1654,9 +1704,6 @@ This checks in turn:
     ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (eldoc-mode +1)
     (tide-hl-identifier-mode +1)
-    ;; company is an optional dependency. You have to
-    ;; install it separately via package-install
-    ;; `M-x package-install [ret] company`
     (company-mode +1))
   (defun my/setup-tsx-mode ()
     (when (string-equal "tsx" (file-name-extension buffer-file-name))
@@ -1811,8 +1858,6 @@ Uses the default stack config file, or STACK-YAML file if given."
 (use-package parchment-theme
   :ensure t)
 
-;; (use-package modus-vivendi-theme
-;; :ensure t)
-
 (load-theme 'parchment t)
+
 (put 'narrow-to-region 'disabled nil)
