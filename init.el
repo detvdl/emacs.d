@@ -562,16 +562,17 @@ static char * data[] = {
   (defface org-checkbox-done-text
     '((t (:foreground "#71696A" :strike-through t)))
     "Face for the text part of a checked org-mode checkbox.")
-  (font-lock-add-keywords 'org-mode
-                          '(("^ *\\([-]\\) "
-                             (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2022"))))
-                            ("^ *\\([+]\\) "
-                             0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2023")))))
-  (font-lock-add-keywords
-   'org-mode
-   `(("^[ \t]*\\(?:[-+*]\\|[0-9]+[).]\\)[ \t]+\\(\\(?:\\[@\\(?:start:\\)?[0-9]+\\][ \t]*\\)?\\[\\(?:X\\|\\([0-9]+\\)/\\2\\)\\][^\n]*\n\\)"
-      1 'org-checkbox-done-text prepend))
-   'append)
+  (mapc (lambda (mode)
+          (font-lock-add-keywords
+           mode
+           `(("^[ \t]*\\(?:[-+*]\\|[0-9]+[).]\\)[ \t]+\\(\\(?:\\[@\\(?:start:\\)?[0-9]+\\][ \t]*\\)?\\[\\(?:X\\|\\([0-9]+\\)/\\2\\)\\][^\n]*\n\\)"
+              1 'org-checkbox-done-text prepend)
+             ("^ *\\([-]\\) "
+              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2022"))))
+             ("^ *\\([+]\\) "
+              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2023")))))
+           'append))
+        (list 'org-mode 'org-journal-mode))
   (delight 'org-indent-mode nil t))
 
 ;; Org-mode buffer-local variables
@@ -616,7 +617,7 @@ static char * data[] = {
   ("C-c n j" . org-journal-new-entry)
   ("C-c n t" . org-journal-today)
   :custom
-  (org-journal-date-prefix "#+TITLE: ")
+  (org-journal-date-prefix "#+TITLE: [DAILY] ")
   (org-journal-file-format "%Y-%m-%d.org")
   (org-journal-dir "~/stack/Documents/roam")
   (org-journal-date-format "%Y-%m-%d")
