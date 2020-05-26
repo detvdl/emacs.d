@@ -501,6 +501,7 @@ static char * data[] = {
   (org-hide-leading-stars t)
   (org-ellipsis " \u25bc" )
   (org-hide-emphasis-markers t)
+  (org-image-actual-width nil)
   (org-hidden-keywords '())
   (org-src-tab-acts-natively t)
   (org-src-window-setup 'current-window)
@@ -1856,9 +1857,16 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-(use-package parchment-theme
-  :ensure t)
+;; (use-package parchment-theme
+;;   :ensure t)
 
-(load-theme 'parchment t)
+(use-package modus-operandi-theme
+  :ensure t
+  :custom
+  (modus-operandi-theme-distinct-org-blocks t)
+  (modus-operandi-theme-slanted-constructs t)
+  :config
+  (load-theme 'modus-operandi t))
 
 (put 'narrow-to-region 'disabled nil)
+(put 'upcase-region 'disabled nil)
