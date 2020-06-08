@@ -10,3 +10,7 @@
 [submodule "themes/ir-black-theme.el"]
 	path = themes/ir-black-theme.el
 	url = https://github.com/jmdeldin/ir-black-theme.el.git
+[submodule "elisp/company-org-roam"]
+	path = elisp/company-org-roam
+	url = https://github.com/org-roam/company-org-roam.git
+	branch = master
