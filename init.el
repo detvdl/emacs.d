@@ -108,9 +108,6 @@
 (bind-key "C-+" #'text-scale-increase global-map)
 
 (defvar font-height (face-attribute 'default :height))
-;; (set-face-attribute 'default nil :family "Fira Code" :height 140 :weight 'light)
-;; (set-face-attribute 'variable-pitch nil :family "Baskerville")
-;; (set-frame-font "Fira Code-11:light")
 (setq inhibit-compacting-font-caches t)
 
 ;; PATCHing stuff
@@ -119,84 +116,23 @@
   :config
   (setq el-patch-enable-use-package-integration t))
 
-(defconst git--state-small-dot
-  "/* XPM */
-static char * data[] = {
-\"14 7 3 1\",
-\" 	c None\",
-\"+	c #202020\",
-\".	c %s\",
-\"      +++     \",
-\"     +...+    \",
-\"    +.....+   \",
-\"    +.....+   \",
-\"    +.....+   \",
-\"     +...+    \",
-\"      +++     \"};")
-
-(defconst git--state-large-dot
-  "/* XPM */
-static char * data[] = {
-\"18 13 3 1\",
-\" 	c None\",
-\"+	c #000000\",
-\".	c %s\",
-\"                  \",
-\"       +++++      \",
-\"      +.....+     \",
-\"     +.......+    \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"     +.......+    \",
-\"      +.....+     \",
-\"       +++++      \",
-\"                  \"};")
-
-(defun git--state-color (state)
-  "Return an appropriate color string for the given Git STATE."
-  (cond ((eq state 'edited) "green")
-        ((eq state 'added) "blue")
-        ((memq state '(removed conflict unregistered)) "red")
-        ((memq state '(needs-update needs-merge)) "purple")
-        ((eq state 'up-to-date) "yellow")
-        ((eq state 'staged) "yellow")
-        ((memq state '(ignored unknown)) "gray50")
-        (t "gray50")))
-
-(defun git--state-dot (&optional state)
-  "Return the appropriate bitmap dot for the given Git STATE."
-  (let* ((backend (vc-backend buffer-file-name))
-         (state (or state (if (and backend buffer-file-name)
-                              (vc-state buffer-file-name backend)
-                            'unknown)))
-         (color (git--state-color state)))
-    (propertize "   "
-                'help-echo (format "VC state: %s" state)
-                'display
-                `(image :type xpm
-                        :data ,(format git--state-large-dot color)
-                        :ascent center))))
-
-(setq-default mode-line-format
-	          '("%e"
-		        mode-line-front-space
-		        (:eval (git--state-dot))
-		        mode-line-mule-info
-		        mode-line-client
-		        mode-line-modified
-		        mode-line-remote
-		        mode-line-frame-identification
-		        mode-line-buffer-identification
-		        "   "
-		        mode-line-position
-		        (vc-mode vc-mode)
-		        "  "
-		        mode-line-modes
-		        mode-line-misc-info
-		        mode-line-end-spaces))
+;; (setq-default mode-line-format
+;; 	          '("%e"
+;; 		        mode-line-front-space
+;; 		        (:eval (git--state-dot))
+;; 		        mode-line-mule-info
+;; 		        mode-line-client
+;; 		        mode-line-modified
+;; 		        mode-line-remote
+;; 		        mode-line-frame-identification
+;; 		        mode-line-buffer-identification
+;; 		        "   "
+;; 		        mode-line-position
+;; 		        (vc-mode vc-mode)
+;; 		        "  "
+;; 		        mode-line-modes
+;; 		        mode-line-misc-info
+;; 		        mode-line-end-spaces))
 
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
@@ -319,7 +255,24 @@ static char * data[] = {
 
 (use-package iedit
   :ensure t
-  :bind ("C-;" . iedit-mode))
+  :bind ("C-;" . iedit-mode)
+  :config
+  (defun iedit-dwim (arg)
+    "Starts iedit but uses \\[narrow-to-defun] to limit its scope."
+    (interactive "P")
+    (if arg
+        (iedit-mode)
+      (save-excursion
+        (save-restriction
+          (widen)
+          ;; this function determines the scope of `iedit-start'.
+          (if iedit-mode
+              (iedit-done)
+            ;; `current-word' can of course be replaced by other
+            ;; functions.
+            (narrow-to-defun)
+            (iedit-start (current-word) (point-min) (point-max)))))))
+  )
 
 (use-package expand-region
   :ensure t
@@ -425,15 +378,15 @@ static char * data[] = {
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
-(use-package ivy-posframe
-  :after ivy
-  :ensure t
-  :delight
-  :config
-  (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
-        ivy-posframe-height-alist '((t . 20)))
-  (setq ivy-posframe-width 80)
-  (ivy-posframe-mode +1))
+;; (use-package ivy-posframe
+;;   :after ivy
+;;   :ensure t
+;;   :delight
+;;   :config
+;;   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
+;;         ivy-posframe-height-alist '((t . 20)))
+;;   (setq ivy-posframe-width 80)
+;;   (ivy-posframe-mode +1))
 
 (use-package ggtags
   :ensure t
@@ -480,10 +433,10 @@ static char * data[] = {
 
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
-(use-package variable-pitch
-  :ensure nil
-  :after org
-  :hook (org-mode . variable-pitch-mode))
+;; (use-package variable-pitch
+;;   :ensure nil
+;;   :after org
+;;   :hook (org-mode . variable-pitch-mode))
 
 (use-package org
   :ensure org-plus-contrib
@@ -497,7 +450,7 @@ static char * data[] = {
   (org-log-done t)
   (org-startup-folded nil)
   (org-startup-indented t)
-  (org-list-indent-offset 4)
+  (org-list-indent-offset 2)
   (org-hide-leading-stars t)
   (org-ellipsis " \u25bc" )
   (org-hide-emphasis-markers t)
@@ -557,8 +510,10 @@ static char * data[] = {
                              (push '("[ ]" . "☐") prettify-symbols-alist)
                              (push '("[X]" . "☑" ) prettify-symbols-alist)
                              (push '("[-]" . "❍" ) prettify-symbols-alist)
+                             (push '("--" . "⸺") prettify-symbols-alist)
                              (push '("-->" . "⟶") prettify-symbols-alist)
                              (push '("<--" . "⟵") prettify-symbols-alist)
+                             (push '("=>" . "⇒") prettify-symbols-alist)
                              (prettify-symbols-mode)))
   (defface org-checkbox-done-text
     '((t (:foreground "#71696A" :strike-through t)))
@@ -611,6 +566,13 @@ static char * data[] = {
           ("C-c n g" . org-roam-graph))
          :map org-mode-map
          (("C-c n i" . org-roam-insert))))
+
+(use-package org-roam-server
+  :ensure t
+  :after org-roam
+  :hook (org-roam-mode . org-roam-server-mode)
+  :custom
+  (org-roam-server-port 9091))
 
 (use-package org-journal
   :ensure t
@@ -1116,7 +1078,7 @@ This checks in turn:
   :commands (lsp lsp-deferred)
   :config
   (setq lsp-eldoc-enable-hover t
-        lsp-eldoc-render-all t
+        lsp-eldoc-render-all nil
         lsp-prefer-flymake nil))
 
 (use-package lsp-ui
@@ -1126,12 +1088,14 @@ This checks in turn:
   :bind (:map lsp-ui-mode-map
          ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
          ([remap xref-find-references] . lsp-ui-peek-find-references)
-         ([remap describe-thing-at-point] . lsp-describe-thing-at-point))
+         ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
+         ("C-. p" . lsp-ui-doc-glance))
   :config
   (setq lsp-ui-flycheck-enable t
+        lsp-ui-doc-enable nil
         lsp-ui-doc-include-signature t
         lsp-ui-doc-use-childframe t
-        lsp-ui-doc-position 'top
+        lsp-ui-doc-position 'at-point
         lsp-ui-sideline-update-mode 'line))
 
 (use-package company-lsp
@@ -1354,8 +1318,8 @@ This checks in turn:
     (setq-local tab-width 4)
     (subword-mode +1)
     (yas-minor-mode)
-    ;; (lsp-deferred) ;; WARNING: for this to work with `bingo', set `$GOROOT' correctly
-    ;; (company:add-local-backend 'company-lsp)
+    (lsp-deferred)
+    (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
@@ -1867,6 +1831,10 @@ Uses the default stack config file, or STACK-YAML file if given."
   (modus-operandi-theme-slanted-constructs t)
   :config
   (load-theme 'modus-operandi t))
+
+(use-package elegance
+  :ensure nil
+  :load-path "elisp/elegance")
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
