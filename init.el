@@ -474,6 +474,10 @@
   (org-level-4 ((t (:inherit outline-4 :height 1.00))))
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   :config
+  (require 'ob-shell)
+  (org-babel-do-load-languages 'org-babel-load-languages
+                               '((shell . t)
+                                 (awk . t)))
   ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)
@@ -916,6 +920,11 @@ This functions should be added to the hooks of major modes for programming."
              (eq major-mode 'rust-mode))
          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                              (thing-at-point 'line))))))
+
+(defun func (arg)
+  (and (or (derived-mode-p 'some-top-level-mode)
+           (eq major-mode 'exact-mode))
+       (do-stuff)))
 
 ;; Utility function to re-indent entire file
 (defun indent-whole-file ()
@@ -1821,20 +1830,49 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-;; (use-package parchment-theme
-;;   :ensure t)
-
-(use-package modus-operandi-theme
+(use-package acme-theme
   :ensure t
-  :custom
-  (modus-operandi-theme-distinct-org-blocks t)
-  (modus-operandi-theme-slanted-constructs t)
   :config
-  (load-theme 'modus-operandi t))
+  (load-theme 'acme t))
 
-(use-package elegance
-  :ensure nil
-  :load-path "elisp/elegance")
+;; (use-package modus-operandi-theme
+;;   :ensure t
+;;   :custom
+;;   (modus-operandi-theme-distinct-org-blocks t)
+;;   (modus-operandi-theme-slanted-constructs t)
+;;   :config
+;;   (load-theme 'modus-operandi t))
+
+;; (use-package elegance
+;;   :ensure nil
+;;   :load-path "elisp/elegance")
+
+(use-package minibuffer-line
+  :ensure t
+  :config
+  ;; Display the hostname and time in the minibuffer window.
+  (defun my-minibuffer-line-justify-right (text)
+    "Return a string of `window-width' length with TEXT right-aligned."
+    (with-selected-window (minibuffer-window)
+      (format (format "%%%ds" ;; terminals appear to need 1 column fewer.
+                      (if window-system (window-width) (1- (window-width))))
+              text)))
+
+  (defun my-minibuffer-line-config ()
+    "Require and configure the `minibuffer-line' library."
+    (when (require 'minibuffer-line nil :noerror)
+      (setq minibuffer-line-refresh-interval 5
+            minibuffer-line-format
+            '("" (:eval (my-minibuffer-line-justify-right
+                         (concat system-name
+                                 " | "
+                                 (format-time-string "%F %R"))))))
+      (set-face-attribute 'minibuffer-line nil :inherit 'unspecified)
+      (set-face-attribute 'minibuffer-line nil :foreground "dark gray")
+      (minibuffer-line-mode 1)))
+
+  ;; Assume `minibuffer-line' is installed as an ELPA package.
+  (add-hook 'after-init-hook 'my-minibuffer-line-config))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
