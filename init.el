@@ -5,7 +5,6 @@
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package--init-file-ensured t
       package-check-signature nil)
-
 (when (version< emacs-version "27")
   (setq package-enable-at-startup nil)
   (unless package--initialized
@@ -22,6 +21,9 @@
 (setq use-package-always-ensure nil)
 
 (use-package use-package-ensure-system-package :ensure t)
+
+;; TODO: fix
+(setq x-select-request-type 'STRING)
 
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
@@ -460,6 +462,7 @@
   (org-src-window-setup 'current-window)
   (org-src-strip-leading-and-trailing-blank-lines t)
   (org-src-preserve-indentation t)
+  (org-export-preserve-breaks t)
   ;; LaTeX preview size is a bit too small for comfort
   ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (org-highlight-latex-and-related '(latex))
@@ -478,6 +481,7 @@
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell . t)
                                  (awk . t)))
+  (require 'ox-confluence)
   ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)
@@ -1694,7 +1698,7 @@ This checks in turn:
          ("\\.md\\'" . markdown-mode)
          ("\\.markdown\\'" . markdown-mode))
   :config
-  (setq markdown-command "multimarkdown")
+  (setq markdown-command "pandoc")
   '(mapc
     (lambda (face)
       (set-face-attribute
