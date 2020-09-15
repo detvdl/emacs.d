@@ -118,23 +118,84 @@
   :config
   (setq el-patch-enable-use-package-integration t))
 
-;; (setq-default mode-line-format
-;; 	          '("%e"
-;; 		        mode-line-front-space
-;; 		        (:eval (git--state-dot))
-;; 		        mode-line-mule-info
-;; 		        mode-line-client
-;; 		        mode-line-modified
-;; 		        mode-line-remote
-;; 		        mode-line-frame-identification
-;; 		        mode-line-buffer-identification
-;; 		        "   "
-;; 		        mode-line-position
-;; 		        (vc-mode vc-mode)
-;; 		        "  "
-;; 		        mode-line-modes
-;; 		        mode-line-misc-info
-;; 		        mode-line-end-spaces))
+(defconst git--state-small-dot
+  "/* XPM */
+static char * data[] = {
+\"14 7 3 1\",
+\" 	c None\",
+\"+	c #202020\",
+\".	c %s\",
+\"      +++     \",
+\"     +...+    \",
+\"    +.....+   \",
+\"    +.....+   \",
+\"    +.....+   \",
+\"     +...+    \",
+\"      +++     \"};")
+
+(defconst git--state-large-dot
+  "/* XPM */
+static char * data[] = {
+\"18 13 3 1\",
+\" 	c None\",
+\"+	c #000000\",
+\".	c %s\",
+\"                  \",
+\"       +++++      \",
+\"      +.....+     \",
+\"     +.......+    \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"    +.........+   \",
+\"     +.......+    \",
+\"      +.....+     \",
+\"       +++++      \",
+\"                  \"};")
+
+(defun git--state-color (state)
+  "Return an appropriate color string for the given Git STATE."
+  (cond ((eq state 'edited) "green")
+        ((eq state 'added) "blue")
+        ((memq state '(removed conflict unregistered)) "red")
+        ((memq state '(needs-update needs-merge)) "purple")
+        ((eq state 'up-to-date) "yellow")
+        ((eq state 'staged) "yellow")
+        ((memq state '(ignored unknown)) "gray50")
+        (t "gray50")))
+
+(defun git--state-dot (&optional state)
+  "Return the appropriate bitmap dot for the given Git STATE."
+  (let* ((backend (vc-backend buffer-file-name))
+         (state (or state (if (and backend buffer-file-name)
+                              (vc-state buffer-file-name backend)
+                            'unknown)))
+         (color (git--state-color state)))
+    (propertize "   "
+                'help-echo (format "VC state: %s" state)
+                'display
+                `(image :type xpm
+                        :data ,(format git--state-large-dot color)
+                        :ascent center))))
+
+(setq-default mode-line-format
+	          '("%e"
+		        mode-line-front-space
+		        (:eval (git--state-dot))
+		        mode-line-mule-info
+		        mode-line-client
+		        mode-line-modified
+		        mode-line-remote
+		        mode-line-frame-identification
+		        mode-line-buffer-identification
+		        "   "
+		        mode-line-position
+		        (vc-mode vc-mode)
+		        "  "
+		        mode-line-modes
+		        mode-line-misc-info
+		        mode-line-end-spaces))
 
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
@@ -556,8 +617,8 @@
   :init
   (use-package company-org-roam
     :ensure t
-    :after org
-    :load-path "elisp/company-org-roam"
+    :after org-roam company org
+    :pin melpa
     :config
     (add-hook 'org-mode-hook (lambda ()
                                (company:add-local-backend 'company-org-roam))))
