@@ -516,6 +516,7 @@ static char * data[] = {
   (org-list-indent-offset 2)
   (org-hide-leading-stars t)
   (org-ellipsis " \u25bc" )
+  (org-return-follows-link t)
   (org-hide-emphasis-markers t)
   (org-image-actual-width nil)
   (org-hidden-keywords '())
@@ -639,7 +640,6 @@ static char * data[] = {
 (use-package org-roam-server
   :ensure t
   :after org-roam
-  :hook (org-roam-mode . org-roam-server-mode)
   :custom
   (org-roam-server-port 9091))
 
@@ -1895,49 +1895,58 @@ Uses the default stack config file, or STACK-YAML file if given."
   :ensure t
   :bind ("C-c d" . docker))
 
-(use-package acme-theme
+(use-package modus-operandi-theme
   :ensure t
+  :custom
+  (modus-operandi-theme-distinct-org-blocks t)
+  (modus-operandi-theme-slanted-constructs t)
   :config
-  (load-theme 'acme t))
+  (load-theme 'modus-operandi t))
 
-;; (use-package modus-operandi-theme
-;;   :ensure t
-;;   :custom
-;;   (modus-operandi-theme-distinct-org-blocks t)
-;;   (modus-operandi-theme-slanted-constructs t)
-;;   :config
-;;   (load-theme 'modus-operandi t))
+(use-package modus-vivendi-theme
+  :ensure t
+  :defer t)
+
+(defun modus-themes-toggle ()
+  "Toggle between `modus-operandi' and `modus-vivendi' themes."
+  (interactive)
+  (if (eq (car custom-enabled-themes) 'modus-operandi)
+      (progn
+        (disable-theme 'modus-operandi)
+        (load-theme 'modus-vivendi t))
+    (disable-theme 'modus-vivendi)
+    (load-theme 'modus-operandi t)))
 
 ;; (use-package elegance
 ;;   :ensure nil
 ;;   :load-path "elisp/elegance")
 
-(use-package minibuffer-line
-  :ensure t
-  :config
-  ;; Display the hostname and time in the minibuffer window.
-  (defun my-minibuffer-line-justify-right (text)
-    "Return a string of `window-width' length with TEXT right-aligned."
-    (with-selected-window (minibuffer-window)
-      (format (format "%%%ds" ;; terminals appear to need 1 column fewer.
-                      (if window-system (window-width) (1- (window-width))))
-              text)))
+;; (use-package minibuffer-line
+;;   :ensure t
+;;   :config
+;;   ;; Display the hostname and time in the minibuffer window.
+;;   (defun my-minibuffer-line-justify-right (text)
+;;     "Return a string of `window-width' length with TEXT right-aligned."
+;;     (with-selected-window (minibuffer-window)
+;;       (format (format "%%%ds" ;; terminals appear to need 1 column fewer.
+;;                       (if window-system (window-width) (1- (window-width))))
+;;               text)))
 
-  (defun my-minibuffer-line-config ()
-    "Require and configure the `minibuffer-line' library."
-    (when (require 'minibuffer-line nil :noerror)
-      (setq minibuffer-line-refresh-interval 5
-            minibuffer-line-format
-            '("" (:eval (my-minibuffer-line-justify-right
-                         (concat system-name
-                                 " | "
-                                 (format-time-string "%F %R"))))))
-      (set-face-attribute 'minibuffer-line nil :inherit 'unspecified)
-      (set-face-attribute 'minibuffer-line nil :foreground "dark gray")
-      (minibuffer-line-mode 1)))
+;;   (defun my-minibuffer-line-config ()
+;;     "Require and configure the `minibuffer-line' library."
+;;     (when (require 'minibuffer-line nil :noerror)
+;;       (setq minibuffer-line-refresh-interval 5
+;;             minibuffer-line-format
+;;             '("" (:eval (my-minibuffer-line-justify-right
+;;                          (concat system-name
+;;                                  " | "
+;;                                  (format-time-string "%F %R"))))))
+;;       (set-face-attribute 'minibuffer-line nil :inherit 'unspecified)
+;;       (set-face-attribute 'minibuffer-line nil :foreground "dark gray")
+;;       (minibuffer-line-mode 1)))
 
-  ;; Assume `minibuffer-line' is installed as an ELPA package.
-  (add-hook 'after-init-hook 'my-minibuffer-line-config))
+;;   ;; Assume `minibuffer-line' is installed as an ELPA package.
+;;   (add-hook 'after-init-hook 'my-minibuffer-line-config))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
