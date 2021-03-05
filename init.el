@@ -71,23 +71,20 @@
 (when (file-exists-p custom-file)
   (load custom-file))
 
-;; (setq x-select-request-type 'STRING)
-
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns))
+  ;; :if (memq window-system '(mac ns))
   :ensure t
+  :custom
+  (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
+                                    "PAGER" "TERM"
+                                    "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+                                    "LOMBOK_JAR"
+                                    "GOPATH" "GOROOT"))
+  (exec-path-from-shell-arguments '("-l"))
   :config
-  (setq exec-path-from-shell-variables
-        '("HOME" "PATH" "MANPATH"
-          "PAGER" "TERM"
-          "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-          "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-          "LOMBOK_JAR"
-          "GOPATH" "GOROOT")
-        exec-path-from-shell-arguments '("-l" "-i"))
-  (when (memq window-system '(mac ns))
-    (exec-path-from-shell-initialize)))
+  (exec-path-from-shell-initialize))
 
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) initial-frame-alist)
@@ -245,10 +242,9 @@ static char * data[] = {
 ;;;; Dired
 (use-package dired-subtree
   :ensure t
-  :config
-  (bind-keys :map dired-mode-map
-    ("i" . dired-subtree-insert)
-    (";" . dired-subtree-remove)))
+  :bind (:map dired-mode-map
+         ("i" . dired-subtree-insert)
+         (";" . dired-subtree-remove)))
 
 ;;;; Undo/Redo
 (use-package undo-tree
@@ -266,7 +262,7 @@ static char * data[] = {
 ;;;; Clipboard
 (setq select-enable-clipboard t)
 (setq select-active-regions t)
-(setq save-interprogram-paste-before-kill 1)
+;; (setq save-interprogram-paste-before-kill 1)
 (setq yank-pop-change-selection t)
 
 (use-package ace-window
@@ -427,8 +423,7 @@ static char * data[] = {
     :config
     (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
   ;; use the faster ripgrep for standard counsel-grep
-  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"
-        counsel-rg-base-command "rg -i -M 120 --no-heading --line-number --color never %s ."))
+  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
 (use-package swiper
   :ensure t
@@ -446,9 +441,17 @@ static char * data[] = {
 ;;   :ensure t
 ;;   :delight
 ;;   :config
-;;   (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
-;;         ivy-posframe-height-alist '((t . 20)))
-;;   (setq ivy-posframe-width 80)
+;;   (setq ivy-posframe-parameters
+;;         '((left-fringe . 8)
+;;           (right-fringe . 8)))
+;;   (setq ivy-posframe-display-functions-alist
+;;         '((swiper          . ivy-display-function-fallback)
+;;           (complete-symbol . ivy-posframe-display-at-point)
+;;           (counsel-M-x     . ivy-posframe-display-at-window-bottom-left)
+;;           (t               . ivy-posframe-display-at-frame-bottom-window-center)))
+;;   ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
+;;   ;;       ivy-posframe-height-alist '((t . 20)))
+;;   (setq ivy-posframe-min-width (frame-width (selected-frame)))
 ;;   (ivy-posframe-mode +1))
 
 (use-package ggtags
@@ -615,14 +618,6 @@ static char * data[] = {
   :ensure t
   :hook
   (after-init . org-roam-mode)
-  :init
-  (use-package company-org-roam
-    :ensure t
-    :after org-roam company org
-    :pin melpa
-    :config
-    (add-hook 'org-mode-hook (lambda ()
-                               (company:add-local-backend 'company-org-roam))))
   :custom
   (org-roam-directory "~/stack/Documents/roam")
   (org-roam-completion-system 'ivy)
@@ -750,7 +745,7 @@ This functions should be added to the hooks of major modes for programming."
 (use-package smartparens
   :ensure t
   :delight smartparens-mode
-  :hook ((prolog-mode prog-mode ess-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
   :bind (("C-. )" . sp-rewrap-sexp)
          ("C-. (" . sp-rewrap-sexp))
@@ -804,7 +799,7 @@ This functions should be added to the hooks of major modes for programming."
 ;;;; Rainbows
 (use-package rainbow-delimiters
   :ensure t
-  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode) . rainbow-delimiters-mode))
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . rainbow-delimiters-mode))
 
 ;;;; Movement
 (use-package avy
@@ -1172,11 +1167,6 @@ This checks in turn:
         lsp-ui-doc-position 'at-point
         lsp-ui-sideline-update-mode 'line))
 
-(use-package company-lsp
-  :ensure t
-  :after (lsp-mode company)
-  :init (yas-minor-mode 1))
-
 ;;;; Magit
 (use-package magit
   :ensure t
@@ -1198,10 +1188,11 @@ This checks in turn:
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
 
-;;;; Git Diff
+;; Git Diff
 ;; Visual diff feedback in the margin/gutter
 (use-package diff-hl
   :ensure t
+  :load-path "~/git/diff-hl"
   :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
@@ -1226,12 +1217,15 @@ This checks in turn:
   :config
   (editorconfig-mode 1))
 
+
+
 ;;;; Emacs Lisp
-(use-package elisp-slime-nav
-  :ensure t
-  :defer t
-  :commands (elisp-slime-nav-mode)
-  :hook ((emacs-lisp-mode ielm-mode) . elisp-slime-nav-mode))
+
+;; (use-package elisp-slime-nav
+;;   :ensure t
+;;   :defer t
+;;   :commands (elisp-slime-nav-mode)
+;;   :hook ((emacs-lisp-mode ielm-mode) . elisp-slime-nav-mode))
 
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 
@@ -1242,33 +1236,65 @@ This checks in turn:
 ;; Open files with .cl extension in lisp-mode
 (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
 
-(use-package slime
+(use-package sly
   :ensure t
-  :bind (:map slime-mode-map
-         ("C-c C-s" . slime-selector))
+  :commands (sly)
+  :init
+  (setq inferior-lisp-program "ros -L sbcl -Q -l ~/.sbclrc run")
   :config
-  (setq inferior-lisp-program (executable-find "sbcl")
-        slime-contribs '(slime-fancy slime-company slime-indentation)
-        slime-autodoc-use-multiline-p t
-        slime-enable-evaluate-in-emacs t
-        common-lisp-style-default "sbcl")
-  (add-hook 'slime-load-hook (lambda () (require 'slime-fancy)))
-  (defun slime-enable-concurrent-hints ()
-    (interactive)
-    (setf slime-inhibit-pipelining nil)))
+  (sly-setup)
+  (use-package sly-asdf
+    :ensure t
+    :config
+    (add-to-list 'sly-contribs 'sly-asdf 'append))
+  (use-package sly-macrostep
+    :ensure t
+    :config
+    (add-to-list 'sly-contribs 'sly-macrostep 'append))
+  (use-package sly-named-readtables
+    :ensure t
+    :config
+    (add-to-list 'sly-contribs 'sly-named-readtables 'append))
+  (use-package sly-quicklisp
+    :ensure t
+    :config
+    (add-to-list 'sly-contribs 'sly-quicklisp 'append))
+  (use-package sly-stepper
+    :load-path "~/.emacs.d/elisp/sly-stepper"
+    :after sly
+    :config
+    (add-to-list 'sly-contribs 'sly-stepper 'append)))
 
-(use-package slime-company
-  :ensure t
-  :after slime
-  :config
-  (setq slime-company-completion 'fuzzy))
+;; (use-package slime
+;;   :ensure t
+;;   ;; :load-path "~/.roswell/lisp/slime"
+;;   :hook (lisp-mode . slime)
+;;   :init (load (expand-file-name "~/.roswell/helper.el"))
+;;   :bind (:map slime-mode-map
+;;          ("C-c C-s" . slime-selector))
+;;   :config
+;;   (setq inferior-lisp-program (executable-find "sbcl")
+;;         slime-contribs '(slime-fancy slime-company slime-indentation)
+;;         slime-autodoc-use-multiline-p t
+;;         slime-enable-evaluate-in-emacs t
+;;         common-lisp-style-default "sbcl")
+;;   (add-hook 'slime-load-hook (lambda () (require 'slime-fancy)))
+;;   (defun slime-enable-concurrent-hints ()
+;;     (interactive)
+;;     (setf slime-inhibit-pipelining nil)))
 
-(add-hook 'slime-mode-hook (lambda ()
-                             (setq lisp-indent-function 'common-lisp-indent-function
-                                   lisp-loop-indent-subclauses nil
-                                   lisp-loop-indent-forms-like-keywords t
-                                   lisp-lambda-list-keyword-parameter-alignment t)
-                             (company:add-local-backend 'company-slime)))
+;; (use-package slime-company
+;;   :ensure t
+;;   :after slime
+;;   :config
+;;   (setq slime-company-completion 'fuzzy))
+
+;; (add-hook 'slime-mode-hook (lambda ()
+;;                              (setq lisp-indent-function 'common-lisp-indent-function
+;;                                    lisp-loop-indent-subclauses nil
+;;                                    lisp-loop-indent-forms-like-keywords t
+;;                                    lisp-lambda-list-keyword-parameter-alignment t)
+;;                              (company:add-local-backend 'company-slime)))
 
 ;;;; Clojure
 (use-package clojure-mode
@@ -1393,7 +1419,6 @@ This checks in turn:
     (subword-mode +1)
     (yas-minor-mode)
     (lsp-deferred)
-    (company:add-local-backend 'company-lsp)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
              "go build -v && go test -v && go vet")))
@@ -1423,11 +1448,7 @@ This checks in turn:
 (use-package rust-mode
   :ensure t
   :mode ("\\.rs\\'")
-  :config
-  (defun my--rust-mode-hook ()
-    (lsp)
-    (company:add-local-backend 'company-lsp))
-  (add-hook 'rust-mode-hook #'my--rust-mode-hook))
+  :hook (rust-mode . lsp))
 
 (use-package toml-mode
   :ensure t
@@ -1694,12 +1715,6 @@ This checks in turn:
   :delight
   :hook (js2-mode . tern-mode))
 
-(use-package company-tern
-  :ensure t
-  :after tern
-  :config
-  (add-hook 'js2-mode-hook (lambda () (company:add-local-backend 'company-tern))))
-
 (use-package json-mode
   :ensure t
   :mode ("\\.json\\'")
@@ -1800,92 +1815,93 @@ This checks in turn:
 
 (use-package haskell-mode
   :ensure t
+  :mode (("\\.hs\\'" . haskell-mode))
   :config
   (setq haskell-stylish-on-save t))
 
-(use-package intero
-  :ensure t
-  :hook (haskell-mode . intero-mode)
-  :config/el-patch
-  (el-patch-defun intero-ghci-output-flags ()
-    "Get the appropriate ghci output flags for the current GHC version"
-    (with-current-buffer (intero-buffer 'backend)
-      (let ((current-version (mapcar #'string-to-number (split-string (el-patch-swap intero-ghc-version (intero-ghc-version)) "\\."))))
-        (if (intero-version>= '(8 4 1) current-version)
-            '("-fno-code" "-fwrite-interface")
-          '("-fobject-code")))))
-  (el-patch-defun intero-start-process-in-buffer (buffer &optional targets source-buffer stack-yaml)
-    "Start an Intero worker in BUFFER.
-Uses the specified TARGETS if supplied.
-Automatically performs initial actions in SOURCE-BUFFER, if specified.
-Uses the default stack config file, or STACK-YAML file if given."
-    (if (buffer-local-value 'intero-give-up buffer)
-        buffer
-      (let* ((process-info (intero-start-piped-process buffer targets stack-yaml))
-             (arguments (plist-get process-info :arguments))
-             (options (plist-get process-info :options))
-             (process (plist-get process-info :process)))
-        (set-process-query-on-exit-flag process nil)
-        (mapc
-         (lambda (flag)
-           (process-send-string process ((el-patch-swap append concat) ":set " flag "\n")))
-         (intero-ghci-output-flags))
-        (process-send-string process ":set -fdefer-type-errors\n")
-        (process-send-string process ":set -fdiagnostics-color=never\n")
-        (process-send-string process ":set prompt \"\\4\"\n")
-        (with-current-buffer buffer
-          (erase-buffer)
-          (when stack-yaml
-            (setq intero-stack-yaml stack-yaml))
-          (setq intero-targets targets)
-          (setq intero-start-time (current-time))
-          (setq intero-source-buffer source-buffer)
-          (setq intero-arguments arguments)
-          (setq intero-starting t)
-          (setq intero-callbacks
-                (list (list (cons source-buffer
-                                  buffer)
-                            (lambda (buffers msg)
-                              (let ((source-buffer (car buffers))
-                                    (process-buffer (cdr buffers)))
-                                (with-current-buffer process-buffer
-                                  (when (string-match "^Intero-Service-Port: \\([0-9]+\\)\n" msg)
-                                    (setq intero-service-port (string-to-number (match-string 1 msg))))
-                                  (setq-local intero-starting nil))
-                                (when source-buffer
-                                  (with-current-buffer source-buffer
-                                    (when flycheck-mode
-                                      (run-with-timer 0 nil
-                                                      'intero-call-in-buffer
-                                                      (current-buffer)
-                                                      'intero-flycheck-buffer)))))
-                              (message "Booted up intero!"))))))
-        (set-process-filter
-         process
-         (lambda (process string)
-           (when intero-debug
-             (message "[Intero] <- %s" string))
-           (when (buffer-live-p (process-buffer process))
-             (with-current-buffer (process-buffer process)
-               (goto-char (point-max))
-               (insert string)
-               (when (and intero-try-with-build
-                          intero-starting)
-                 (let ((last-line (buffer-substring-no-properties
-                                   (line-beginning-position)
-                                   (line-end-position))))
-                   (if (string-match-p "^Progress" last-line)
-                       (message "Booting up intero (building dependencies: %s)"
-                                (downcase
-                                 (or (car (split-string (replace-regexp-in-string
-                                                         "\u0008+" "\n"
-                                                         last-line)
-                                                        "\n" t))
-                                     "...")))
-                     (message "Booting up intero ..."))))
-               (intero-read-buffer)))))
-        (set-process-sentinel process 'intero-sentinel)
-        buffer))))
+;; (use-package intero
+;;   :ensure t
+;;   :hook (haskell-mode . intero-mode)
+;;   :config/el-patch
+;;   (el-patch-defun intero-ghci-output-flags ()
+;;     "Get the appropriate ghci output flags for the current GHC version"
+;;     (with-current-buffer (intero-buffer 'backend)
+;;       (let ((current-version (mapcar #'string-to-number (split-string (el-patch-swap intero-ghc-version (intero-ghc-version)) "\\."))))
+;;         (if (intero-version>= '(8 4 1) current-version)
+;;             '("-fno-code" "-fwrite-interface")
+;;           '("-fobject-code")))))
+;;   (el-patch-defun intero-start-process-in-buffer (buffer &optional targets source-buffer stack-yaml)
+;;     "Start an Intero worker in BUFFER.
+;; Uses the specified TARGETS if supplied.
+;; Automatically performs initial actions in SOURCE-BUFFER, if specified.
+;; Uses the default stack config file, or STACK-YAML file if given."
+;;     (if (buffer-local-value 'intero-give-up buffer)
+;;         buffer
+;;       (let* ((process-info (intero-start-piped-process buffer targets stack-yaml))
+;;              (arguments (plist-get process-info :arguments))
+;;              (options (plist-get process-info :options))
+;;              (process (plist-get process-info :process)))
+;;         (set-process-query-on-exit-flag process nil)
+;;         (mapc
+;;          (lambda (flag)
+;;            (process-send-string process ((el-patch-swap append concat) ":set " flag "\n")))
+;;          (intero-ghci-output-flags))
+;;         (process-send-string process ":set -fdefer-type-errors\n")
+;;         (process-send-string process ":set -fdiagnostics-color=never\n")
+;;         (process-send-string process ":set prompt \"\\4\"\n")
+;;         (with-current-buffer buffer
+;;           (erase-buffer)
+;;           (when stack-yaml
+;;             (setq intero-stack-yaml stack-yaml))
+;;           (setq intero-targets targets)
+;;           (setq intero-start-time (current-time))
+;;           (setq intero-source-buffer source-buffer)
+;;           (setq intero-arguments arguments)
+;;           (setq intero-starting t)
+;;           (setq intero-callbacks
+;;                 (list (list (cons source-buffer
+;;                                   buffer)
+;;                             (lambda (buffers msg)
+;;                               (let ((source-buffer (car buffers))
+;;                                     (process-buffer (cdr buffers)))
+;;                                 (with-current-buffer process-buffer
+;;                                   (when (string-match "^Intero-Service-Port: \\([0-9]+\\)\n" msg)
+;;                                     (setq intero-service-port (string-to-number (match-string 1 msg))))
+;;                                   (setq-local intero-starting nil))
+;;                                 (when source-buffer
+;;                                   (with-current-buffer source-buffer
+;;                                     (when flycheck-mode
+;;                                       (run-with-timer 0 nil
+;;                                                       'intero-call-in-buffer
+;;                                                       (current-buffer)
+;;                                                       'intero-flycheck-buffer)))))
+;;                               (message "Booted up intero!"))))))
+;;         (set-process-filter
+;;          process
+;;          (lambda (process string)
+;;            (when intero-debug
+;;              (message "[Intero] <- %s" string))
+;;            (when (buffer-live-p (process-buffer process))
+;;              (with-current-buffer (process-buffer process)
+;;                (goto-char (point-max))
+;;                (insert string)
+;;                (when (and intero-try-with-build
+;;                           intero-starting)
+;;                  (let ((last-line (buffer-substring-no-properties
+;;                                    (line-beginning-position)
+;;                                    (line-end-position))))
+;;                    (if (string-match-p "^Progress" last-line)
+;;                        (message "Booting up intero (building dependencies: %s)"
+;;                                 (downcase
+;;                                  (or (car (split-string (replace-regexp-in-string
+;;                                                          "\u0008+" "\n"
+;;                                                          last-line)
+;;                                                         "\n" t))
+;;                                      "...")))
+;;                      (message "Booting up intero ..."))))
+;;                (intero-read-buffer)))))
+;;         (set-process-sentinel process 'intero-sentinel)
+;;         buffer))))
 
 (use-package kubernetes
   :ensure t
@@ -1894,6 +1910,10 @@ Uses the default stack config file, or STACK-YAML file if given."
 (use-package docker
   :ensure t
   :bind ("C-c d" . docker))
+
+(use-package ereader
+  :ensure t
+  :mode ("\\.epub\\'" . ereader-mode))
 
 (use-package modus-operandi-theme
   :ensure t
