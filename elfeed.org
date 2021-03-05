@@ -1,0 +1,56 @@
+#+STARTUP: showall
+
+* Feeds                                                              :elfeed:
+** entry-title: \(linux\|linus\|ubuntu\|kde\|gnome\)                 :linux:
+** entry-title: \(emacs\)                                            :emacs:
+** entry-title: \(clojure\)                                        :clojure:
+** [[https://www.instapaper.com/rss/6436730/aAzvYopNslgQPU2arTDVThHW4][Instapaper]]                                  :instapaper:mustread:backlog:
+** [[https://news.ycombinator.com/rss][Hacker News]]                                                    :HN:daily:
+** [[http://showrss.info/user/174140.rss?magnets=true&namespaces=true&name=null&quality=null&re=null][showRSS]]                                                           :shows:
+** [[https://blog.acolyer.org/feed/][The Morning Paper]]                                        :daily:mustread:
+** [[http://feeds.feedburner.com/webdesignernews][WebdesignerNews]]                                            :frontend:web:
+** Programming                                                 :programming:
+*** Languages                                                        :lang:
+**** Clojure                                                     :clojure:
+***** [[https://adambard.com/blog/feed.xml][Adam Bard Makes Words]]
+***** [[https://www.reddit.com/r/clojure/.rss][r/Clojure]]                                                  :reddit:
+**** Golang                                                       :golang:
+***** [[https://www.reddit.com/r/golang/.rss][r/Golang]]                                                   :reddit:
+***** [[http://schier.co/rss.xml][Schier blog]]
+**** Javascript                                                       :JS:
+***** [[https://medium.com/feed/topic/javascript][Medium:Javascript]]                                 :frontend:medium:
+***** [[https://refind.com/feed/javascript.rss][Refind:Javascript]]                                 :frontend:refind:
+**** Lisp                                                           :lisp:
+***** [[https://www.reddit.com/r/lisp/.rss][r/Lisp]]                                                     :reddit:
+***** [[https://www.reddit.com/r/Common_Lisp/.rss][r/Common_Lisp]]                                           :CL:reddit:
+**** Perl6                                                         :perl6:
+***** [[https://rakudo.party/feed/][Perl 6 Party]]
+***** [[http://pl6anet.org/atom.xml][pl6anet]]
+***** [[https://p6weekly.wordpress.com/feed/][Weekly changes in and around Perl 6]]                        :weekly:
+***** [[https://perl6advent.wordpress.com][Perl6 Advent]]
+**** Rust                                                           :rust:
+***** [[https://readrust.net/all/feed.rss][ReadRust]]
+***** [[http://smallcultfollowing.com/babysteps/atom.xml][Baby Steps]]
+***** [[https://this-week-in-rust.org/rss.xml][This Week in Rust]]
+*** Emacs                                                  :emacs:mustread:
+**** [[https://emacsair.me/feed.xml][Emacsair]]
+**** [[http://planet.emacsen.org/atom.xml][Planet Emacsen]]
+**** [[http://pragmaticemacs.com/feed/][Pragmatic Emacs]]
+**** [[https://www.reddit.com/r/emacs/.rss][r/Emacs]]                                                      :reddit:
+*** Medium                                                         :medium:
+**** [[https://medium.com/feed/topic/artificial-intelligence][Artificial Intelligence]]                                          :AI:
+**** [[https://medium.com/feed/topic/data-science][Data Science]]
+**** [[https://medium.com/feed/topic/programming][Programming]]
+**** [[https://medium.com/feed/topic/software-engineering][Software Engineering]]
+**** [[https://medium.com/feed/topic/technology][Technology]]
+*** Refind                                                         :refind:
+**** [[https://refind.com/feed/ai.rss][AI]]                                                               :AI:
+**** [[https://refind.com/feed/frontend.rss][Front-end]]                                                  :frontend:
+**** [[https://refind.com/feed/programming.rss][Programming]]                                                :frontend:
+** Ars Technica                                                :arstechnica:
+*** [[http://feeds.arstechnica.com/arstechnica/technology-lab][Biz & IT]]
+*** [[http://feeds.arstechnica.com/arstechnica/gaming][Gaming]]
+*** [[http://feeds.arstechnica.com/arstechnica/gadgets][Tech]]
+** [[https://www.reddit.com/r/mechanicalkeyboards/.rss][r/Mechanicalkeyboards]]                                  :keyboards:reddit:
+** Twitter                                                         :twitter:
+*** [[https://twitrss.me/twitter_user_to_rss/?user=dmofengineering][@dmofengineering]]
