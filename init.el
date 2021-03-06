@@ -21,8 +21,9 @@
   (load bootstrap-file nil 'nomessage))
 
 (straight-use-package 'use-package)
-(setq straight-use-package-version "straight"
+(setq straight-use-package-version 'straight
       straight-use-package-by-default t
+      straight-vc-git-default-protocol 'ssh
       straight-host-usernames '((github . "detvdl")))
 
 ;; (when (version< emacs-version "27")
@@ -764,7 +765,12 @@ This functions should be added to the hooks of major modes for programming."
 
 ;;;; Smartparens
 (use-package smartparens
-  :straight t
+  :straight (smartparens
+             :host github :type git
+             :repo "Fuco1/smartparens"
+             :fork (:host github
+                    :repo "sirikid/smartparens"
+                    :branch "hotfix/when-let"))
   :delight smartparens-mode
   :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
