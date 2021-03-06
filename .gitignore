@@ -18,3 +18,4 @@ eshell/
 /.cask
 /eclipse.jdt.ls/*
 flycheck_*.el
+/straight/**

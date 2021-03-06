@@ -4,23 +4,50 @@
 			             ("org" . "http://orgmode.org/elpa/")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package--init-file-ensured t
-      package-check-signature nil)
-(when (version< emacs-version "27")
-  (setq package-enable-at-startup nil)
-  (unless package--initialized
-    (package-initialize)))
+      package-check-signature nil
+      package-enable-at-startup nil)
 
-(unless (package-installed-p 'use-package)
-  (package-refresh-contents)
-  (package-install 'use-package)
-  (require 'use-package))
+(defvar bootstrap-version)
+(let ((bootstrap-file
+       (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+      (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+    (with-current-buffer
+        (url-retrieve-synchronously
+         "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+         'silent 'inhibit-cookies)
+      (goto-char (point-max))
+      (eval-print-last-sexp)))
+  (load bootstrap-file nil 'nomessage))
 
-(use-package delight :ensure t)
-(use-package bind-key :ensure t)
+(straight-use-package 'use-package)
+(setq straight-use-package-version "straight"
+      straight-use-package-by-default t
+      straight-host-usernames '((github . "detvdl")))
 
-(setq use-package-always-ensure nil)
+;; (when (version< emacs-version "27")
+;;   (unless package--initialized
+;;     (package-initialize)))
 
-(use-package use-package-ensure-system-package :ensure t)
+;; (unless (package-installed-p 'use-package)
+;;   (package-refresh-contents)
+;;   (package-install 'use-package)
+;;   (require 'use-package))
+;; (setq use-package-always-ensure nil)
+;; (use-package use-package-straight-system-package :straight t)
+
+(use-package delight :straight t)
+(use-package bind-key :straight t)
+(use-package s :straight t)
+
+;;; Emacs 28 introduced an extra parameter to `define-obsolete-function-alias'
+(when (version<= "28" emacs-version)
+  (define-advice define-obsolete-function-alias (:filter-args (ll) fix-obsolete)
+    (let ((obsolete-name (pop ll))
+          (current-name (pop ll))
+          (when (if ll (pop ll) "1"))
+          (docstring (if ll (pop ll) nil)))
+      (list obsolete-name current-name when docstring))))
 
 ;; TODO: fix
 (setq x-select-request-type 'STRING)
@@ -43,7 +70,7 @@
               (setq init-files-list
                     (cons dir-item-base
                           init-files-list))))))))
-(use-package s :ensure t)
+
 (defun platform-init-path ()
   "Return path to directory containing platform-specific init files."
   (let* ((platform-dir (symbol-name system-type))
@@ -54,8 +81,7 @@
     (concat user-emacs-directory
             sanitized-platform-dir)))
 
-;; If there are any customizations per-machine, per-user, load them as
-;; well
+;; If there are any customizations per-machine, per-user, load them as well
 (mapc 'load
       (sort (list-init-files (platform-init-path))
             'string-lessp))
@@ -73,8 +99,8 @@
 
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
-  ;; :if (memq window-system '(mac ns))
-  :ensure t
+  :if (memq window-system '(mac ns x))
+  :straight t
   :custom
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
@@ -111,7 +137,7 @@
 
 ;; PATCHing stuff
 (use-package el-patch
-  :ensure t
+  :straight t
   :config
   (setq el-patch-enable-use-package-integration t))
 
@@ -241,18 +267,23 @@ static char * data[] = {
 
 ;;;; Dired
 (use-package dired-subtree
-  :ensure t
+  :straight t
   :bind (:map dired-mode-map
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
 
 ;;;; Undo/Redo
-(use-package undo-tree
-  :ensure t
-  :defer 1
-  :delight
-  :config
-  (global-undo-tree-mode +1))
+(if (version< emacs-version "28")
+    (use-package undo-tree
+      :straight t
+      :defer 1
+      :delight
+      :config
+      (global-undo-tree-mode +1))
+  (progn
+    (bind-key "C-/" #'undo-only global-map)
+    (bind-key "C-?" #'undo-redo global-map)))
+
 
 ;;;; Auto-revert
 ;; Automatically revert buffers that have changed on disk
@@ -266,7 +297,7 @@ static char * data[] = {
 (setq yank-pop-change-selection t)
 
 (use-package ace-window
-  :ensure t
+  :straight t
   :delight ace-window-mode
   :bind ("M-o" . ace-window)
   :config
@@ -280,14 +311,14 @@ static char * data[] = {
 ;; To refactor for example, search with swiper =C-s=, then activate ivy-occur =C-c C-o=.
 ;; This opens an occur buffer with all results. Now you can activate wgrep and edit to your heart's content
 (use-package wgrep
-  :ensure t
+  :straight t
   :defer t
   :config
   (setq wgrep-auto-save-buffer t))
 
 ;; Helper functions to improve some emacs basics.
 (use-package crux
-  :ensure t
+  :straight t
   :bind (([(shift return)] . crux-smart-open-line)
          ([(control shift return)] . crux-smart-open-line-above)
          ("C-a" . crux-move-beginning-of-line)
@@ -298,22 +329,22 @@ static char * data[] = {
 
 ;; Handy-dandy menu in case you ever forget a keybind.
 (use-package which-key
-  :ensure t
+  :straight t
   :delight which-key-mode
   :config
   (which-key-mode))
 
 ;; Quickly select expanding regions and put them in the kill-ring.
 (use-package easy-kill
-  :ensure t
+  :straight t
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
 (use-package hydra
-  :ensure t)
+  :straight t)
 
 (use-package iedit
-  :ensure t
+  :straight t
   :bind ("C-;" . iedit-mode)
   :config
   (defun iedit-dwim (arg)
@@ -334,12 +365,12 @@ static char * data[] = {
   )
 
 (use-package expand-region
-  :ensure t
+  :straight t
   :bind ("C-=" . er/expand-region))
 
 ;; Does what it says: multiple cursors!
 (use-package multiple-cursors
-  :ensure t
+  :straight t
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
@@ -378,7 +409,7 @@ static char * data[] = {
 
 ;;;; Ivy
 (use-package ivy
-  :ensure t
+  :straight t
   :delight ivy-mode
   :hook (after-init . ivy-mode)
   :bind (("C-s" . swiper-isearch)
@@ -404,7 +435,7 @@ static char * data[] = {
          ("<escape>" . minibuffer-keyboard-quit))
   :config
   ;; Fuzzy matching
-  (use-package flx :ensure t)
+  (use-package flx :straight t)
   (setq ivy-use-virtual-buffers t
         ivy-use-selectable-prompt t
         enable-recursive-minibuffers t
@@ -419,18 +450,18 @@ static char * data[] = {
                                 (swiper-isearch . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
   (use-package smex
-    :ensure t
+    :straight t
     :config
     (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
 (use-package swiper
-  :ensure t
+  :straight t
   :after ivy
   :config
   (setq swiper-use-visual-line-p #'ignore))
-(use-package counsel :ensure t
+(use-package counsel :straight t
   :after swiper
   :hook (ivy-mode . counsel-mode)
   :config
@@ -438,7 +469,7 @@ static char * data[] = {
 
 ;; (use-package ivy-posframe
 ;;   :after ivy
-;;   :ensure t
+;;   :straight t
 ;;   :delight
 ;;   :config
 ;;   (setq ivy-posframe-parameters
@@ -455,7 +486,8 @@ static char * data[] = {
 ;;   (ivy-posframe-mode +1))
 
 (use-package ggtags
-  :ensure t
+  :straight t
+  :hook ((c-mode c++-mode java-mode) . ggtags-mode)
   :config
   (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
   ;; ensure ace-window keybind doesn't get overridden in ggtags-mode buffers
@@ -465,7 +497,7 @@ static char * data[] = {
 (setq imenu-auto-rescan t)
 
 (use-package imenu-list
-  :ensure t
+  :straight t
   :bind ("C-'" . imenu-list-smart-toggle)
   :config
   (setq imenu-list-focus-after-activation t
@@ -475,13 +507,13 @@ static char * data[] = {
 
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
-  :ensure t
+  :straight t
   :hook (prog-mode . symbol-overlay-mode)
   :config
   (set-face-attribute 'symbol-overlay-default-face nil :background "DarkOrchid" :foreground "white"))
 
 (use-package highlight-indent-guides
-  :ensure t
+  :straight t
   :hook (prog-mode . highlight-indent-guides-mode)
   :delight
   :config
@@ -492,7 +524,7 @@ static char * data[] = {
 
 ;;;; Dired
 (use-package dired-subtree
-  :ensure t
+  :straight t
   :bind (:map dired-mode-map
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
@@ -505,8 +537,8 @@ static char * data[] = {
 ;;   :hook (org-mode . variable-pitch-mode))
 
 (use-package org
-  :ensure org-plus-contrib
-  :pin org
+  :straight org-plus-contrib
+  ;; :pin org
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
@@ -610,17 +642,17 @@ static char * data[] = {
 ;; Poporg is a useful package to edit comments in code as an org-mode buffer
 ;; By the way, it works amazingly
 (use-package poporg
-  :ensure t
+  :straight t
   :commands poporg-dwim
   :bind (("C-c \"" . poporg-dwim)))
 
 (use-package org-roam
-  :ensure t
-  :hook
-  (after-init . org-roam-mode)
+  :straight t
+  :defer 3
   :custom
   (org-roam-directory "~/stack/Documents/roam")
   (org-roam-completion-system 'ivy)
+  (org-roam-link-title-format "[[%s]]")
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   :bind (:map org-roam-mode-map
@@ -630,16 +662,18 @@ static char * data[] = {
           ("C-c n b" . org-roam-switch-to-buffer)
           ("C-c n g" . org-roam-graph))
          :map org-mode-map
-         (("C-c n i" . org-roam-insert))))
+         (("C-c n i" . org-roam-insert)))
+  :config
+  (org-roam-mode))
 
 (use-package org-roam-server
-  :ensure t
+  :straight t
   :after org-roam
   :custom
   (org-roam-server-port 9091))
 
 (use-package org-journal
-  :ensure t
+  :straight t
   :bind
   ("C-c n j" . org-journal-new-entry)
   ("C-c n t" . org-journal-today)
@@ -663,7 +697,7 @@ static char * data[] = {
                                  "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))))
 
 (use-package org-download
-  :ensure t
+  :straight t
   :after org
   :bind
   (:map org-mode-map
@@ -671,7 +705,7 @@ static char * data[] = {
     ("s-y" . org-download-yank))))
 
 (use-package org-cliplink
-  :ensure t
+  :straight t
   :after org
   :bind
   (:map org-mode-map
@@ -681,7 +715,7 @@ static char * data[] = {
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
 (use-package org-bullets
-  :ensure t
+  :straight t
   :after org
   :hook (org-mode . org-bullets-mode)
   :config
@@ -692,7 +726,7 @@ static char * data[] = {
 ;; DEFT
 (use-package deft
   :after org
-  :ensure t
+  :straight t
   :bind (("C-c n d" . deft)
          ("C-x C-g". deft-find-file))
   :commands (deft)
@@ -702,23 +736,10 @@ static char * data[] = {
   (deft-extensions '("txt" "org" "md"))
   (deft-default-extension "org")
   (deft-use-filter-string-for-filename t)
-  (deft-recursive t)
-  :config/el-patch
-  (defun deft-parse-title (file contents)
-    "Parse the given FILE and CONTENTS and determine the title.
-If `deft-use-filename-as-title' is nil, the title is taken to
-be the first non-empty line of the FILE.  Else the base name of the FILE is
-used as title."
-    (el-patch-swap (if deft-use-filename-as-title
-                       (deft-base-filename file)
-                     (let ((begin (string-match "^.+$" contents)))
-                       (if begin
-                           (funcall deft-parse-title-function
-                                    (substring contents begin (match-end 0))))))
-                   (org-roam--get-title-or-slug file))))
+  (deft-recursive t))
 
 (use-package adaptive-wrap
-  :ensure t
+  :straight t
   :hook ((prog-mode org-mode) . adaptive-wrap-prefix-mode)
   :config
   (setq-default adaptive-wrap-extra-indent 2))
@@ -743,7 +764,7 @@ This functions should be added to the hooks of major modes for programming."
 
 ;;;; Smartparens
 (use-package smartparens
-  :ensure t
+  :straight t
   :delight smartparens-mode
   :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
@@ -781,7 +802,7 @@ This functions should be added to the hooks of major modes for programming."
 
 ;;;; Projectile
 (use-package projectile
-  :ensure t
+  :straight t
   :delight projectile-mode
   :bind (("C-c p p" . projectile-switch-project)
          ("C-c p f" . projectile-find-file))
@@ -798,12 +819,12 @@ This functions should be added to the hooks of major modes for programming."
 
 ;;;; Rainbows
 (use-package rainbow-delimiters
-  :ensure t
+  :straight t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . rainbow-delimiters-mode))
 
 ;;;; Movement
 (use-package avy
-  :ensure t
+  :straight t
   :bind (("M-n l" . avy-goto-line)
          ("M-n c" . avy-goto-char)
          ("M-n f" . avy-goto-char-2)
@@ -812,13 +833,13 @@ This functions should be added to the hooks of major modes for programming."
   (avy-setup-default))
 
 (use-package all-the-icons
-  :ensure t
+  :straight t
   :config
   (setq all-the-icons-scale-factor 1.0))
 
 ;;; Treemacs
 (use-package treemacs
-  :ensure t
+  :straight t
   :bind (("M-0" . treemacs-select-window)
          ("M-'" . treemacs)
          :map treemacs-mode-map
@@ -942,10 +963,10 @@ This functions should be added to the hooks of major modes for programming."
 
 (use-package treemacs-projectile
   :after treemacs projectile
-  :ensure t)
+  :straight t)
 
 ;; (use-package solaire-mode
-;;   :ensure t
+;;   :straight t
 ;;   :defer 2
 ;;   :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
 ;;          (minibuffer-setup . solaire-mode-in-minibuffer))
@@ -960,13 +981,13 @@ This functions should be added to the hooks of major modes for programming."
 
 ;;;; Error checking
 (use-package flycheck
-  :ensure t
+  :straight t
   :hook (prog-mode . flycheck-mode))
 
 ;;;; Indentation
 ;; Aggressively indent everything (except for basically all non-lisp modes)!
 (use-package aggressive-indent
-  :ensure t
+  :straight t
   :delight
   :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode) . aggressive-indent-mode)
   :config
@@ -1102,17 +1123,17 @@ This checks in turn:
 
 (use-package yasnippet
   :if (not noninteractive)
-  :ensure t
+  :straight t
   :delight yas-minor-mode
   :commands (yas-reload-all yas-minor-mode))
 
 (use-package yasnippet-snippets
-  :ensure t
+  :straight t
   :after yasnippet)
 
 ;;;; Company
 (use-package company
-  :ensure t
+  :straight t
   :delight company-mode
   :bind (("M-\\" . company-select-next))
   :hook ((org-mode prog-mode) . company-mode)
@@ -1124,10 +1145,10 @@ This checks in turn:
         company-tooltip-align-annotations t))
 
 (use-package company-quickhelp
-  :ensure t
+  :straight t
   :after company
   :config
-  (use-package pos-tip :ensure t)
+  (use-package pos-tip :straight t)
   (company-quickhelp-mode 1)
   (setq company-quickhelp-delay 0.5
         company-quickhelp-use-propertized-text t))
@@ -1143,7 +1164,7 @@ This checks in turn:
 
 ;;;; Language Server Protocol (LSP)
 (use-package lsp-mode
-  :ensure t
+  :straight t
   :commands (lsp lsp-deferred)
   :config
   (setq lsp-eldoc-enable-hover t
@@ -1151,7 +1172,7 @@ This checks in turn:
         lsp-prefer-flymake nil))
 
 (use-package lsp-ui
-  :ensure t
+  :straight t
   :after lsp-mode
   :commands lsp-ui-mode
   :bind (:map lsp-ui-mode-map
@@ -1169,13 +1190,13 @@ This checks in turn:
 
 ;;;; Magit
 (use-package magit
-  :ensure t
+  :straight t
   :bind (("C-x g" . magit-status))
   :config
   (setq magit-completing-read-function 'ivy-completing-read
         vc-follow-symlinks t)
   (use-package other-frame-window
-    :ensure t
+    :straight t
     :config
     (defun magit-display-buffer-popup-frame (buffer)
       (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
@@ -1191,8 +1212,11 @@ This checks in turn:
 ;; Git Diff
 ;; Visual diff feedback in the margin/gutter
 (use-package diff-hl
-  :ensure t
-  :load-path "~/git/diff-hl"
+  :straight (diff-hl
+             :type git :host github
+             :repo "dgutov/diff-hl"
+             :fork (:branch "fix/diff-hl-create-revision-unused-lexical-arg"))
+  ;; :load-path "~/git/diff-hl"
   :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
@@ -1207,13 +1231,13 @@ This checks in turn:
 
 ;; Don't let ediff create any fancy layouts, just use a proper, separate buffer.
 (use-package ediff
-  :ensure t
+  :straight t
   :defer t
   :config
   (setq ediff-window-setup-function 'ediff-setup-windows-plain))
 
 (use-package editorconfig
-  :ensure t
+  :straight t
   :config
   (editorconfig-mode 1))
 
@@ -1222,7 +1246,7 @@ This checks in turn:
 ;;;; Emacs Lisp
 
 ;; (use-package elisp-slime-nav
-;;   :ensure t
+;;   :straight t
 ;;   :defer t
 ;;   :commands (elisp-slime-nav-mode)
 ;;   :hook ((emacs-lisp-mode ielm-mode) . elisp-slime-nav-mode))
@@ -1237,36 +1261,38 @@ This checks in turn:
 (add-to-list 'auto-mode-alist '("\\.cl\\'" . lisp-mode))
 
 (use-package sly
-  :ensure t
+  :straight t
   :commands (sly)
   :init
   (setq inferior-lisp-program "ros -L sbcl -Q -l ~/.sbclrc run")
   :config
   (sly-setup)
   (use-package sly-asdf
-    :ensure t
+    :straight t
     :config
     (add-to-list 'sly-contribs 'sly-asdf 'append))
   (use-package sly-macrostep
-    :ensure t
+    :straight t
     :config
     (add-to-list 'sly-contribs 'sly-macrostep 'append))
   (use-package sly-named-readtables
-    :ensure t
+    :straight t
     :config
     (add-to-list 'sly-contribs 'sly-named-readtables 'append))
   (use-package sly-quicklisp
-    :ensure t
+    :straight t
     :config
     (add-to-list 'sly-contribs 'sly-quicklisp 'append))
   (use-package sly-stepper
-    :load-path "~/.emacs.d/elisp/sly-stepper"
+    :straight (sly-stepper
+               :host github :type git
+               :repo "joaotavora/sly-stepper")
     :after sly
     :config
     (add-to-list 'sly-contribs 'sly-stepper 'append)))
 
 ;; (use-package slime
-;;   :ensure t
+;;   :straight t
 ;;   ;; :load-path "~/.roswell/lisp/slime"
 ;;   :hook (lisp-mode . slime)
 ;;   :init (load (expand-file-name "~/.roswell/helper.el"))
@@ -1284,7 +1310,7 @@ This checks in turn:
 ;;     (setf slime-inhibit-pipelining nil)))
 
 ;; (use-package slime-company
-;;   :ensure t
+;;   :straight t
 ;;   :after slime
 ;;   :config
 ;;   (setq slime-company-completion 'fuzzy))
@@ -1298,7 +1324,7 @@ This checks in turn:
 
 ;;;; Clojure
 (use-package clojure-mode
-  :ensure t
+  :straight t
   :mode ("\\.clj[xc]?\\'"
          "build\\.boot\\'"
          "project\\.clj\\'")
@@ -1308,7 +1334,7 @@ This checks in turn:
 (add-to-list 'auto-mode-alist '("\\.cljs\\'" . clojurescript-mode))
 
 (use-package cider
-  :ensure t
+  :straight t
   :defer t
   :commands (cider-jack-in-clj&cljs
              cider-jack-in
@@ -1334,14 +1360,14 @@ This checks in turn:
     (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
 
 (use-package clojure-snippets
-  :ensure t
+  :straight t
   :after clojure-mode
   :config
   (with-eval-after-load 'yasnippet
     (clojure-snippets-initialize)))
 
 (use-package clj-refactor
-  :ensure t
+  :straight t
   :after clojure-mode
   :config
   (defun my-clojure-mode-hook ()
@@ -1354,8 +1380,9 @@ This checks in turn:
 
 ;;;; Scheme
 (use-package geiser
-  :ensure t
+  :straight t
   :commands run-geiser
+  :defines scheme-mode-map
   :bind (:map scheme-mode-map
          ("C-x C-e" . geiser-eval-last-sexp)))
 
@@ -1373,7 +1400,7 @@ This checks in turn:
   (setq prolog-system 'swi))
 
 (use-package ediprolog
-  :ensure t
+  :straight t
   :after prolog
   :bind (:map prolog-mode-map
          ("C-x C-e" . 'ediprolog-dwim)))
@@ -1405,7 +1432,7 @@ This checks in turn:
 
 ;;;; Go
 (use-package go-mode
-  :ensure t
+  :straight t
   :mode "\\.go\\'"
   :bind (:map go-mode-map
          ("C-c c" . compile)
@@ -1425,7 +1452,7 @@ This checks in turn:
   (add-hook 'go-mode-hook #'my--go-mode-hook))
 
 (use-package gotest
-  :ensure t
+  :straight t
   :after go-mode
   :bind (:map go-mode-map
          ("C-c a" . go-test-current-project)
@@ -1434,32 +1461,32 @@ This checks in turn:
          ("C-c b" . go-run)))
 
 (use-package flycheck-golangci-lint
-  :ensure t
+  :straight t
   :after flycheck
   :hook (go-mode . flycheck-golangci-lint-setup))
 
 (use-package go-impl
-  :ensure t
+  :straight t
   :after go-mode
   :bind (:map go-mode-map
          ("C-c C-l" . go-impl)))
 
 ;;;; Rust
 (use-package rust-mode
-  :ensure t
+  :straight t
   :mode ("\\.rs\\'")
   :hook (rust-mode . lsp))
 
 (use-package toml-mode
-  :ensure t
+  :straight t
   :mode ("\\.toml\\'"))
 
 (use-package cargo
-  :ensure t
+  :straight t
   :hook (rust-mode . cargo-minor-mode))
 
 (use-package flycheck-rust
-  :ensure t
+  :straight t
   :after rust-mode
   :config
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
@@ -1489,7 +1516,7 @@ This checks in turn:
 ;;       lsp-java-format-settings-url
 ;;       (concat "file://" jmi/java-format-settings-file))
 (use-package dap-mode
-  :ensure t
+  :straight t
   :functions (dap-breakpoint-toggle
               dap-debug
               dap-eval
@@ -1510,13 +1537,14 @@ This checks in turn:
   (local-set-key (kbd "C-; o") #'dap-step-out))
 
 (use-package lsp-java
-  :ensure t
+  :straight t
   :after lsp-mode
   :config
   (setq lsp-java-workspace-dir (expand-file-name "workspace" lsp-java-server-install-dir)
         lsp-java-save-action-organize-imports nil))
 
 (use-package dap-java
+  :straight nil
   :after (lsp-java dap-mode))
 
 (defun my--java-mode-hook ()
@@ -1539,7 +1567,7 @@ This checks in turn:
 (add-hook 'python-mode-hook #'subword-mode)
 
 (use-package anaconda-mode
-  :ensure t
+  :straight t
   :hook python-mode
   :bind (:map anaconda-mode-map
          ([remap xref-find-definitions] . anaconda-mode-find-definitions)
@@ -1552,7 +1580,7 @@ This checks in turn:
     (setq anaconda-mode-localhost-address "localhost")))
 
 (use-package company-anaconda
-  :ensure t
+  :straight t
   :after anaconda-mode
   :config
   (add-hook 'anaconda-mode-hook
@@ -1561,7 +1589,7 @@ This checks in turn:
               (anaconda-eldoc-mode))))
 
 (use-package pyenv-mode
-  :ensure t
+  :straight t
   :hook python-mode
   :config
   (progn
@@ -1575,7 +1603,7 @@ This checks in turn:
 
 ;;;; Ruby
 (use-package ruby-mode
-  :ensure t
+  :straight t
   :mode ("\\.rake\\'"
          "Rakefile\\'"
          "\\.gemspec\\'"
@@ -1599,43 +1627,43 @@ This checks in turn:
   (add-hook 'ruby-mode-hook #'subword-mode))
 
 (use-package yari
-  :ensure t
+  :straight t
   :defer t)
 
 (use-package inf-ruby
-  :ensure t
+  :straight t
   :bind (:map inf-ruby-minor-mode-map
          ("C-x C-e" . ruby-send-last-sexp))
   :hook (ruby-mode . inf-ruby-minor-mode))
 
 (use-package ruby-tools
-  :ensure t
+  :straight t
   :hook (ruby-mode . ruby-tools-mode))
 
 (use-package rbenv
-  :ensure t
+  :straight t
   :defer t
   :config
   (global-rbenv-mode)
   (rbenv-use-corresponding))
 
 (use-package robe
-  :ensure t
+  :straight t
   :hook (ruby-mode . robe-mode)
   :config
   (add-hook 'robe-mode (lambda () (company:add-local-backend 'company-robe))))
 
 (use-package rubocop
-  :ensure t
+  :straight t
   :hook (ruby-mode . rubocop-mode))
 
 (use-package feature-mode
-  :ensure t
+  :straight t
   :mode (("\\.feature$" . feature-mode)))
 
 ;;;; (X)HTML & CSS
 (use-package web-mode
-  :ensure t
+  :straight t
   :mode ("\\.phtml\\'"
          "\\.tpl\\.php\\'"
          "\\.tpl\\'"
@@ -1669,8 +1697,8 @@ This checks in turn:
       (sp-local-tag "#" "<%# " " %>"))))
 
 (use-package prettier-js
-  :ensure t
-  :ensure-system-package (prettier . "npm i -g prettier")
+  :straight t
+  ;; :ensure-system-package (prettier . "npm i -g prettier")
   :commands prettier-js
   :init
   (defun my/prettier-js-hook ()
@@ -1679,26 +1707,26 @@ This checks in turn:
   :hook ((typescript-mode js2-mode) . my/prettier-js-hook))
 
 (use-package emmet-mode
-  :ensure t
+  :straight t
   :bind (:map emmet-mode-keymap
          ("TAB" . emmet-expand-line))
   :hook ((web-mode sgml-mode css-mode) . emmet-mode))
 
 (use-package css-mode
-  :ensure t
+  :straight t
   :mode ("\\.[s]?css\\'")
   :config
   (setq css-indent-offset 2))
 
 ;; Pretty colours for css-mode
 (use-package rainbow-mode
-  :ensure t
+  :straight t
   :after css-mode
   :hook css-mode)
 
 ;;;; JavaScript
 (use-package js2-mode
-  :ensure t
+  :straight t
   :mode ("\\.js\\'"
          "\\.pac\\'")
   :interpreter "node"
@@ -1711,12 +1739,12 @@ This checks in turn:
   (js2-imenu-extras-mode +1))
 
 (use-package tern
-  :ensure t
+  :straight t
   :delight
   :hook (js2-mode . tern-mode))
 
 (use-package json-mode
-  :ensure t
+  :straight t
   :mode ("\\.json\\'")
   :config
   (add-hook 'json-mode-hook (lambda ()
@@ -1736,11 +1764,11 @@ This checks in turn:
 
 ;;;; Typescript
 (use-package typescript-mode
-  :ensure t
+  :straight t
   :mode "\\.ts\\'")
 
 (use-package tide
-  :ensure t
+  :straight t
   :after (typescript-mode company flycheck)
   :hook ((typescript-mode . tide-setup)
          (typescript-mode . tide-hl-identifier-mode)
@@ -1768,7 +1796,7 @@ This checks in turn:
 
 ;;;; Markdown
 (use-package markdown-mode
-  :ensure t
+  :straight t
   :commands (markdown-mode gfm-mode)
   :mode (("README\\.md\\'" . gfm-mode)
          ("\\.md\\'" . markdown-mode)
@@ -1786,7 +1814,7 @@ This checks in turn:
     (list 'markdown-pre-face 'markdown-inline-code-face)))
 
 (use-package pandoc-mode
-  :ensure t
+  :straight t
   :hook markdown-mode
   :config
   (add-hook 'pandoc-mode-hook 'pandoc-load-default-settings)
@@ -1795,32 +1823,32 @@ This checks in turn:
 
 ;; Yet Another Markup Language
 (use-package yaml-mode
-  :ensure t
+  :straight t
   :mode "\\.yml\\'")
 
 ;;;; REST
 (use-package restclient
-  :ensure t
+  :straight t
   :mode (("\\.rest\\'" . restclient-mode)))
 
 (use-package company-restclient
-  :ensure t
+  :straight t
   :after restclient
   :config
   (add-hook 'restclient-mode-hook (lambda () (company:add-local-backend 'company-restclient))))
 
 (use-package ob-restclient
   :after org
-  :ensure t)
+  :straight t)
 
 (use-package haskell-mode
-  :ensure t
+  :straight t
   :mode (("\\.hs\\'" . haskell-mode))
   :config
   (setq haskell-stylish-on-save t))
 
 ;; (use-package intero
-;;   :ensure t
+;;   :straight t
 ;;   :hook (haskell-mode . intero-mode)
 ;;   :config/el-patch
 ;;   (el-patch-defun intero-ghci-output-flags ()
@@ -1904,28 +1932,34 @@ This checks in turn:
 ;;         buffer))))
 
 (use-package kubernetes
-  :ensure t
+  :straight t
   :commands (kubernetes-overview))
 
 (use-package docker
-  :ensure t
+  :straight t
   :bind ("C-c d" . docker))
 
 (use-package ereader
-  :ensure t
+  :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
 (use-package modus-operandi-theme
-  :ensure t
+  :straight t
   :custom
   (modus-operandi-theme-distinct-org-blocks t)
-  (modus-operandi-theme-slanted-constructs t)
-  :config
-  (load-theme 'modus-operandi t))
+  (modus-operandi-theme-slanted-constructs t))
 
 (use-package modus-vivendi-theme
-  :ensure t
+  :straight t
   :defer t)
+
+(use-package color-theme-sanityinc-tomorrow
+  :straight (color-theme-sanityinc-tomorrow
+             :type git :host github
+             :repo "purcell/color-theme-sanityinc-tomorrow"
+             :fork t)
+  :config
+  (color-theme-sanityinc-tomorrow-bright))
 
 (defun modus-themes-toggle ()
   "Toggle between `modus-operandi' and `modus-vivendi' themes."
@@ -1942,7 +1976,7 @@ This checks in turn:
 ;;   :load-path "elisp/elegance")
 
 ;; (use-package minibuffer-line
-;;   :ensure t
+;;   :straight t
 ;;   :config
 ;;   ;; Display the hostname and time in the minibuffer window.
 ;;   (defun my-minibuffer-line-justify-right (text)

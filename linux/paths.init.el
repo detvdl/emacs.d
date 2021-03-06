@@ -30,6 +30,6 @@
 
 (setq exec/git "/usr/bin/git")
 
-(provide 'init-platform-paths)
+(provide 'paths.init)
 
 ;;; paths.init.el ends here
