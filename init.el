@@ -53,6 +53,15 @@
 ;; TODO: fix
 (setq x-select-request-type 'STRING)
 
+(use-package no-littering
+  :straight t
+  :config
+  (setq auto-save-file-name-transforms
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
+  (with-eval-after-load "recentf"
+    (add-to-list 'recentf-exclude no-littering-var-directory)
+    (add-to-list 'recentf-exclude no-littering-etc-directory)))
+
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
 (defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 
@@ -94,7 +103,7 @@
 		        (not (file-directory-p dirpath)))
       (push dirpath custom-theme-load-path))))
 
-(setq custom-file (expand-file-name "custom.el" user-emacs-directory))
+(setq custom-file (no-littering-expand-etc-file-name "custom.el"))
 (when (file-exists-p custom-file)
   (load custom-file))
 
@@ -272,7 +281,8 @@ static char * data[] = {
   :bind (:map dired-mode-map
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)
-         ("TAB" . dired-subtree-toggle))
+         ("<tab>" . dired-subtree-toggle)
+         ("<backtab>" . dired-subtree-cycle))
   :custom
   (dired-subtree-line-prefix "\t"))
 
@@ -413,8 +423,7 @@ static char * data[] = {
     ;; Help with click recognition in this hydra
     ("<down-mouse-1>" ignore)
     ("<drag-mouse-1>" ignore)
-    ("q" nil))
-  (setq mc/list-file (expand-file-name ".mc-lists.el" emacs-misc-dir)))
+    ("q" nil)))
 
 ;;;; Ivy
 (use-package ivy
@@ -424,7 +433,6 @@ static char * data[] = {
   :bind (("C-s" . swiper-isearch)
          ("C-x C-f" . counsel-find-file)
 	     ("M-x" . counsel-M-x)
-	     ("M-X" . smex-major-mode-commands)
          ("C-c y" . counsel-yank-pop)
          ;; TODO: investigate https://github.com/Wilfred/deadgrep as a possible substitute/enrichment
          ("C-c k" . counsel-rg)
@@ -459,10 +467,6 @@ static char * data[] = {
                                 (swiper-all . ivy--regex-plus)
                                 (swiper-isearch . ivy--regex-plus)
                                 (t . ivy--regex-fuzzy)))
-  (use-package smex
-    :straight t
-    :config
-    (setq smex-save-file (expand-file-name "smex-items" emacs-misc-dir)))
   ;; use the faster ripgrep for standard counsel-grep
   (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
 
@@ -472,7 +476,8 @@ static char * data[] = {
   :bind ("M-n" . swiper-thing-at-point)
   :config
   (setq swiper-use-visual-line-p #'ignore))
-(use-package counsel :straight t
+(use-package counsel
+  :straight t
   :after swiper
   :hook (ivy-mode . counsel-mode)
   :config
@@ -1144,6 +1149,7 @@ This checks in turn:
            (display-graphic-p))
   (use-package company-box
     :straight t
+    :after company
     :blackout
     :hook (company-mode . company-box-mode)))
 
@@ -1244,13 +1250,49 @@ This checks in turn:
   :config
   (editorconfig-mode 1))
 
+;; Prescient: sorting by frecency
+(use-package prescient
+  :straight t
+  :config
+  (prescient-persist-mode +1))
+
+(use-package ivy-prescient
+  :straight t
+  :after ivy counsel prescient
+  :config
+  (ivy-prescient-mode))
+
+(use-package company-prescient
+  :straight t
+  :after company prescient
+  :hook (company-mode . company-prescient-mode)
+  :config
+  (defadvice lsp (after advice-lsp activate)
+    (setq-local company-prescient-sort-length-enable
+                (cl-dolist (w lsp--buffer-workspaces)
+                  (when (thread-first w
+                          (lsp--workspace-client)
+                          (lsp--client-server-id)
+                          (memq '(jsts-ls
+                                  mspyls
+                                  bash-ls
+                                  texlab
+                                  ts-ls
+                                  svelte-ls))
+                          (not))
+                    (cl-return t)))))
+  )
+
 ;;;; Emacs Lisp
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 
 (use-package emr
-  :straight t
+  :straight (emr
+             :host github :type git
+             :repo "Wilfred/emacs-refactor"
+             :fork t)
   :bind (:map prog-mode-map
-         ("M-RET" . emr-show-refactor-menu)))
+         ("M-RET" . emr-refactor)))
 
 ;;;; Common Lisp
 ;; the SBCL configuration file is written in Common Lisp
@@ -1533,7 +1575,6 @@ This checks in turn:
          ([remap describe-thing-at-point] . anaconda-mode-show-doc))
   :config
   (setq python-shell-interpreter "python3")
-  (setq anaconda-mode-installation-directory (expand-file-name "anaconda-mode" emacs-misc-dir))
   (when *is-mac*
     (setq anaconda-mode-localhost-address "localhost")))
 

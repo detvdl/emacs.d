@@ -1,6 +1,6 @@
 MKFILE_PATH := $(abspath $(lastword $(MAKEFILE_LIST)))
 MKFILE_DIR := $(dir $(MKFILE_PATH))
-PROF_DIR := $(abspath git/profile-dotemacs)
+PROF_DIR := $(abspath elisp/profile-dotemacs)
 PROF_FILE := $(addprefix $(PROF_DIR)/,profile-dotemacs.el)
 
 .PHONY: help
