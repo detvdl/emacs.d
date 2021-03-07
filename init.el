@@ -37,7 +37,7 @@
 ;; (setq use-package-always-ensure nil)
 ;; (use-package use-package-straight-system-package :straight t)
 
-(use-package delight :straight t)
+(use-package blackout :straight t)
 (use-package bind-key :straight t)
 (use-package s :straight t)
 
@@ -255,7 +255,7 @@ static char * data[] = {
 
 ;; Proper line wrapping.
 (global-visual-line-mode +1)
-(delight 'visual-line-mode nil t)
+(blackout 'visual-line-mode)
 
 ;; Uniquify buffers with the same name instead of appending a number.
 (setq uniquify-buffer-name-style 'forward
@@ -278,18 +278,17 @@ static char * data[] = {
     (use-package undo-tree
       :straight t
       :defer 1
-      :delight
+      :blackout
       :config
       (global-undo-tree-mode +1))
   (progn
     (bind-key "C-/" #'undo-only global-map)
     (bind-key "C-?" #'undo-redo global-map)))
 
-
 ;;;; Auto-revert
 ;; Automatically revert buffers that have changed on disk
 (auto-revert-mode +1)
-(delight 'auto-revert-mode nil t)
+(blackout 'auto-revert-mode)
 
 ;;;; Clipboard
 (setq select-enable-clipboard t)
@@ -299,7 +298,7 @@ static char * data[] = {
 
 (use-package ace-window
   :straight t
-  :delight ace-window-mode
+  :blackout ace-window-mode
   :bind ("M-o" . ace-window)
   :config
   (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
@@ -331,7 +330,7 @@ static char * data[] = {
 ;; Handy-dandy menu in case you ever forget a keybind.
 (use-package which-key
   :straight t
-  :delight which-key-mode
+  :blackout which-key-mode
   :config
   (which-key-mode))
 
@@ -411,7 +410,7 @@ static char * data[] = {
 ;;;; Ivy
 (use-package ivy
   :straight t
-  :delight ivy-mode
+  :blackout ivy-mode
   :hook (after-init . ivy-mode)
   :bind (("C-s" . swiper-isearch)
          ("C-x C-f" . counsel-find-file)
@@ -509,6 +508,7 @@ static char * data[] = {
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
   :straight t
+  :blackout
   :hook (prog-mode . symbol-overlay-mode)
   :config
   (set-face-attribute 'symbol-overlay-default-face nil :background "DarkOrchid" :foreground "white"))
@@ -516,7 +516,7 @@ static char * data[] = {
 (use-package highlight-indent-guides
   :straight t
   :hook (prog-mode . highlight-indent-guides-mode)
-  :delight
+  :blackout
   :config
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
@@ -635,7 +635,7 @@ static char * data[] = {
               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2023")))))
            'append))
         (list 'org-mode 'org-journal-mode))
-  (delight 'org-indent-mode nil t))
+  (blackout 'org-indent-mode))
 
 ;; Org-mode buffer-local variables
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
@@ -771,7 +771,7 @@ This functions should be added to the hooks of major modes for programming."
              :fork (:host github
                     :repo "sirikid/smartparens"
                     :branch "hotfix/when-let"))
-  :delight smartparens-mode
+  :blackout smartparens-mode
   :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
   :bind (("C-. )" . sp-rewrap-sexp)
@@ -809,7 +809,7 @@ This functions should be added to the hooks of major modes for programming."
 ;;;; Projectile
 (use-package projectile
   :straight t
-  :delight projectile-mode
+  :blackout projectile-mode
   :bind (("C-c p p" . projectile-switch-project)
          ("C-c p f" . projectile-find-file))
   :config
@@ -983,7 +983,7 @@ This functions should be added to the hooks of major modes for programming."
 
 ;; Always enable eldoc
 (global-eldoc-mode +1)
-(delight 'eldoc-mode nil t)
+(blackout 'eldoc-mode)
 
 ;;;; Error checking
 (use-package flycheck
@@ -994,7 +994,7 @@ This functions should be added to the hooks of major modes for programming."
 ;; Aggressively indent everything (except for basically all non-lisp modes)!
 (use-package aggressive-indent
   :straight t
-  :delight
+  :blackout
   :hook ((lisp-mode lisp-interaction-mode emacs-lisp-mode) . aggressive-indent-mode)
   :config
   (defvar aggressive-indent/excluded '())
@@ -1130,7 +1130,7 @@ This checks in turn:
 (use-package yasnippet
   :if (not noninteractive)
   :straight t
-  :delight yas-minor-mode
+  :blackout yas-minor-mode
   :commands (yas-reload-all yas-minor-mode))
 
 (use-package yasnippet-snippets
@@ -1140,7 +1140,7 @@ This checks in turn:
 ;;;; Company
 (use-package company
   :straight t
-  :delight company-mode
+  :blackout company-mode
   :bind (("M-\\" . company-select-next))
   :hook ((org-mode prog-mode) . company-mode)
   :config
@@ -1244,20 +1244,17 @@ This checks in turn:
 
 (use-package editorconfig
   :straight t
+  :blackout
   :config
   (editorconfig-mode 1))
 
-
-
 ;;;; Emacs Lisp
-
-;; (use-package elisp-slime-nav
-;;   :straight t
-;;   :defer t
-;;   :commands (elisp-slime-nav-mode)
-;;   :hook ((emacs-lisp-mode ielm-mode) . elisp-slime-nav-mode))
-
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
+
+(use-package emr
+  :straight t
+  :bind (:map prog-mode-map
+         ("M-RET" . emr-show-refactor-menu)))
 
 ;;;; Common Lisp
 ;; the SBCL configuration file is written in Common Lisp
@@ -1746,7 +1743,7 @@ This checks in turn:
 
 (use-package tern
   :straight t
-  :delight
+  :blackout
   :hook (js2-mode . tern-mode))
 
 (use-package json-mode
