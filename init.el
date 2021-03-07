@@ -271,7 +271,10 @@ static char * data[] = {
   :straight t
   :bind (:map dired-mode-map
          ("i" . dired-subtree-insert)
-         (";" . dired-subtree-remove)))
+         (";" . dired-subtree-remove)
+         ("TAB" . dired-subtree-toggle))
+  :custom
+  (dired-subtree-line-prefix "\t"))
 
 ;;;; Undo/Redo
 (if (version< emacs-version "28")
@@ -313,6 +316,8 @@ static char * data[] = {
 (use-package wgrep
   :straight t
   :defer t
+  :bind (("C-x C-q" . wgrep-change-to-wgrep-mode)
+         ("C-c C-c" . wgrep-finish-edit))
   :config
   (setq wgrep-auto-save-buffer t))
 
@@ -345,13 +350,15 @@ static char * data[] = {
 
 (use-package iedit
   :straight t
-  :bind ("C-;" . iedit-mode)
+  :bind (("C-;" . iedit-mode)
+         ("C-:" . iedit-dwim))
   :config
-  (defun iedit-dwim (arg)
+  (defun iedit-dwim (begin end)
     "Starts iedit but uses \\[narrow-to-defun] to limit its scope."
-    (interactive "P")
-    (if arg
-        (iedit-mode)
+    (interactive "r")
+    (let ((occurrence (if (use-region-p)
+                          (buffer-substring begin end)
+                        (current-word))))
       (save-excursion
         (save-restriction
           (widen)
@@ -361,7 +368,7 @@ static char * data[] = {
             ;; `current-word' can of course be replaced by other
             ;; functions.
             (narrow-to-defun)
-            (iedit-start (current-word) (point-min) (point-max)))))))
+            (iedit-start occurrence (point-min) (point-max)))))))
   )
 
 (use-package expand-region
@@ -371,6 +378,7 @@ static char * data[] = {
 ;; Does what it says: multiple cursors!
 (use-package multiple-cursors
   :straight t
+  :functions (mc/num-cursors)
   :bind (("C->" . mc/mark-next-like-this)
          ("C-<" . mc/mark-previous-like-this)
          ("C-M-<" . mc/unmark-previous-like-this)
@@ -379,8 +387,9 @@ static char * data[] = {
          ("C-. C-<" . mc/skip-to-previous-like-this)
          ("C-. >" . hydra-multiple-cursors/body)
          :map global-map
-         ("C-S-<mouse-1>" . mc/add-cursor-on-click))
-  :init
+         ("C-S-<mouse-1>" . mc/add-cursor-on-click)
+         ("M-S-<mouse-1>" . mc/add-cursor-on-click))
+  :config
   (defhydra hydra-multiple-cursors (:hint nil)
     "
  Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
@@ -428,6 +437,7 @@ static char * data[] = {
          ("C-c C-u" . swiper-all)
          :map ivy-occur-mode-map
          ("w" . ivy-wgrep-change-to-wgrep-mode)
+         ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)
          :map ivy-minibuffer-map
          ("RET" . ivy-alt-done)
          ("C-m" . ivy-alt-done)
@@ -459,6 +469,7 @@ static char * data[] = {
 (use-package swiper
   :straight t
   :after ivy
+  :bind ("M-n" . swiper-thing-at-point)
   :config
   (setq swiper-use-visual-line-p #'ignore))
 (use-package counsel :straight t
