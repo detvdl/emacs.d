@@ -1140,6 +1140,13 @@ This checks in turn:
         company-tooltip-flip-when-above t
         company-tooltip-align-annotations t))
 
+(when (and (version<= "26" emacs-version)
+           (display-graphic-p))
+  (use-package company-box
+    :straight t
+    :blackout
+    :hook (company-mode . company-box-mode)))
+
 (use-package company-quickhelp
   :straight t
   :after company
