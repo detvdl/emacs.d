@@ -826,10 +826,10 @@ This functions should be added to the hooks of major modes for programming."
 ;;;; Movement
 (use-package avy
   :straight t
-  :bind (("M-n l" . avy-goto-line)
-         ("M-n c" . avy-goto-char)
-         ("M-n f" . avy-goto-char-2)
-         ("M-n w" . avy-goto-word-1))
+  ;; :bind (("M-n l" . avy-goto-line)
+  ;;        ("M-n c" . avy-goto-char)
+  ;;        ("M-n f" . avy-goto-char-2)
+  ;;        ("M-n w" . avy-goto-word-1))
   :config
   (avy-setup-default))
 
