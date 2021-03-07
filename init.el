@@ -478,24 +478,6 @@ static char * data[] = {
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
-;; (use-package ivy-posframe
-;;   :after ivy
-;;   :straight t
-;;   :delight
-;;   :config
-;;   (setq ivy-posframe-parameters
-;;         '((left-fringe . 8)
-;;           (right-fringe . 8)))
-;;   (setq ivy-posframe-display-functions-alist
-;;         '((swiper          . ivy-display-function-fallback)
-;;           (complete-symbol . ivy-posframe-display-at-point)
-;;           (counsel-M-x     . ivy-posframe-display-at-window-bottom-left)
-;;           (t               . ivy-posframe-display-at-frame-bottom-window-center)))
-;;   ;; (setq ivy-posframe-display-functions-alist '((t . ivy-posframe-display-at-frame-top-center))
-;;   ;;       ivy-posframe-height-alist '((t . 20)))
-;;   (setq ivy-posframe-min-width (frame-width (selected-frame)))
-;;   (ivy-posframe-mode +1))
-
 (use-package ggtags
   :straight t
   :hook ((c-mode c++-mode java-mode) . ggtags-mode)
@@ -1021,11 +1003,6 @@ This functions should be added to the hooks of major modes for programming."
          (null (string-match "\\([;{}]\\|\\b\\(if\\|for\\|while\\)\\b\\)"
                              (thing-at-point 'line))))))
 
-(defun func (arg)
-  (and (or (derived-mode-p 'some-top-level-mode)
-           (eq major-mode 'exact-mode))
-       (do-stuff)))
-
 ;; Utility function to re-indent entire file
 (defun indent-whole-file ()
   (interactive)
@@ -1235,7 +1212,6 @@ This checks in turn:
              :type git :host github
              :repo "dgutov/diff-hl"
              :fork (:branch "fix/diff-hl-create-revision-unused-lexical-arg"))
-  ;; :load-path "~/git/diff-hl"
   :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
@@ -1282,61 +1258,20 @@ This checks in turn:
   :init
   (setq inferior-lisp-program "ros -L sbcl -Q -l ~/.sbclrc run")
   :config
-  (sly-setup)
   (use-package sly-asdf
     :straight t
-    :config
-    (add-to-list 'sly-contribs 'sly-asdf 'append))
-  (use-package sly-macrostep
-    :straight t
-    :config
-    (add-to-list 'sly-contribs 'sly-macrostep 'append))
-  (use-package sly-named-readtables
-    :straight t
-    :config
-    (add-to-list 'sly-contribs 'sly-named-readtables 'append))
-  (use-package sly-quicklisp
-    :straight t
-    :config
-    (add-to-list 'sly-contribs 'sly-quicklisp 'append))
-  (use-package sly-stepper
-    :straight (sly-stepper
-               :host github :type git
-               :repo "joaotavora/sly-stepper")
-    :after sly
-    :config
-    (add-to-list 'sly-contribs 'sly-stepper 'append)))
+    :config (add-to-list 'sly-contribs 'sly-asdf 'append))
+  (use-package sly-macrostep :straight t)
+  (use-package sly-named-readtables :straight t)
+  (use-package sly-quicklisp :straight t)
+  (sly-setup))
 
-;; (use-package slime
-;;   :straight t
-;;   ;; :load-path "~/.roswell/lisp/slime"
-;;   :hook (lisp-mode . slime)
-;;   :init (load (expand-file-name "~/.roswell/helper.el"))
-;;   :bind (:map slime-mode-map
-;;          ("C-c C-s" . slime-selector))
-;;   :config
-;;   (setq inferior-lisp-program (executable-find "sbcl")
-;;         slime-contribs '(slime-fancy slime-company slime-indentation)
-;;         slime-autodoc-use-multiline-p t
-;;         slime-enable-evaluate-in-emacs t
-;;         common-lisp-style-default "sbcl")
-;;   (add-hook 'slime-load-hook (lambda () (require 'slime-fancy)))
-;;   (defun slime-enable-concurrent-hints ()
-;;     (interactive)
-;;     (setf slime-inhibit-pipelining nil)))
-
-;; (use-package slime-company
-;;   :straight t
-;;   :after slime
-;;   :config
-;;   (setq slime-company-completion 'fuzzy))
-
-;; (add-hook 'slime-mode-hook (lambda ()
-;;                              (setq lisp-indent-function 'common-lisp-indent-function
-;;                                    lisp-loop-indent-subclauses nil
-;;                                    lisp-loop-indent-forms-like-keywords t
-;;                                    lisp-lambda-list-keyword-parameter-alignment t)
-;;                              (company:add-local-backend 'company-slime)))
+(use-package sly-stepper
+  :straight (sly-stepper
+             :host github :type git
+             :repo "joaotavora/sly-stepper"
+             :files (:defaults "*.lisp" "*.asd" (:exclude "sly-stepper-autoloads.el")))
+  :after sly sly-stickers)
 
 ;;;; Clojure
 (use-package clojure-mode
@@ -1565,7 +1500,7 @@ This checks in turn:
 
 (defun my--java-mode-hook ()
   (setq lsp-prefer-flymake nil)
-  (lsp)
+  (lsp-deferred)
   (company:add-local-backend 'company-lsp)
   (dap-mode t)
   (dap-ui-mode t)
@@ -1977,46 +1912,14 @@ This checks in turn:
   :config
   (color-theme-sanityinc-tomorrow-bright))
 
-(defun modus-themes-toggle ()
-  "Toggle between `modus-operandi' and `modus-vivendi' themes."
+(defun theme-toggle ()
+  "Toggle between `modus-operandi' and `tomorrow-night-bright' themes."
   (interactive)
-  (if (eq (car custom-enabled-themes) 'modus-operandi)
-      (progn
-        (disable-theme 'modus-operandi)
-        (load-theme 'modus-vivendi t))
-    (disable-theme 'modus-vivendi)
-    (load-theme 'modus-operandi t)))
-
-;; (use-package elegance
-;;   :ensure nil
-;;   :load-path "elisp/elegance")
-
-;; (use-package minibuffer-line
-;;   :straight t
-;;   :config
-;;   ;; Display the hostname and time in the minibuffer window.
-;;   (defun my-minibuffer-line-justify-right (text)
-;;     "Return a string of `window-width' length with TEXT right-aligned."
-;;     (with-selected-window (minibuffer-window)
-;;       (format (format "%%%ds" ;; terminals appear to need 1 column fewer.
-;;                       (if window-system (window-width) (1- (window-width))))
-;;               text)))
-
-;;   (defun my-minibuffer-line-config ()
-;;     "Require and configure the `minibuffer-line' library."
-;;     (when (require 'minibuffer-line nil :noerror)
-;;       (setq minibuffer-line-refresh-interval 5
-;;             minibuffer-line-format
-;;             '("" (:eval (my-minibuffer-line-justify-right
-;;                          (concat system-name
-;;                                  " | "
-;;                                  (format-time-string "%F %R"))))))
-;;       (set-face-attribute 'minibuffer-line nil :inherit 'unspecified)
-;;       (set-face-attribute 'minibuffer-line nil :foreground "dark gray")
-;;       (minibuffer-line-mode 1)))
-
-;;   ;; Assume `minibuffer-line' is installed as an ELPA package.
-;;   (add-hook 'after-init-hook 'my-minibuffer-line-config))
+  (let ((is-light (eq (car custom-enabled-themes) 'modus-operandi)))
+    (mapc #'disable-theme custom-enabled-themes)
+    (if is-light
+        (load-theme 'sanityinc-tomorrow-bright t)
+      (load-theme 'modus-operandi t))))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
