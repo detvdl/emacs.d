@@ -658,11 +658,13 @@ static char * data[] = {
   :commands poporg-dwim
   :bind (("C-c \"" . poporg-dwim)))
 
+(defvar user-roam-dir "~/stack/Documents/roam")
+
 (use-package org-roam
   :straight t
   :defer 3
   :custom
-  (org-roam-directory "~/stack/Documents/roam")
+  (org-roam-directory user-roam-dir)
   (org-roam-completion-system 'ivy)
   (org-roam-link-title-format "[[%s]]")
   :custom-face
@@ -692,7 +694,7 @@ static char * data[] = {
   :custom
   (org-journal-date-prefix "#+TITLE: [DAILY] ")
   (org-journal-file-format "%Y-%m-%d.org")
-  (org-journal-dir "~/stack/Documents/roam")
+  (org-journal-dir user-roam-dir)
   (org-journal-date-format "%Y-%m-%d")
   :config
   (defun org-journal-today ()
@@ -744,7 +746,7 @@ static char * data[] = {
   :commands (deft)
   :custom
   (deft-auto-save-interval 5)
-  (deft-directory "~/stack/Documents/roam")
+  (deft-directory user-roam-dir)
   (deft-extensions '("txt" "org" "md"))
   (deft-default-extension "org")
   (deft-use-filter-string-for-filename t)
