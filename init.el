@@ -7,6 +7,9 @@
       package-check-signature nil
       package-enable-at-startup nil)
 
+;; Manually rebuild packages when needed/required with `straight-rebuild-all'
+(setq straight-check-for-modifications nil)
+
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -19,6 +22,7 @@
       (goto-char (point-max))
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
+
 
 (straight-use-package 'use-package)
 (setq straight-use-package-version 'straight
@@ -40,6 +44,7 @@
 (use-package blackout :straight t)
 (use-package bind-key :straight t)
 (use-package s :straight t)
+(use-package dash :straight t)
 
 ;;; Emacs 28 introduced an extra parameter to `define-obsolete-function-alias'
 (when (version<= "28" emacs-version)
@@ -476,6 +481,7 @@ static char * data[] = {
   :bind ("M-n" . swiper-thing-at-point)
   :config
   (setq swiper-use-visual-line-p #'ignore))
+
 (use-package counsel
   :straight t
   :after swiper
@@ -734,9 +740,7 @@ static char * data[] = {
   :after org
   :hook (org-mode . org-bullets-mode)
   :config
-  (setq org-bullets-bullet-list '("◉"
-                                  "●"
-                                  "○")))
+  (setq org-bullets-bullet-list '("◉" "●" "○")))
 
 ;; DEFT
 (use-package deft
@@ -824,18 +828,18 @@ This functions should be added to the hooks of major modes for programming."
 (use-package projectile
   :straight t
   :blackout projectile-mode
-  :bind (("C-c p p" . projectile-switch-project)
-         ("C-c p f" . projectile-find-file))
+  :hook (after-init . projectile-mode)
+  :bind (:map projectile-mode-map
+         ("C-c p" . projectile-command-map))
   :config
   (setq projectile-completion-system 'ivy
         projectile-sort-order 'recentf
-        projectile-indexing-method 'hybrid)
-  (with-eval-after-load 'ivy
+        projectile-indexing-method 'alien)
+  (with-eval-after-load "ivy"
     (ivy-set-actions 'projectile-find-file
                      '(("j" find-file-other-window "other window")))
     (ivy-set-actions 'projectile-switch-project
-                     '(("g" magit-status "magit status"))))
-  (projectile-mode))
+                     '(("g" magit-status "magit status")))))
 
 ;;;; Rainbows
 (use-package rainbow-delimiters
