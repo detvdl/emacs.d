@@ -19,5 +19,5 @@ profile: | $(PROF_FILE)
 $(PROF_FILE):
 ifeq (,$(wildcard $(PROF_FILE)))
 	mkdir -p $(PROF_DIR)
-	wget -O $(PROF_FILE) "http://www.randomsample.de/profile-dotemacs.el"
+	wget -O $(PROF_FILE) "https://raw.githubusercontent.com/abo-abo/profile-dotemacs/master/profile-dotemacs.el"
 endif
