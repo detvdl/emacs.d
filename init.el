@@ -1169,7 +1169,10 @@ This checks in turn:
     :straight t
     :after company
     :blackout
-    :hook (company-mode . company-box-mode)))
+    :custom
+    (company-box-scrollbar nil)
+    :hook (company-mode . company-box-mode))
+  )
 
 (use-package company-quickhelp
   :straight t
