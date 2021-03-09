@@ -1305,6 +1305,8 @@ This checks in turn:
 (use-package ivy-prescient
   :straight t
   :after ivy counsel prescient
+  :custom
+  (ivy-prescient-enable-filtering nil)
   :config
   (ivy-prescient-mode))
 
