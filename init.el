@@ -1201,6 +1201,31 @@ This checks in turn:
         lsp-eldoc-render-all nil
         lsp-prefer-flymake nil))
 
+(use-package mpv
+  :straight (mpv
+             :host github :type git
+             :repo "kljohann/mpv.el"
+             :fork t)
+  :config
+  (defun news ()
+    "Play today's news from vrt.be/vrtnu."
+    (interactive)
+    (-let* ((config-file (no-littering-expand-var-file-name "vrt.eld"))
+            ((&alist 'username user 'password pass)
+             (with-current-buffer (find-file-noselect config-file)
+               (goto-char (point-min))
+               (read (buffer-string))))
+            (hours '(("13u" . "13") ("update" . "16") ("19u" . "19") ("laat" . "23")))
+            (time-string (completing-read "Format: " (mapcar 'car hours) nil t nil nil "19u"))
+            (time (car (assoc time-string hours)))
+            (date (format-time-string "%Y%m%d"
+                                      (if (string< (format-time-string "%H") time)
+                                          (- (time-to-seconds (current-time)) (* 60 60 24))
+                                        (current-time))))
+            (news-url (format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s" time-string date))
+            (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
+      (mpv-play news-url))))
+
 (use-package lsp-ui
   :straight t
   :after lsp-mode
