@@ -483,6 +483,20 @@ static char * data[] = {
   :config
   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
+(use-package aweshell
+  :straight (aweshell
+             :host github :type git
+             :repo "manateelazycat/aweshell"
+             :fork t)
+  :commands (aweshell-new aweshell-toggle aweshell-dedicated)
+  :bind (("C-c s t" . aweshell-toggle)
+         ("C-c s s" . aweshell-new)
+         ("C-c s n" . aweshell-next)
+         ("C-c s p" . aweshell-prev)
+         ("C-c s d" . aweshell-dedicated-toggle))
+  :config
+  (setq aweshell-search-history-key "C-r"))
+
 (use-package ggtags
   :straight t
   :hook ((c-mode c++-mode java-mode) . ggtags-mode)
