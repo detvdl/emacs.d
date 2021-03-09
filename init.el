@@ -1986,6 +1986,9 @@ This checks in turn:
   :straight t
   :bind ("C-c d" . docker))
 
+(use-package terraform-mode
+  :straight t)
+
 (use-package ereader
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
