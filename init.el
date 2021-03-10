@@ -1,3 +1,5 @@
+;; -*- lexical-binding: t -*-
+
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 			             ("melpa" . "https://melpa.org/packages/")
@@ -1205,43 +1207,32 @@ This checks in turn:
   :straight (mpv
              :host github :type git
              :repo "kljohann/mpv.el"
-             :fork t)
-  :config
-  (defun news ()
-    "Play today's news from vrt.be/vrtnu."
-    (interactive)
-    (-let* ((config-file (no-littering-expand-var-file-name "vrt.eld"))
-            ((&alist 'username user 'password pass)
-             (with-current-buffer (find-file-noselect config-file)
-               (goto-char (point-min))
-               (read (buffer-string))))
-            (hours '(("13u" . "13") ("update" . "16") ("19u" . "19") ("laat" . "23")))
-            (time-string (completing-read "Format: " (mapcar 'car hours) nil t nil nil "19u"))
-            (time (car (assoc time-string hours)))
-            (date (format-time-string "%Y%m%d"
-                                      (if (string< (format-time-string "%H") time)
-                                          (- (time-to-seconds (current-time)) (* 60 60 24))
-                                        (current-time))))
-            (news-url (format "https://www.vrt.be/vrtnu/a-z/het-journaal/2021/het-journaal-het-journaal-%s-%s" time-string date))
-            (mpv-default-options `(,(format "--ytdl-raw-options=username=%s,password=%s" user pass))))
-      (mpv-play news-url))))
+             :fork t))
+
+(use-package vrtnu
+  :after mpv
+  :straight (vrtnu
+             :host github :type git
+             :repo "detvdl/vrtnu.el")
+  :custom
+  (vrtnu-config-file (no-littering-expand-var-file-name "vrt.eld")))
 
 (use-package lsp-ui
-  :straight t
-  :after lsp-mode
-  :commands lsp-ui-mode
-  :bind (:map lsp-ui-mode-map
-         ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-         ([remap xref-find-references] . lsp-ui-peek-find-references)
-         ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
-         ("C-. p" . lsp-ui-doc-glance))
-  :config
-  (setq lsp-ui-flycheck-enable t
-        lsp-ui-doc-enable nil
-        lsp-ui-doc-include-signature t
-        lsp-ui-doc-use-childframe t
-        lsp-ui-doc-position 'at-point
-        lsp-ui-sideline-update-mode 'line))
+:straight t
+:after lsp-mode
+:commands lsp-ui-mode
+:bind (:map lsp-ui-mode-map
+       ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+       ([remap xref-find-references] . lsp-ui-peek-find-references)
+       ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
+       ("C-. p" . lsp-ui-doc-glance))
+:config
+(setq lsp-ui-flycheck-enable t
+      lsp-ui-doc-enable nil
+      lsp-ui-doc-include-signature t
+      lsp-ui-doc-use-childframe t
+      lsp-ui-doc-position 'at-point
+      lsp-ui-sideline-update-mode 'line))
 
 ;;;; Magit
 (use-package magit
