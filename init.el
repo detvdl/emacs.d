@@ -848,6 +848,10 @@ This functions should be added to the hooks of major modes for programming."
   :straight t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . rainbow-delimiters-mode))
 
+(use-package color-identifiers-mode
+  :straight t
+  :hook ((lisp-mode clojure-mode) . color-identifiers-mode))
+
 ;;;; Movement
 (use-package avy
   :straight t
@@ -2018,7 +2022,9 @@ This checks in turn:
     (mapc #'disable-theme custom-enabled-themes)
     (if is-light
         (load-theme 'sanityinc-tomorrow-bright t)
-      (load-theme 'modus-operandi t))))
+      (load-theme 'modus-operandi t))
+    (when (bound-and-true-p color-identifiers-mode)
+      (color-identifiers:regenerate-colors))))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
