@@ -1335,7 +1335,7 @@ This checks in turn:
 ;;;; Java
 ;; NOTE: possibly dap-java needs to be byte-compiled separately, to account for the following snippet:
 ;; (eval-when-compile
-;;   (require 'cl))
+;;   (require 'cl-lib))
 ;; (setq lsp-java-vmargs
 ;;       (list "-noverify"
 ;;             "-Xmx2G"

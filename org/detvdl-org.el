@@ -6,10 +6,10 @@
 
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
-;; (use-package variable-pitch
-;;   :straight t
-;;   :after org
-;;   :hook (org-mode . variable-pitch-mode))
+(use-package variable-pitch
+  :straight nil
+  :after org
+  :hook (org-mode . variable-pitch-mode))
 
 (use-package org
   :straight org-plus-contrib
@@ -204,7 +204,7 @@
   (org-superstar-prettify-item-bullets t)
   (org-superstar-item-bullet-alist '((?- . ?•)
                                      (?+ . ?▸)
-                                     (?* . ?﹡))))
+                                     (?* . ?▪))))
 
 ;; DEFT
 (use-package deft
