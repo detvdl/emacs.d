@@ -25,23 +25,11 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
 
-
 (straight-use-package 'use-package)
 (setq straight-use-package-version 'straight
       straight-use-package-by-default t
       straight-vc-git-default-protocol 'ssh
       straight-host-usernames '((github . "detvdl")))
-
-;; (when (version< emacs-version "27")
-;;   (unless package--initialized
-;;     (package-initialize)))
-
-;; (unless (package-installed-p 'use-package)
-;;   (package-refresh-contents)
-;;   (package-install 'use-package)
-;;   (require 'use-package))
-;; (setq use-package-always-ensure nil)
-;; (use-package use-package-straight-system-package :straight t)
 
 (use-package blackout :straight t)
 (use-package bind-key :straight t)
@@ -437,17 +425,27 @@ static char * data[] = {
     ("<drag-mouse-1>" ignore)
     ("q" nil)))
 
+(use-package deadgrep
+  :straight t
+  :bind (("C-c k" . deadgrep))
+  :config
+  (require 'dash)
+  (defun deadgrep--arguments-patch (rg-arguments)
+    "Add --no-ignore-vcs to rg-command."
+    (-insert-at (- (length rg-arguments) 3) "--no-ignore-vcs" rg-arguments))
+  (advice-add 'deadgrep--arguments :filter-return #'deadgrep--arguments-patch))
+
 ;;;; Ivy
 (use-package ivy
   :straight t
   :blackout ivy-mode
   :hook (after-init . ivy-mode)
   :bind (("C-s" . swiper-isearch)
+         ("C-r" . swiper-isearch-backward)
          ("C-x C-f" . counsel-find-file)
-	     ("M-x" . counsel-M-x)
          ("C-c y" . counsel-yank-pop)
          ;; TODO: investigate https://github.com/Wilfred/deadgrep as a possible substitute/enrichment
-         ("C-c k" . counsel-rg)
+         ("C-c g" . counsel-rg)
          ("C-x l" . counsel-locate)
          ("C-h v" . counsel-describe-variable)
          ("C-h f" . counsel-describe-function)
@@ -455,6 +453,7 @@ static char * data[] = {
          ("C-x b" . ivy-switch-buffer)
 	     ("C-c C-r" . ivy-resume)
          ("C-c C-u" . swiper-all)
+         ("M-x" . counsel-M-x)
          :map ivy-occur-mode-map
          ("w" . ivy-wgrep-change-to-wgrep-mode)
          ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)
@@ -463,24 +462,26 @@ static char * data[] = {
          ("C-m" . ivy-alt-done)
          ("C-j" . ivy-done)
          ("<escape>" . minibuffer-keyboard-quit))
+  :custom
+  (ivy-use-virtual-buffers t)
+  (ivy-use-selectable-prompt t)
+  (enable-recursive-minibuffers t)
+  (ivy-display-style nil)
+  (ivy-height 8) ;; used when posframe is not available
+  (ivy-virtual-abbreviate 'full)
+  (ivy-extra-directories nil)
+  (ivy-re-builders-alist '((swiper . ivy--regex-plus)
+                           (counsel-ag-function . ivy--regex-plus)
+                           (counsel-grep-function . ivy--regex-plus)
+                           (swiper-all . ivy--regex-plus)
+                           (swiper-isearch . ivy--regex-plus)
+                           (t . ivy--regex-fuzzy)))
+  (counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+  (counsel-rg-base-command '("rg" "--max-columns" "240" "--with-filename" "--no-heading"
+                             "--line-number" "--color" "never" "--no-ignore-vcs" "%s"))
   :config
   ;; Fuzzy matching
-  (use-package flx :straight t)
-  (setq ivy-use-virtual-buffers t
-        ivy-use-selectable-prompt t
-        enable-recursive-minibuffers t
-        ivy-display-style nil
-        ivy-height 8 ;; used when posframe is not available
-        ivy-virtual-abbreviate 'full
-        ivy-extra-directories nil
-        ivy-re-builders-alist '((swiper . ivy--regex-plus)
-                                (counsel-ag-function . ivy--regex-plus)
-                                (counsel-grep-function . ivy--regex-plus)
-                                (swiper-all . ivy--regex-plus)
-                                (swiper-isearch . ivy--regex-plus)
-                                (t . ivy--regex-fuzzy)))
-  ;; use the faster ripgrep for standard counsel-grep
-  (setq counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s"))
+  (use-package flx :straight t))
 
 (use-package swiper
   :straight t
@@ -507,8 +508,9 @@ static char * data[] = {
          ("C-c s n" . aweshell-next)
          ("C-c s p" . aweshell-prev)
          ("C-c s d" . aweshell-dedicated-toggle))
-  :config
-  (setq aweshell-search-history-key "C-r"))
+  :custom
+  (aweshell-search-history-key "C-r")
+  (aweshell-auto-suggestion-p nil))
 
 (use-package ggtags
   :straight t
@@ -643,7 +645,8 @@ This functions should be added to the hooks of major modes for programming."
 
 (use-package color-identifiers-mode
   :straight t
-  :hook ((lisp-mode clojure-mode) . color-identifiers-mode))
+  :blackout t
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . color-identifiers-mode))
 
 ;;;; Movement
 (use-package avy
@@ -667,31 +670,31 @@ This functions should be added to the hooks of major modes for programming."
          ("M-'" . treemacs)
          :map treemacs-mode-map
          ([mouse-1] . treemacs-single-click-expand-action))
+  :custom
+  (treemacs-indentation-string (propertize " \| " 'font-lock-face '(:foreground "lightgray")))
+  (treemacs-indentation 1)
+  (treemacs-no-png-images nil)
+  (treemacs-display-in-side-window t)
+  (treemacs-width 30)
+  (treemacs-silent-refresh t)
+  (treemacs-silent-filewatch t)
+  (treemacs-show-hidden-files t)
+  (treemacs-sorting 'alphabetic-case-insensitive-desc)
+  (treemacs-follow-after-init t)
+  (treemacs-project-follow-cleanup t)
+  (treemacs-tag-follow-cleanup t)
+  (treemacs-tag-follow-delay 1.0)
+  (treemacs-recenter-distance 0.1)
+  (treemacs-recenter-after-tag-follow 'on-distance)
+  (treemacs-recenter-after-file-follow 'on-distance)
+  (treemacs-file-event-delay 1000)
+  (treemacs-file-follow-delay 0.1)
   :config
-  (setq treemacs-indentation-string (propertize " \| " 'face 'font-lock-comment-face)
-        treemacs-indentation 1
-        treemacs-no-png-images nil
-        treemacs-display-in-side-window t
-        treemacs-width 30
-        treemacs-silent-refresh t
-        treemacs-silent-filewatch t
-        treemacs-show-hidden-files t
-        treemacs-sorting 'alphabetic-case-insensitive-desc
-        treemacs-follow-after-init t
-        treemacs-project-follow-cleanup t
-        treemacs-tag-follow-cleanup t
-        treemacs-tag-follow-delay 1.0
-        treemacs-recenter-distance 0.1
-        treemacs-recenter-after-tag-follow 'on-distance
-        treemacs-recenter-after-file-follow 'on-distance
-        treemacs-file-event-delay 1000
-        treemacs-file-follow-delay 0.1)
   (treemacs-follow-mode t)
   (treemacs-tag-follow-mode t)
   (treemacs-filewatch-mode t)
   (treemacs-fringe-indicator-mode t)
   (add-hook 'treemacs-mode-hook (lambda ()
-                                  (linum-mode -1)
                                   (display-line-numbers-mode -1)
                                   (when (display-graphic-p)
                                     (set-window-fringes nil 00))
@@ -704,99 +707,88 @@ This functions should be added to the hooks of major modes for programming."
       (error "all-the-icons isn't installed"))
     ;; minimalistic atom-inspired icon theme
     (treemacs-create-theme "doom"
-                           :config
-                           (let ((face-spec '(:inherit font-lock-doc-face :slant normal)))
-                             (treemacs-create-icon
-                              :icon (format " %s\t" (all-the-icons-octicon "repo" :v-adjust -0.1 :face face-spec))
-                              :extensions (root))
-                             (treemacs-create-icon
-                              :icon (format "%s\t%s\t"
-                                            (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
-                                            (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
-                              :extensions (dir-open))
-                             (treemacs-create-icon
-                              :icon (format "%s\t%s\t"
-                                            (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
-                                            (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
-                              :extensions (dir-closed))
-                             (treemacs-create-icon
-                              :icon (format "%s\t%s\t"
-                                            (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
-                                            (all-the-icons-octicon "package" :v-adjust 0 :face face-spec)) :extensions (tag-open))
-                             (treemacs-create-icon
-                              :icon (format "%s\t%s\t"
-                                            (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
-                                            (all-the-icons-octicon "package" :v-adjust 0 :face face-spec))
-                              :extensions (tag-closed))
-                             (treemacs-create-icon
-                              :icon (format "%s\t" (all-the-icons-octicon "tag" :height 0.9 :v-adjust 0 :face face-spec))
-                              :extensions (tag-leaf))
-                             (treemacs-create-icon
-                              :icon (format "%s\t" (all-the-icons-octicon "flame" :v-adjust 0 :face face-spec))
-                              :extensions (error))
-                             (treemacs-create-icon
-                              :icon (format "%s\t" (all-the-icons-octicon "stop" :v-adjust 0 :face face-spec))
-                              :extensions (warning))
-                             (treemacs-create-icon
-                              :icon (format "%s\t" (all-the-icons-octicon "info" :height 0.75 :v-adjust 0.1 :face face-spec))
-                              :extensions (info))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-media" :v-adjust 0 :face face-spec))
-                              :extensions ("png" "jpg" "jpeg" "gif" "ico" "tif" "tiff" "svg" "bmp"
-                                           "psd" "ai" "eps" "indd" "mov" "avi" "mp4" "webm" "mkv"
-                                           "wav" "mp3" "ogg" "midi"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-code" :v-adjust 0 :face face-spec))
-                              :extensions ("yml" "yaml" "sh" "zsh" "fish" "c" "h" "cpp" "cxx" "hpp"
-                                           "tpp" "cc" "hh" "hs" "lhs" "cabal" "py" "pyc" "rs" "el"
-                                           "elc" "clj" "cljs" "cljc" "ts" "tsx" "vue" "css" "html"
-                                           "htm" "dart" "java" "kt" "scala" "sbt" "go" "js" "jsx"
-                                           "hy" "json" "jl" "ex" "exs" "eex" "ml" "mli" "pp" "dockerfile"
-                                           "vagrantfile" "j2" "jinja2" "tex" "racket" "rkt" "rktl" "rktd"
-                                           "scrbl" "scribble" "plt" "makefile" "elm" "xml" "xsl" "rb"
-                                           "scss" "lua" "lisp" "scm" "sql" "toml" "nim" "pl" "pm" "perl"
-                                           "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"
-                                           "cask" "r" "re" "rei" "bashrc" "zshrc" "inputrc" "editorconfig"
-                                           "gitconfig"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "book" :v-adjust 0 :face face-spec))
-                              :extensions ("lrf" "lrx" "cbr" "cbz" "cb7" "cbt" "cba" "chm" "djvu"
-                                           "doc" "docx" "pdb" "pdb" "fb2" "xeb" "ceb" "inf" "azw"
-                                           "azw3" "kf8" "kfx" "lit" "prc" "mobi" "exe" "or" "html"
-                                           "pkg" "opf" "txt" "pdb" "ps" "rtf" "pdg" "xml" "tr2"
-                                           "tr3" "oxps" "xps"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
-                              :extensions ("md" "markdown" "rst" "log" "org" "txt"
-                                           "CONTRIBUTE" "LICENSE" "README" "CHANGELOG"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-binary" :v-adjust 0 :face face-spec))
-                              :extensions ("exe" "dll" "obj" "so" "o" "out"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-pdf" :v-adjust 0 :face face-spec))
-                              :extensions ("pdf"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-zip" :v-adjust 0 :face face-spec))
-                              :extensions ("zip" "7z" "tar" "gz" "rar" "tgz"))
-                             (treemacs-create-icon
-                              :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
-                              :extensions (fallback))))
-    )
+      :config
+      (let ((face-spec '(:inherit font-lock-doc-face :slant normal)))
+        (treemacs-create-icon
+         :icon (format " %s\t" (all-the-icons-octicon "repo" :v-adjust -0.1 :face face-spec))
+         :extensions (root))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
+         :extensions (dir-open))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
+         :extensions (dir-closed))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec)) :extensions (tag-open))
+        (treemacs-create-icon
+         :icon (format "%s\t%s\t"
+                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
+                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec))
+         :extensions (tag-closed))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "tag" :height 0.9 :v-adjust 0 :face face-spec))
+         :extensions (tag-leaf))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "flame" :v-adjust 0 :face face-spec))
+         :extensions (error))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "stop" :v-adjust 0 :face face-spec))
+         :extensions (warning))
+        (treemacs-create-icon
+         :icon (format "%s\t" (all-the-icons-octicon "info" :height 0.75 :v-adjust 0.1 :face face-spec))
+         :extensions (info))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-media" :v-adjust 0 :face face-spec))
+         :extensions ("png" "jpg" "jpeg" "gif" "ico" "tif" "tiff" "svg" "bmp"
+                      "psd" "ai" "eps" "indd" "mov" "avi" "mp4" "webm" "mkv"
+                      "wav" "mp3" "ogg" "midi"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-code" :v-adjust 0 :face face-spec))
+         :extensions ("yml" "yaml" "sh" "zsh" "fish" "c" "h" "cpp" "cxx" "hpp"
+                      "tpp" "cc" "hh" "hs" "lhs" "cabal" "py" "pyc" "rs" "el"
+                      "elc" "clj" "cljs" "cljc" "ts" "tsx" "vue" "css" "html"
+                      "htm" "dart" "java" "kt" "scala" "sbt" "go" "js" "jsx"
+                      "hy" "json" "jl" "ex" "exs" "eex" "ml" "mli" "pp" "dockerfile"
+                      "vagrantfile" "j2" "jinja2" "tex" "racket" "rkt" "rktl" "rktd"
+                      "scrbl" "scribble" "plt" "makefile" "elm" "xml" "xsl" "rb"
+                      "scss" "lua" "lisp" "scm" "sql" "toml" "nim" "pl" "pm" "perl"
+                      "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"
+                      "cask" "r" "re" "rei" "bashrc" "zshrc" "inputrc" "editorconfig"
+                      "gitconfig"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "book" :v-adjust 0 :face face-spec))
+         :extensions ("lrf" "lrx" "cbr" "cbz" "cb7" "cbt" "cba" "chm" "djvu"
+                      "doc" "docx" "pdb" "pdb" "fb2" "xeb" "ceb" "inf" "azw"
+                      "azw3" "kf8" "kfx" "lit" "prc" "mobi" "exe" "or" "html"
+                      "pkg" "opf" "txt" "pdb" "ps" "rtf" "pdg" "xml" "tr2"
+                      "tr3" "oxps" "xps"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
+         :extensions ("md" "markdown" "rst" "log" "org" "txt"
+                      "CONTRIBUTE" "LICENSE" "README" "CHANGELOG"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-binary" :v-adjust 0 :face face-spec))
+         :extensions ("exe" "dll" "obj" "so" "o" "out"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-pdf" :v-adjust 0 :face face-spec))
+         :extensions ("pdf"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-zip" :v-adjust 0 :face face-spec))
+         :extensions ("zip" "7z" "tar" "gz" "rar" "tgz"))
+        (treemacs-create-icon
+         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
+         :extensions (fallback)))))
   (treemacs-load-theme "doom"))
 
 (use-package treemacs-projectile
   :after treemacs projectile
   :straight t)
-
-;; (use-package solaire-mode
-;;   :straight t
-;;   :defer 2
-;;   :hook (((after-revert ediff-prepare-buffer) . turn-on-solaire-mode)
-;;          (minibuffer-setup . solaire-mode-in-minibuffer))
-;;   :config
-;;   (add-hook 'change-major-mode-hook #'turn-on-solaire-mode)
-;;   (solaire-global-mode +1)
-;;   (solaire-mode-swap-bg))
 
 ;; Always enable eldoc
 (global-eldoc-mode +1)
@@ -1687,90 +1679,6 @@ This checks in turn:
   :config
   (setq haskell-stylish-on-save t))
 
-;; (use-package intero
-;;   :straight t
-;;   :hook (haskell-mode . intero-mode)
-;;   :config/el-patch
-;;   (el-patch-defun intero-ghci-output-flags ()
-;;     "Get the appropriate ghci output flags for the current GHC version"
-;;     (with-current-buffer (intero-buffer 'backend)
-;;       (let ((current-version (mapcar #'string-to-number (split-string (el-patch-swap intero-ghc-version (intero-ghc-version)) "\\."))))
-;;         (if (intero-version>= '(8 4 1) current-version)
-;;             '("-fno-code" "-fwrite-interface")
-;;           '("-fobject-code")))))
-;;   (el-patch-defun intero-start-process-in-buffer (buffer &optional targets source-buffer stack-yaml)
-;;     "Start an Intero worker in BUFFER.
-;; Uses the specified TARGETS if supplied.
-;; Automatically performs initial actions in SOURCE-BUFFER, if specified.
-;; Uses the default stack config file, or STACK-YAML file if given."
-;;     (if (buffer-local-value 'intero-give-up buffer)
-;;         buffer
-;;       (let* ((process-info (intero-start-piped-process buffer targets stack-yaml))
-;;              (arguments (plist-get process-info :arguments))
-;;              (options (plist-get process-info :options))
-;;              (process (plist-get process-info :process)))
-;;         (set-process-query-on-exit-flag process nil)
-;;         (mapc
-;;          (lambda (flag)
-;;            (process-send-string process ((el-patch-swap append concat) ":set " flag "\n")))
-;;          (intero-ghci-output-flags))
-;;         (process-send-string process ":set -fdefer-type-errors\n")
-;;         (process-send-string process ":set -fdiagnostics-color=never\n")
-;;         (process-send-string process ":set prompt \"\\4\"\n")
-;;         (with-current-buffer buffer
-;;           (erase-buffer)
-;;           (when stack-yaml
-;;             (setq intero-stack-yaml stack-yaml))
-;;           (setq intero-targets targets)
-;;           (setq intero-start-time (current-time))
-;;           (setq intero-source-buffer source-buffer)
-;;           (setq intero-arguments arguments)
-;;           (setq intero-starting t)
-;;           (setq intero-callbacks
-;;                 (list (list (cons source-buffer
-;;                                   buffer)
-;;                             (lambda (buffers msg)
-;;                               (let ((source-buffer (car buffers))
-;;                                     (process-buffer (cdr buffers)))
-;;                                 (with-current-buffer process-buffer
-;;                                   (when (string-match "^Intero-Service-Port: \\([0-9]+\\)\n" msg)
-;;                                     (setq intero-service-port (string-to-number (match-string 1 msg))))
-;;                                   (setq-local intero-starting nil))
-;;                                 (when source-buffer
-;;                                   (with-current-buffer source-buffer
-;;                                     (when flycheck-mode
-;;                                       (run-with-timer 0 nil
-;;                                                       'intero-call-in-buffer
-;;                                                       (current-buffer)
-;;                                                       'intero-flycheck-buffer)))))
-;;                               (message "Booted up intero!"))))))
-;;         (set-process-filter
-;;          process
-;;          (lambda (process string)
-;;            (when intero-debug
-;;              (message "[Intero] <- %s" string))
-;;            (when (buffer-live-p (process-buffer process))
-;;              (with-current-buffer (process-buffer process)
-;;                (goto-char (point-max))
-;;                (insert string)
-;;                (when (and intero-try-with-build
-;;                           intero-starting)
-;;                  (let ((last-line (buffer-substring-no-properties
-;;                                    (line-beginning-position)
-;;                                    (line-end-position))))
-;;                    (if (string-match-p "^Progress" last-line)
-;;                        (message "Booting up intero (building dependencies: %s)"
-;;                                 (downcase
-;;                                  (or (car (split-string (replace-regexp-in-string
-;;                                                          "\u0008+" "\n"
-;;                                                          last-line)
-;;                                                         "\n" t))
-;;                                      "...")))
-;;                      (message "Booting up intero ..."))))
-;;                (intero-read-buffer)))))
-;;         (set-process-sentinel process 'intero-sentinel)
-;;         buffer))))
-
 (use-package kubernetes
   :straight t
   :commands (kubernetes-overview))
@@ -1790,7 +1698,10 @@ This checks in turn:
   :straight t
   :custom
   (modus-operandi-theme-distinct-org-blocks t)
-  (modus-operandi-theme-slanted-constructs t))
+  (modus-operandi-theme-slanted-constructs t)
+  :custom-face
+  (org-transclusion-block ((t (:background "#efefef" :extend t))))
+  (org-transclusion-source-block ((t (:background "#ebf6fa" :extend t)))))
 
 (use-package modus-vivendi-theme
   :straight t
@@ -1800,9 +1711,9 @@ This checks in turn:
   :straight (color-theme-sanityinc-tomorrow
              :type git :host github
              :repo "purcell/color-theme-sanityinc-tomorrow"
-             :fork t)
-  :config
-  (color-theme-sanityinc-tomorrow-bright))
+             :fork t))
+
+(load-theme 'modus-operandi t)
 
 (defun theme-toggle ()
   "Toggle between `modus-operandi' and `tomorrow-night-bright' themes."

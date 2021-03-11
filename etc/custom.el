@@ -9,8 +9,10 @@
    ["#000000" "#ff8059" "#44bc44" "#eecc00" "#29aeff" "#feacd0" "#00d3d0" "#ffffff"])
  '(awesome-tray-mode-line-active-color "#29aeff")
  '(awesome-tray-mode-line-inactive-color "#2f2f2f")
+ '(beacon-color "#d54e53")
+ '(custom-enabled-themes '(sanityinc-tomorrow-bright))
  '(custom-safe-themes
-   '("b7871c3e6b6ce44cb58def7ed99122c5a569102adfc3009112595c9a8dc6b5cf" "3380a2766cf0590d50d6366c5a91e976bdc3c413df963a0ab9952314b4577299" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "b3bcf1b12ef2a7606c7697d71b934ca0bdd495d52f901e73ce008c4c9825a3aa" "8c1dd3d6fdfb2bee6b8f05d13d167f200befe1712d0abfdc47bb6d3b706c3434" "d96587ec2c7bf278269b8ec2b800c7d9af9e22d816827639b332b0e613314dfd" "9be1d34d961a40d94ef94d0d08a364c3d27201f3c98c9d38e36f10588469ea57" "bc4c89a7b91cfbd3e28b2a8e9e6750079a985237b960384f158515d32c7f0490" "d74dbf5fccb34455859134e068ff3152c32be4c68851efb08ea332483de95ebf" "af252168d587c0b9c596d19d31236191251f23c15a6bb2e5921d377a254cb48a" "6c19d233c854a40b7767434d1dc12ec280a90e8b7f08cd7b4d06008fd1f7445f" "6c3f9f5a8a8534c4f162c2e33de979fcd7e76726d96e07fd3ca7f7a1c003dda1" "d03fcded328ea95ad6e831c1a9589b702d732e80e7cc430475fbcaac8d42c7ed" "0279bada7a780c86b72c7398d7a60f83ebe496c92162d7dcccdd5b3286414937" "c19e5291471680e72d8bd98f8d6e84f781754a9e8fc089536cda3f0b7c3550e3" "ac2ca460db1668a48c35c4d0fd842e5d2ce2d4e8567a7903b76438f2750826cd" "9e816bc85b64963710efdbc57db8545b53f7f359b0736e0b36fbc9efe07f12f4" "d29613760b773d8c53f4d2e0d28260b8bdba20bce2abbc861e954c1ea3255275" "5b52a4d0d95032547f718e1574d3a096c6eaf56117e188945ae873bdb3200066" "38c4fb6c8b2625f6307f3dde763d5c61d774d854ecee9c5eb9c5433350bc0bef" default))
+   '("5ed25f51c2ed06fc63ada02d3af8ed860d62707e96efc826f4a88fd511f45a1d" "de1f10725856538a8c373b3a314d41b450b8eba21d653c4a4498d52bb801ecd2" "b7871c3e6b6ce44cb58def7ed99122c5a569102adfc3009112595c9a8dc6b5cf" "3380a2766cf0590d50d6366c5a91e976bdc3c413df963a0ab9952314b4577299" "1b8d67b43ff1723960eb5e0cba512a2c7a2ad544ddb2533a90101fd1852b426e" "06f0b439b62164c6f8f84fdda32b62fb50b6d00e8b01c2208e55543a6337433a" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "b3bcf1b12ef2a7606c7697d71b934ca0bdd495d52f901e73ce008c4c9825a3aa" "8c1dd3d6fdfb2bee6b8f05d13d167f200befe1712d0abfdc47bb6d3b706c3434" "d96587ec2c7bf278269b8ec2b800c7d9af9e22d816827639b332b0e613314dfd" "9be1d34d961a40d94ef94d0d08a364c3d27201f3c98c9d38e36f10588469ea57" "bc4c89a7b91cfbd3e28b2a8e9e6750079a985237b960384f158515d32c7f0490" "d74dbf5fccb34455859134e068ff3152c32be4c68851efb08ea332483de95ebf" "af252168d587c0b9c596d19d31236191251f23c15a6bb2e5921d377a254cb48a" "6c19d233c854a40b7767434d1dc12ec280a90e8b7f08cd7b4d06008fd1f7445f" "6c3f9f5a8a8534c4f162c2e33de979fcd7e76726d96e07fd3ca7f7a1c003dda1" "d03fcded328ea95ad6e831c1a9589b702d732e80e7cc430475fbcaac8d42c7ed" "0279bada7a780c86b72c7398d7a60f83ebe496c92162d7dcccdd5b3286414937" "c19e5291471680e72d8bd98f8d6e84f781754a9e8fc089536cda3f0b7c3550e3" "ac2ca460db1668a48c35c4d0fd842e5d2ce2d4e8567a7903b76438f2750826cd" "9e816bc85b64963710efdbc57db8545b53f7f359b0736e0b36fbc9efe07f12f4" "d29613760b773d8c53f4d2e0d28260b8bdba20bce2abbc861e954c1ea3255275" "5b52a4d0d95032547f718e1574d3a096c6eaf56117e188945ae873bdb3200066" "38c4fb6c8b2625f6307f3dde763d5c61d774d854ecee9c5eb9c5433350bc0bef" default))
  '(debug-on-error t)
  '(evil-emacs-state-cursor '(bar "cyan"))
  '(evil-insert-state-cursor '(bar "spring green"))
@@ -19,9 +21,12 @@
  '(evil-operator-state-cursor '(box "red"))
  '(evil-replace-state-cursor '(hbar "orange red"))
  '(evil-visual-state-cursor '(hollow "orange"))
+ '(fci-rule-color "#424242")
+ '(flycheck-color-mode-line-face-to-color 'mode-line-buffer-id)
  '(flymake-error-bitmap '(flymake-double-exclamation-mark modus-theme-fringe-red))
  '(flymake-note-bitmap '(exclamation-mark modus-theme-fringe-cyan))
  '(flymake-warning-bitmap '(exclamation-mark modus-theme-fringe-yellow))
+ '(frame-background-mode 'dark)
  '(highlight-tail-colors '(("#2f4a00" . 0) ("#00415e" . 20)))
  '(hl-todo-keyword-faces
    '(("HOLD" . "#cfdf30")
@@ -101,6 +106,7 @@
      (340 . "#00bdfa")
      (360 . "#b6a0ff")))
  '(vc-annotate-very-old-color nil)
+ '(window-divider-mode nil)
  '(xterm-color-names
    ["#000000" "#ff8059" "#44bc44" "#eecc00" "#29aeff" "#feacd0" "#00d3d0" "#a8a8a8"])
  '(xterm-color-names-bright
