@@ -57,8 +57,11 @@
     (add-to-list 'recentf-exclude no-littering-var-directory)
     (add-to-list 'recentf-exclude no-littering-etc-directory)))
 
+(setq custom-file (no-littering-expand-etc-file-name "custom.el"))
+(when (file-exists-p custom-file)
+  (load custom-file))
+
 (defconst emacs-misc-dir (expand-file-name "misc" user-emacs-directory))
-(defconst emacs-theme-dir (expand-file-name "themes" user-emacs-directory))
 (defconst emacs-org-dir (expand-file-name "org" user-emacs-directory))
 
 (defconst *is-mac* (eq system-type 'darwin))
@@ -93,19 +96,9 @@
       (sort (list-init-files (platform-init-path))
             'string-lessp))
 
+;; ORG-MODE
 (push emacs-org-dir load-path)
 (require 'detvdl-org)
-
-(push emacs-theme-dir custom-theme-load-path)
-(dolist (dir (directory-files emacs-theme-dir))
-  (let ((dirpath (expand-file-name dir emacs-theme-dir)))
-    (unless (or (member dir '("." ".." ".git"))
-		        (not (file-directory-p dirpath)))
-      (push dirpath custom-theme-load-path))))
-
-(setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-(when (file-exists-p custom-file)
-  (load custom-file))
 
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
@@ -557,12 +550,6 @@ static char * data[] = {
          ("i" . dired-subtree-insert)
          (";" . dired-subtree-remove)))
 
-(use-package adaptive-wrap
-  :straight t
-  :hook ((prog-mode org-mode) . adaptive-wrap-prefix-mode)
-  :config
-  (setq-default adaptive-wrap-extra-indent 2))
-
 ;;;; Comment Keywords
 (defun local-comment-auto-fill ()
   (set (make-local-variable 'comment-auto-fill-only-comments) t))
@@ -587,7 +574,7 @@ This functions should be added to the hooks of major modes for programming."
                     :repo "sirikid/smartparens"
                     :branch "hotfix/when-let"))
   :blackout smartparens-mode
-  :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode) . smartparens-mode)
+  :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode org-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
   :bind (("C-. )" . sp-rewrap-sexp)
          ("C-. (" . sp-rewrap-sexp))
@@ -643,10 +630,10 @@ This functions should be added to the hooks of major modes for programming."
   :straight t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . rainbow-delimiters-mode))
 
-(use-package color-identifiers-mode
-  :straight t
-  :blackout t
-  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . color-identifiers-mode))
+;; (use-package color-identifiers-mode
+;;   :straight t
+;;   :blackout t
+;;   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . color-identifiers-mode))
 
 ;;;; Movement
 (use-package avy
@@ -952,7 +939,8 @@ This checks in turn:
         company-tooltip-limit 10
         company-minimum-prefix-length 2
         company-tooltip-flip-when-above t
-        company-tooltip-align-annotations t))
+        company-tooltip-align-annotations t)
+  (add-hook 'org-mode-hook (lambda () (cl-pushnew 'company-capf company-backends))))
 
 (when (and (version<= "26" emacs-version)
            (display-graphic-p))
@@ -1694,14 +1682,12 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
+;; THEMES
 (use-package modus-operandi-theme
   :straight t
   :custom
   (modus-operandi-theme-distinct-org-blocks t)
-  (modus-operandi-theme-slanted-constructs t)
-  :custom-face
-  (org-transclusion-block ((t (:background "#efefef" :extend t))))
-  (org-transclusion-source-block ((t (:background "#ebf6fa" :extend t)))))
+  (modus-operandi-theme-slanted-constructs t))
 
 (use-package modus-vivendi-theme
   :straight t
@@ -1711,9 +1697,12 @@ This checks in turn:
   :straight (color-theme-sanityinc-tomorrow
              :type git :host github
              :repo "purcell/color-theme-sanityinc-tomorrow"
-             :fork t))
+             :fork t)
+  :defer t)
 
-(load-theme 'modus-operandi t)
+(progn
+  (mapc #'disable-theme custom-enabled-themes)
+  (load-theme 'modus-operandi t))
 
 (defun theme-toggle ()
   "Toggle between `modus-operandi' and `tomorrow-night-bright' themes."

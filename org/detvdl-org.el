@@ -128,6 +128,7 @@
   (org-roam-directory user-roam-dir)
   (org-roam-completion-system 'ivy)
   (org-roam-link-title-format "[[%s]]")
+  ;; (org-roam-completion-everywhere t)
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   :bind (:map org-roam-mode-map
@@ -227,6 +228,12 @@
 
 ;; Make the whole heading line fontified
 (setq org-fontify-whole-heading-line t)
+
+(use-package adaptive-wrap
+  :straight t
+  :hook ((prog-mode org-mode) . adaptive-wrap-prefix-mode)
+  :config
+  (setq-default adaptive-wrap-extra-indent 2))
 
 (provide 'detvdl-org)
 ;;; detvdl-org.el ends here
