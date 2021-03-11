@@ -1856,6 +1856,10 @@ This checks in turn:
         (face-attribute face :inherit))))
     (list 'markdown-pre-face 'markdown-inline-code-face)))
 
+(use-package edit-indirect
+  :after markdown-mode
+  :straight t)
+
 (use-package pandoc-mode
   :straight t
   :hook markdown-mode
