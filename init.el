@@ -1215,24 +1215,27 @@ This checks in turn:
              :host github :type git
              :repo "detvdl/vrtnu.el")
   :custom
-  (vrtnu-config-file (no-littering-expand-var-file-name "vrt.eld")))
+  (vrtnu-config-file (no-littering-expand-var-file-name "vrt.eld"))
+  :config
+  (with-eval-after-load "ivy"
+    (push '(vrt-news . nil) ivy-sort-functions-alist)))
 
 (use-package lsp-ui
-:straight t
-:after lsp-mode
-:commands lsp-ui-mode
-:bind (:map lsp-ui-mode-map
-       ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
-       ([remap xref-find-references] . lsp-ui-peek-find-references)
-       ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
-       ("C-. p" . lsp-ui-doc-glance))
-:config
-(setq lsp-ui-flycheck-enable t
-      lsp-ui-doc-enable nil
-      lsp-ui-doc-include-signature t
-      lsp-ui-doc-use-childframe t
-      lsp-ui-doc-position 'at-point
-      lsp-ui-sideline-update-mode 'line))
+  :straight t
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :bind (:map lsp-ui-mode-map
+         ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+         ([remap xref-find-references] . lsp-ui-peek-find-references)
+         ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
+         ("C-. p" . lsp-ui-doc-glance))
+  :config
+  (setq lsp-ui-flycheck-enable t
+        lsp-ui-doc-enable nil
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-sideline-update-mode 'line))
 
 ;;;; Magit
 (use-package magit
@@ -1295,9 +1298,11 @@ This checks in turn:
 
 (use-package ivy-prescient
   :straight t
-  :after ivy counsel prescient
+  :after (ivy counsel prescient)
   :custom
   (ivy-prescient-enable-filtering nil)
+  (ivy-prescient-sort-commands
+   '(:not swiper swiper-isearch ivy-switch-buffer vrt-news))
   :config
   (ivy-prescient-mode))
 
