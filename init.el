@@ -115,6 +115,11 @@
   :config
   (exec-path-from-shell-initialize))
 
+(defun align-non-space (BEG END)
+  "Align non-space columns in region BEG END."
+  (interactive "r")
+  (align-regexp BEG END "\\(\\s-*\\)\\S-+" 1 1 t))
+
 (push '(tool-bar-lines . 0) default-frame-alist)
 (push '(tool-bar-lines . 0) initial-frame-alist)
 (push '(menu-bar-lines . 0) default-frame-alist)
@@ -630,10 +635,21 @@ This functions should be added to the hooks of major modes for programming."
   :straight t
   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . rainbow-delimiters-mode))
 
-;; (use-package color-identifiers-mode
-;;   :straight t
-;;   :blackout t
-;;   :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . color-identifiers-mode))
+(use-package color-identifiers-mode
+  :straight t
+  :blackout t
+  :hook ((lisp-mode emacs-lisp-mode clojure-mode slime-mode sly-mode) . color-identifiers-mode)
+  :custom
+  (color-identifiers:min-color-saturation 0.3)
+  :config
+  (color-identifiers:set-declaration-scan-fn
+   'lisp-mode 'color-identifiers:elisp-get-declarations)
+
+  (add-to-list
+   'color-identifiers:modes-alist
+   `(lisp-mode . (""
+                  "\\_<\\(\\(?:\\s_\\|\\sw\\)+\\)"
+                  (nil)))))
 
 ;;;; Movement
 (use-package avy
@@ -1040,8 +1056,7 @@ This checks in turn:
 (use-package diff-hl
   :straight (diff-hl
              :type git :host github
-             :repo "dgutov/diff-hl"
-             :fork (:branch "fix/diff-hl-create-revision-unused-lexical-arg"))
+             :repo "dgutov/diff-hl")
   :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)

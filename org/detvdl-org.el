@@ -23,17 +23,20 @@
   (org-log-done t)
   (org-startup-folded nil)
   (org-startup-indented t)
+  (org-link-descriptive t) ;; set to nil to avoid immediately formatted links
   (org-list-indent-offset 2)
   (org-hide-leading-stars t)
-  (org-ellipsis " \u25bc" )
+  (org-ellipsis " ⧩" )
   (org-return-follows-link t)
   (org-hide-emphasis-markers t)
+  (org-fontify-quote-and-verse-blocks t)
   (org-image-actual-width nil)
   (org-hidden-keywords '())
   (org-src-tab-acts-natively t)
   (org-src-window-setup 'current-window)
   (org-src-strip-leading-and-trailing-blank-lines t)
-  (org-src-preserve-indentation t)
+  (org-src-preserve-indentation nil)
+  (org-edit-src-content-indentation 0)
   (org-export-preserve-breaks t)
   ;; LaTeX preview size is a bit too small for comfort
   ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
@@ -49,6 +52,8 @@
   (org-level-4 ((t (:inherit outline-4 :height 1.00))))
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   :config
+  (add-to-list 'org-export-backends 'md)
+  (add-to-list 'org-export-backends 'jira)
   (require 'ob-shell)
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell . t)
@@ -111,6 +116,12 @@
         (list 'org-mode 'org-journal-mode))
   (blackout 'org-indent-mode))
 
+(use-package ox-jira
+  :straight t
+  :after org
+  :config
+  (load-library "ox-jira"))
+
 ;; Org-mode buffer-local variables
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
 
@@ -128,9 +139,11 @@
   (org-roam-directory user-roam-dir)
   (org-roam-completion-system 'ivy)
   (org-roam-link-title-format "[[%s]]")
-  ;; (org-roam-completion-everywhere t)
+  ;; enable to have automatic completion anywhere in the buffer
+  (org-roam-completion-everywhere nil)
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
+  (org-roam-link-current ((t (:inherit org-roam-link :slant italic))))
   :bind (:map org-roam-mode-map
          (("C-c n l" . org-roam)
           ("C-c n f" . org-roam-find-file)
@@ -163,7 +176,7 @@
   ("C-c n t" . org-journal-today)
   :custom
   (org-journal-date-prefix "#+TITLE: [DAILY] ")
-  (org-journal-file-format "%Y-%m-%d.org")
+  (org-journal-file-format "journal_%Y-%m-%d.org")
   (org-journal-dir user-roam-dir)
   (org-journal-date-format "%Y-%m-%d")
   :config
@@ -206,6 +219,17 @@
   (org-superstar-item-bullet-alist '((?- . ?•)
                                      (?+ . ?▸)
                                      (?* . ?▪))))
+
+(use-package org-appear
+  :straight (org-appear
+             :type git :host github
+             :repo "awth13/org-appear")
+  :hook (org-mode . org-appear-mode))
+
+(use-package darkroom
+  :straight t
+  :custom
+  (darkroom-margins 0.1))
 
 ;; DEFT
 (use-package deft
