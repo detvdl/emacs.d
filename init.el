@@ -1119,6 +1119,14 @@ This checks in turn:
                     (cl-return t)))))
   )
 
+
+;;;; PlantUML
+(use-package plantuml-mode
+  :straight t
+  :mode ("\\.puml\\'" . plantuml-mode)
+  :custom
+  (plantuml-default-exec-mode 'jar))
+
 ;;;; Emacs Lisp
 (add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 
@@ -1402,26 +1410,33 @@ This checks in turn:
 
 (add-hook 'python-mode-hook #'subword-mode)
 
-(use-package anaconda-mode
-  :straight t
-  :hook python-mode
-  :bind (:map anaconda-mode-map
-         ([remap xref-find-definitions] . anaconda-mode-find-definitions)
-         ([remap xref-find-references] . anaconda-mode-find-references)
-         ([remap describe-thing-at-point] . anaconda-mode-show-doc))
-  :config
-  (setq python-shell-interpreter "python3")
-  (when *is-mac*
-    (setq anaconda-mode-localhost-address "localhost")))
+;; (use-package anaconda-mode
+;;   :straight t
+;;   :hook python-mode
+;;   :bind (:map anaconda-mode-map
+;;          ([remap xref-find-definitions] . anaconda-mode-find-definitions)
+;;          ([remap xref-find-references] . anaconda-mode-find-references)
+;;          ([remap describe-thing-at-point] . anaconda-mode-show-doc))
+;;   :config
+;;   (setq python-shell-interpreter "python3")
+;;   (when *is-mac*
+;;     (setq anaconda-mode-localhost-address "localhost")))
 
-(use-package company-anaconda
+;; (use-package company-anaconda
+;;   :straight t
+;;   :after anaconda-mode
+;;   :config
+;;   (add-hook 'anaconda-mode-hook
+;;             (lambda ()
+;;               (company:add-local-backend 'company-anaconda)
+;;               (anaconda-eldoc-mode))))
+
+(use-package lsp-python-ms
   :straight t
-  :after anaconda-mode
-  :config
-  (add-hook 'anaconda-mode-hook
-            (lambda ()
-              (company:add-local-backend 'company-anaconda)
-              (anaconda-eldoc-mode))))
+  :init (setq lsp-python-ms-auto-install-server t)
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-python-ms)
+                         (lsp-deferred))))  ; or lsp-deferred
 
 (use-package pyenv-mode
   :straight t
