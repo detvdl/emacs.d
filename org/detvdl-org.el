@@ -12,7 +12,7 @@
   :hook (org-mode . variable-pitch-mode))
 
 (use-package org
-  :straight org-plus-contrib
+  :straight org
   ;; :pin org
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
@@ -58,7 +58,7 @@
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell . t)
                                  (awk . t)))
-  (require 'ox-confluence)
+  ;; (require 'ox-confluence)
   ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)
@@ -134,32 +134,35 @@
 
 (use-package org-roam
   :straight t
-  :defer 3
+  :init
+  (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory user-roam-dir)
   (org-roam-completion-system 'ivy)
   (org-roam-link-title-format "[[%s]]")
   ;; enable to have automatic completion anywhere in the buffer
   (org-roam-completion-everywhere nil)
+  (org-roam-dailies-capture-templates
+   '(("d" "default" entry "* [%<%R>] %?"
+      :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>"))))
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   (org-roam-link-current ((t (:inherit org-roam-link :slant italic))))
-  :bind (:map org-roam-mode-map
-         (("C-c n l" . org-roam)
-          ("C-c n f" . org-roam-find-file)
-          ("C-c n x" . org-roam-jump-to-index)
-          ("C-c n b" . org-roam-switch-to-buffer)
-          ("C-c n g" . org-roam-graph))
+  :bind (("C-c n c" . org-roam-capture)
+         ("C-c n f" . org-roam-node-find)
+         ("C-c n b" . org-roam-buffer-toggle)
+         ("C-c n j" . org-roam-dailies-capture-today)
+         ("C-c n t" . org-roam-dailies-goto-today)
          :map org-mode-map
-         (("C-c n i" . org-roam-insert)))
+         (("C-c n i" . org-roam-node-insert)))
   :config
-  (org-roam-mode))
+  (org-roam-db-autosync-mode))
 
-(use-package org-roam-server
-  :straight t
-  :after org-roam
-  :custom
-  (org-roam-server-port 9091))
+;; (use-package org-roam-server
+;;   :straight t
+;;   :after org-roam
+;;   :custom
+;;   (org-roam-server-port 9091))
 
 (use-package org-transclusion
   :straight (org-transclusion
@@ -171,13 +174,13 @@
 
 (use-package org-journal
   :straight t
-  :bind
-  ("C-c n j" . org-journal-new-entry)
-  ("C-c n t" . org-journal-today)
+  ;; :bind
+  ;; ("C-c n j" . org-journal-new-entry)
+  ;; ("C-c n t" . org-journal-today)
   :custom
   (org-journal-date-prefix "#+TITLE: [DAILY] ")
-  (org-journal-file-format "journal_%Y-%m-%d.org")
-  (org-journal-dir user-roam-dir)
+  (org-journal-file-format "%Y-%m-%d.org")
+  (org-journal-dir (concat user-roam-dir "daily"))
   (org-journal-date-format "%Y-%m-%d")
   :config
   (defun org-journal-today ()
@@ -243,8 +246,27 @@
   (deft-directory user-roam-dir)
   (deft-extensions '("txt" "org" "md"))
   (deft-default-extension "org")
+  (deft-strip-summary-regexp ":PROPERTIES:\n\\(.+\n\\)+:END:\n")
+  ;; (deft-use-filename-as-title t)
   (deft-use-filter-string-for-filename t)
-  (deft-recursive t))
+  (deft-recursive t)
+  :config
+  (defun cm/deft-parse-title (file contents)
+    "Parse the given FILE and CONTENTS and determine the title.
+  If `deft-use-filename-as-title' is nil, the title is taken to
+  be the first non-empty line of the FILE.  Else the base name of the FILE is
+  used as title."
+    (let ((begin (string-match "^#\\+[tT][iI][tT][lL][eE]: .*$" contents)))
+	  (if begin
+	      (string-trim (substring contents begin (match-end 0)) "#\\+[tT][iI][tT][lL][eE]: *" "[\n\t ]+")
+	    (deft-base-filename file))))
+  (advice-add 'deft-parse-title :override #'cm/deft-parse-title)
+  (setq deft-strip-summary-regexp
+	    (concat "\\("
+		        "[\n\t]" ;; blank
+		        "\\|^#\\+[[:alpha:]_]+:.*$" ;; org-mode metadata
+		        "\\|^:PROPERTIES:\n\\(.+\n\\)+:END:\n"
+		        "\\)")))
 
 (use-package ob-restclient
   :after org

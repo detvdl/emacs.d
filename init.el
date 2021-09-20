@@ -1698,15 +1698,13 @@ This checks in turn:
   :mode ("\\.epub\\'" . ereader-mode))
 
 ;; THEMES
-(use-package modus-operandi-theme
-  :straight t
+(use-package modus-themes
+  :straight (modus-themes
+             :host github :type git
+             :repo "protesilaos/modus-themes")
   :custom
   (modus-operandi-theme-distinct-org-blocks t)
   (modus-operandi-theme-slanted-constructs t))
-
-(use-package modus-vivendi-theme
-  :straight t
-  :defer t)
 
 (use-package color-theme-sanityinc-tomorrow
   :straight (color-theme-sanityinc-tomorrow
