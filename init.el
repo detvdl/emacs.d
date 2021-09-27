@@ -3,7 +3,8 @@
 (require 'package)
 (setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
 			             ("melpa" . "https://melpa.org/packages/")
-			             ("org" . "http://orgmode.org/elpa/")))
+			             ("org" . "http://orgmode.org/elpa/")
+                         ("nongnu" . "https://elpa.nongnu.org/nongnu")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package--init-file-ensured t
       package-check-signature nil
