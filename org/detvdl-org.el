@@ -41,6 +41,9 @@
   ;; LaTeX preview size is a bit too small for comfort
   ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (org-highlight-latex-and-related '(latex))
+  (org-todo-keywords
+   '((sequence "TODO(t)" "IN PROGRESS(i!)" "VERIFY(v@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
+  (org-log-into-drawer "LOGBOOK")
   :custom-face
   (org-document-title ((t (:inherit outline-1 :height 1.20 :underline t))))
   (org-document-info ((t (:inherit outline-1 :height 1.15))))
@@ -53,7 +56,6 @@
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   :config
   (add-to-list 'org-export-backends 'md)
-  (add-to-list 'org-export-backends 'jira)
   (require 'ob-shell)
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell . t)
@@ -120,7 +122,14 @@
   :straight t
   :after org
   :config
-  (load-library "ox-jira"))
+  (load-library "ox-jira")
+  (add-to-list 'org-export-backends 'jira))
+
+(use-package org-contrib
+  :straight t
+  :config
+  (require 'ox-confluence)
+  (add-to-list 'org-export-backends 'confluence))
 
 ;; Org-mode buffer-local variables
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
@@ -144,25 +153,37 @@
   (org-roam-completion-everywhere nil)
   (org-roam-dailies-capture-templates
    '(("d" "default" entry "* [%<%R>] %?"
-      :target (file+head "%<%Y-%m-%d>.org" "#+title: %<%Y-%m-%d>"))))
+      :target (file+head "%<%Y-%m-%d>.org" "#+title: [daily] %<%Y-%m-%d>\n"))))
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   (org-roam-link-current ((t (:inherit org-roam-link :slant italic))))
   :bind (("C-c n c" . org-roam-capture)
+         ("C-c n a" . org-roam-alias-add)
+         ("C-c n t" . org-roam-tag-add)
+         ("C-c n n" . org-id-get-create) ;; creates new Node ID for a given headline/file
+         ("C-c n w" . org-roam-refile)
          ("C-c n f" . org-roam-node-find)
          ("C-c n b" . org-roam-buffer-toggle)
          ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n t" . org-roam-dailies-goto-today)
+         ("C-c n u" . org-roam-dailies-goto-today)
          :map org-mode-map
          (("C-c n i" . org-roam-node-insert)))
   :config
   (org-roam-db-autosync-mode))
 
-;; (use-package org-roam-server
-;;   :straight t
-;;   :after org-roam
-;;   :custom
-;;   (org-roam-server-port 9091))
+(use-package org-roam-ui
+  :straight
+  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :after org-roam
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 
 (use-package org-transclusion
   :straight (org-transclusion
