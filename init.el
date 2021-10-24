@@ -150,84 +150,84 @@
   :config
   (setq el-patch-enable-use-package-integration t))
 
-(defconst git--state-small-dot
-  "/* XPM */
-static char * data[] = {
-\"14 7 3 1\",
-\" 	c None\",
-\"+	c #202020\",
-\".	c %s\",
-\"      +++     \",
-\"     +...+    \",
-\"    +.....+   \",
-\"    +.....+   \",
-\"    +.....+   \",
-\"     +...+    \",
-\"      +++     \"};")
+;; (defconst git--state-small-dot
+;;   "/* XPM */
+;; static char * data[] = {
+;; \"14 7 3 1\",
+;; \" 	c None\",
+;; \"+	c #202020\",
+;; \".	c %s\",
+;; \"      +++     \",
+;; \"     +...+    \",
+;; \"    +.....+   \",
+;; \"    +.....+   \",
+;; \"    +.....+   \",
+;; \"     +...+    \",
+;; \"      +++     \"};")
 
-(defconst git--state-large-dot
-  "/* XPM */
-static char * data[] = {
-\"18 13 3 1\",
-\" 	c None\",
-\"+	c #000000\",
-\".	c %s\",
-\"                  \",
-\"       +++++      \",
-\"      +.....+     \",
-\"     +.......+    \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"    +.........+   \",
-\"     +.......+    \",
-\"      +.....+     \",
-\"       +++++      \",
-\"                  \"};")
+;; (defconst git--state-large-dot
+;;   "/* XPM */
+;; static char * data[] = {
+;; \"18 13 3 1\",
+;; \" 	c None\",
+;; \"+	c #000000\",
+;; \".	c %s\",
+;; \"                  \",
+;; \"       +++++      \",
+;; \"      +.....+     \",
+;; \"     +.......+    \",
+;; \"    +.........+   \",
+;; \"    +.........+   \",
+;; \"    +.........+   \",
+;; \"    +.........+   \",
+;; \"    +.........+   \",
+;; \"     +.......+    \",
+;; \"      +.....+     \",
+;; \"       +++++      \",
+;; \"                  \"};")
 
-(defun git--state-color (state)
-  "Return an appropriate color string for the given Git STATE."
-  (cond ((eq state 'edited) "green")
-        ((eq state 'added) "blue")
-        ((memq state '(removed conflict unregistered)) "red")
-        ((memq state '(needs-update needs-merge)) "purple")
-        ((eq state 'up-to-date) "yellow")
-        ((eq state 'staged) "yellow")
-        ((memq state '(ignored unknown)) "gray50")
-        (t "gray50")))
+;; (defun git--state-color (state)
+;;   "Return an appropriate color string for the given Git STATE."
+;;   (cond ((eq state 'edited) "green")
+;;         ((eq state 'added) "blue")
+;;         ((memq state '(removed conflict unregistered)) "red")
+;;         ((memq state '(needs-update needs-merge)) "purple")
+;;         ((eq state 'up-to-date) "yellow")
+;;         ((eq state 'staged) "yellow")
+;;         ((memq state '(ignored unknown)) "gray50")
+;;         (t "gray50")))
 
-(defun git--state-dot (&optional state)
-  "Return the appropriate bitmap dot for the given Git STATE."
-  (let* ((backend (vc-backend buffer-file-name))
-         (state (or state (if (and backend buffer-file-name)
-                              (vc-state buffer-file-name backend)
-                            'unknown)))
-         (color (git--state-color state)))
-    (propertize "   "
-                'help-echo (format "VC state: %s" state)
-                'display
-                `(image :type xpm
-                        :data ,(format git--state-large-dot color)
-                        :ascent center))))
+;; (defun git--state-dot (&optional state)
+;;   "Return the appropriate bitmap dot for the given Git STATE."
+;;   (let* ((backend (vc-backend buffer-file-name))
+;;          (state (or state (if (and backend buffer-file-name)
+;;                               (vc-state buffer-file-name backend)
+;;                             'unknown)))
+;;          (color (git--state-color state)))
+;;     (propertize "   "
+;;                 'help-echo (format "VC state: %s" state)
+;;                 'display
+;;                 `(image :type xpm
+;;                         :data ,(format git--state-large-dot color)
+;;                         :ascent center))))
 
-(setq-default mode-line-format
-	          '("%e"
-		        mode-line-front-space
-		        (:eval (git--state-dot))
-		        mode-line-mule-info
-		        mode-line-client
-		        mode-line-modified
-		        mode-line-remote
-		        mode-line-frame-identification
-		        mode-line-buffer-identification
-		        "   "
-		        mode-line-position
-		        (vc-mode vc-mode)
-		        "  "
-		        mode-line-modes
-		        mode-line-misc-info
-		        mode-line-end-spaces))
+;; (setq-default mode-line-format
+;; 	          '("%e"
+;; 		        mode-line-front-space
+;; 		        (:eval (git--state-dot))
+;; 		        mode-line-mule-info
+;; 		        mode-line-client
+;; 		        mode-line-modified
+;; 		        mode-line-remote
+;; 		        mode-line-frame-identification
+;; 		        mode-line-buffer-identification
+;; 		        "   "
+;; 		        mode-line-position
+;; 		        (vc-mode vc-mode)
+;; 		        "  "
+;; 		        mode-line-modes
+;; 		        mode-line-misc-info
+;; 		        mode-line-end-spaces))
 
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
@@ -382,6 +382,8 @@ static char * data[] = {
 
 (use-package expand-region
   :straight t
+  :custom
+  (expand-region-subword-enabled t)
   :bind ("C-=" . er/expand-region))
 
 ;; Does what it says: multiple cursors!
@@ -1698,14 +1700,6 @@ This checks in turn:
   :config
   (setq haskell-stylish-on-save t))
 
-(use-package kubernetes
-  :straight t
-  :commands (kubernetes-overview))
-
-(use-package docker
-  :straight t
-  :bind ("C-c d" . docker))
-
 (use-package terraform-mode
   :straight t)
 
@@ -1714,35 +1708,82 @@ This checks in turn:
   :mode ("\\.epub\\'" . ereader-mode))
 
 ;; THEMES
-(use-package modus-themes
-  :straight (modus-themes
-             :host github :type git
-             :repo "protesilaos/modus-themes")
-  :custom
-  (modus-operandi-theme-distinct-org-blocks t)
-  (modus-operandi-theme-slanted-constructs t))
+;; (use-package modus-themes
+;;   :straight (modus-themes
+;;              :host github :type git
+;;              :repo "protesilaos/modus-themes")
+;;   :custom
+;;   (modus-operandi-theme-distinct-org-blocks t)
+;;   (modus-operandi-theme-slanted-constructs t))
 
-(use-package color-theme-sanityinc-tomorrow
-  :straight (color-theme-sanityinc-tomorrow
+(use-package nano
+  :straight (nano-emacs
              :type git :host github
-             :repo "purcell/color-theme-sanityinc-tomorrow"
-             :fork t)
-  :defer t)
+             :repo "rougier/nano-emacs")
+  :no-require t
+  :custom
+  (nano-font-family-proportional (face-attribute 'variable-pitch :family))
+  (nano-font-family-monospaced (face-attribute 'default :family))
+  :config
+  (require 'nano-base-colors)
+  (require 'nano-faces)
+  (nano-faces)
+  (setq inhibit-startup-screen t
+        inhibit-startup-message t
+        inhibit-startup-echo-area-message t
+        initial-scratch-message nil)
+  (require 'disp-table)
+  ;; Fix bug on OSX in term mode & zsh (spurious % after each command)
+  (add-hook 'term-mode-hook
+	        (lambda () (setq buffer-display-table (make-display-table))))
+  (require 'nano-colors))
 
-(progn
-  (mapc #'disable-theme custom-enabled-themes)
-  (load-theme 'modus-operandi t))
+;; Make sure new frames use window-divider
+;; Make a clean & minimalist frame
+(use-package frame
+  :straight (:type built-in)
+  (window-divider-default-right-width 12)
+  (window-divider-default-bottom-width 1)
+  (window-divider-default-places 'right-only)
+  (window-divider-mode t)
+  :config
+  (setq-default default-frame-alist
+                (append (list
+                         '(min-height . 1)
+                         '(height     . 45)
+	                     '(min-width  . 1)
+                         '(width      . 81)
+                         '(vertical-scroll-bars . nil)
+                         '(internal-border-width . 10)
+                         '(left-fringe    . 1)
+                         '(right-fringe   . 1)
+                         '(tool-bar-lines . 0)
+                         '(menu-bar-lines . 0)
+                         '(vertical-scroll-bars . nil))))
+  (setq-default window-resize-pixelwise t)
+  (setq-default frame-resize-pixelwise t))
 
-(defun theme-toggle ()
-  "Toggle between `modus-operandi' and `tomorrow-night-bright' themes."
-  (interactive)
-  (let ((is-light (eq (car custom-enabled-themes) 'modus-operandi)))
-    (mapc #'disable-theme custom-enabled-themes)
-    (if is-light
-        (load-theme 'sanityinc-tomorrow-bright t)
-      (load-theme 'modus-operandi t))
-    (when (bound-and-true-p color-identifiers-mode)
-      (color-identifiers:regenerate-colors))))
+(add-hook 'before-make-frame-hook 'window-divider-mode)
+
+(use-package bespoke-themes
+  :straight (:host github :repo "mclear-tools/bespoke-themes" :branch "main")
+  :config
+  (setq bespoke-set-italic-comments t
+        bespoke-set-italic-keywords t
+        bespoke-set-variable-pitch t)
+  (bespoke/light-theme)
+  (set-face-attribute 'region nil :inherit nil :background "yellow"))
+
+(use-package bespoke-modeline
+  :straight (:type git :host github :repo "mclear-tools/bespoke-modeline")
+  :init
+  (setq bespoke-modeline-position 'top)
+  (setq bespoke-modeline-size 2)
+  (setq bespoke-modeline-git-diff-mode-line t)
+  (setq bespoke-modeline-cleaner t)
+  (setq bespoke-modeline-visual-bell t)
+  :config
+  (bespoke-modeline-mode))
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)

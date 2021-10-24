@@ -3,6 +3,7 @@
 ;;; Code:
 
 (defvar user-roam-dir "~/stack/Documents/roam")
+(defvar user-roam-dailies-dir (file-name-as-directory (expand-file-name "daily" user-roam-dir)))
 
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
@@ -13,13 +14,13 @@
 
 (use-package org
   :straight org
-  ;; :pin org
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
          :map org-mode-map
          ("C-c C-o" . org-open-maybe))
   :custom
+  (org-agenda-files (directory-files-recursively user-roam-dailies-dir "\\.org$"))
   (org-log-done t)
   (org-startup-folded nil)
   (org-startup-indented t)
@@ -127,6 +128,7 @@
 
 (use-package org-contrib
   :straight t
+  :after org
   :config
   (require 'ox-confluence)
   (add-to-list 'org-export-backends 'confluence))
@@ -172,8 +174,9 @@
   (org-roam-db-autosync-mode))
 
 (use-package org-roam-ui
-  :straight
-  (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+  :straight (:host github
+             :repo "org-roam/org-roam-ui" :branch "main"
+             :files ("*.el" "out"))
   :after org-roam
   ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
   ;;         a hookable mode anymore, you're advised to pick something yourself
@@ -223,7 +226,10 @@
   :bind
   (:map org-mode-map
    (("s-Y" . org-download-screenshot)
-    ("s-y" . org-download-yank))))
+    ("s-y" . org-download-yank)))
+  :config
+  (when (eq system-type 'darwin)
+      (setq org-download-screenshot-method "screencapture -i %s")))
 
 (use-package org-cliplink
   :straight t
