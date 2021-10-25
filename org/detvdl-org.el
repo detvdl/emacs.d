@@ -28,6 +28,7 @@
   (org-list-indent-offset 2)
   (org-hide-leading-stars t)
   (org-ellipsis " ⧩" )
+  (org-src-fontify-natively t)
   (org-return-follows-link t)
   (org-hide-emphasis-markers t)
   (org-fontify-quote-and-verse-blocks t)
