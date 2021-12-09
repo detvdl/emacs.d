@@ -999,23 +999,6 @@ This checks in turn:
         lsp-eldoc-render-all nil
         lsp-prefer-flymake nil))
 
-(use-package mpv
-  :straight (mpv
-             :host github :type git
-             :repo "kljohann/mpv.el"
-             :fork t))
-
-(use-package vrtnu
-  :after mpv
-  :straight (vrtnu
-             :host github :type git
-             :repo "detvdl/vrtnu.el")
-  :custom
-  (vrtnu-config-file (no-littering-expand-var-file-name "vrt.eld"))
-  :config
-  (with-eval-after-load "ivy"
-    (push '(vrt-news . nil) ivy-sort-functions-alist)))
-
 (use-package lsp-ui
   :straight t
   :after lsp-mode
@@ -1085,6 +1068,11 @@ This checks in turn:
   :config
   (editorconfig-mode 1))
 
+(use-package direnv
+  :straight t
+  :config
+  (direnv-mode))
+
 ;; Prescient: sorting by frecency
 (use-package prescient
   :straight t
@@ -1152,22 +1140,22 @@ This checks in turn:
   :straight t
   :commands (sly)
   :init
-  (setq inferior-lisp-program "ros -L sbcl -Q -l ~/.sbclrc run")
+  (setq inferior-lisp-program "sbcl -Q -l ~/.sbclrc run")
   :config
   (use-package sly-asdf
     :straight t
     :config (add-to-list 'sly-contribs 'sly-asdf 'append))
   (use-package sly-macrostep :straight t)
   (use-package sly-named-readtables :straight t)
-  (use-package sly-quicklisp :straight t)
+  ;; (use-package sly-quicklisp :straight t)
   (sly-setup))
 
-(use-package sly-stepper
-  :straight (sly-stepper
-             :host github :type git
-             :repo "joaotavora/sly-stepper"
-             :files (:defaults "*.lisp" "*.asd" (:exclude "sly-stepper-autoloads.el")))
-  :after sly sly-stickers)
+;; (use-package sly-stepper
+;;   :straight (sly-stepper
+;;              :host github :type git
+;;              :repo "joaotavora/sly-stepper"
+;;              :files (:defaults "*.lisp" "*.asd" (:exclude "sly-stepper-autoloads.el")))
+;;   :after sly sly-stickers)
 
 ;;;; Clojure
 (use-package clojure-mode
@@ -1410,49 +1398,14 @@ This checks in turn:
 
 ;;;; Python
 ;; System dependencies for the following packages: jedi flake8 autopep8 yap
-
 (add-hook 'python-mode-hook #'subword-mode)
-
-;; (use-package anaconda-mode
-;;   :straight t
-;;   :hook python-mode
-;;   :bind (:map anaconda-mode-map
-;;          ([remap xref-find-definitions] . anaconda-mode-find-definitions)
-;;          ([remap xref-find-references] . anaconda-mode-find-references)
-;;          ([remap describe-thing-at-point] . anaconda-mode-show-doc))
-;;   :config
-;;   (setq python-shell-interpreter "python3")
-;;   (when *is-mac*
-;;     (setq anaconda-mode-localhost-address "localhost")))
-
-;; (use-package company-anaconda
-;;   :straight t
-;;   :after anaconda-mode
-;;   :config
-;;   (add-hook 'anaconda-mode-hook
-;;             (lambda ()
-;;               (company:add-local-backend 'company-anaconda)
-;;               (anaconda-eldoc-mode))))
 
 (use-package lsp-python-ms
   :straight t
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
-                         (lsp-deferred))))  ; or lsp-deferred
-
-(use-package pyenv-mode
-  :straight t
-  :hook python-mode
-  :config
-  (progn
-    (defun projectile-pyenv-mode-set ()
-      "Set pyenv version matching project name."
-      (let ((project (projectile-project-name)))
-        (if (member project (pyenv-mode-versions))
-            (pyenv-mode-set project)
-          (pyenv-mode-unset))))
-    (add-hook 'projectile-switch-project-hook 'projectile-pyenv-mode-set)))
+                         (lsp-deferred))))
 
 ;;;; Ruby
 (use-package ruby-mode
@@ -1492,13 +1445,6 @@ This checks in turn:
 (use-package ruby-tools
   :straight t
   :hook (ruby-mode . ruby-tools-mode))
-
-(use-package rbenv
-  :straight t
-  :defer t
-  :config
-  (global-rbenv-mode)
-  (rbenv-use-corresponding))
 
 (use-package robe
   :straight t
