@@ -1662,6 +1662,7 @@ This predicate prevents dimming the treemacs buffer."
   (dimmer-configure-posframe)
   (dimmer-configure-which-key)
   (dimmer-configure-company-box)
+  (dimmer-configure-hydra)
   (dimmer-configure-treemacs)
   (dimmer-configure-help))
 
