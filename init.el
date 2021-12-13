@@ -1324,11 +1324,14 @@ This checks in turn:
 
 (use-package lsp-python-ms
   :straight t
-  :mode "\\.py\\'"
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
                          (lsp-deferred))))
+
+(use-package python-black
+  :after python
+  :hook (python-mode . python-black-on-save-mode))
 
 ;;;; Ruby
 (use-package ruby-mode
@@ -1651,6 +1654,17 @@ This predicate prevents dimming the treemacs buffer."
     "This predicate prevents dimming the Help buffers."
     (add-to-list
      'dimmer-exclusion-regexp-list "^\\*Help\\*$"))
+  ;;- ref: https://github.com/gonewest818/dimmer.el/issues/49#issuecomment-804500887
+  (defun dimmer-lsp-ui-doc-p ()
+    (string-prefix-p " *lsp-ui-doc-" (buffer-name)))
+  (defun dimmer-configure-lsp-ui-doc ()
+    (add-to-list 'dimmer-prevent-dimming-predicates #'dimmer-lsp-ui-doc-p))
+  (defun advices/dimmer-config-change-handler ()
+    (dimmer--dbg-buffers 1 "dimmer-config-change-handler")
+    (let ((ignore (cl-some (lambda (f) (and (fboundp f) (funcall f)))
+                           dimmer-prevent-dimming-predicates)))
+      (dimmer-process-all (not ignore))))
+  ;;- endref
   :custom
   (dimmer-fraction 0.5)
   (dimmer-adjustment-mode :foreground)
@@ -1664,7 +1678,9 @@ This predicate prevents dimming the treemacs buffer."
   (dimmer-configure-company-box)
   (dimmer-configure-hydra)
   (dimmer-configure-treemacs)
-  (dimmer-configure-help))
+  (dimmer-configure-help)
+  (dimmer-configure-lsp-ui-doc)
+  (advice-add 'dimmer-config-change-handler :override #'advices/dimmer-config-change-handler))
 
 (use-package solaire-mode
   :straight t
