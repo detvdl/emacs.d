@@ -664,11 +664,6 @@ This functions should be added to the hooks of major modes for programming."
   :config
   (avy-setup-default))
 
-(use-package all-the-icons
-  :straight t
-  :config
-  (setq all-the-icons-scale-factor 1.0))
-
 ;;; Treemacs
 (use-package treemacs
   :straight t
@@ -706,95 +701,22 @@ This functions should be added to the hooks of major modes for programming."
                                     (set-window-fringes nil 00))
                                   (setq tab-width 1)
                                   (setq mode-line-format nil)
-                                  (buffer-face-mode 1)))
-  ;; Improve treemacs icons
-  (with-eval-after-load 'treemacs
-    (unless (require 'all-the-icons nil t)
-      (error "all-the-icons isn't installed"))
-    ;; minimalistic atom-inspired icon theme
-    (treemacs-create-theme "doom"
-      :config
-      (let ((face-spec '(:inherit font-lock-doc-face :slant normal)))
-        (treemacs-create-icon
-         :icon (format " %s\t" (all-the-icons-octicon "repo" :v-adjust -0.1 :face face-spec))
-         :extensions (root))
-        (treemacs-create-icon
-         :icon (format "%s\t%s\t"
-                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
-                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
-         :extensions (dir-open))
-        (treemacs-create-icon
-         :icon (format "%s\t%s\t"
-                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
-                       (all-the-icons-octicon "file-directory" :v-adjust 0 :face face-spec))
-         :extensions (dir-closed))
-        (treemacs-create-icon
-         :icon (format "%s\t%s\t"
-                       (all-the-icons-octicon "chevron-down" :height 0.75 :v-adjust 0.1 :face face-spec)
-                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec)) :extensions (tag-open))
-        (treemacs-create-icon
-         :icon (format "%s\t%s\t"
-                       (all-the-icons-octicon "chevron-right" :height 0.75 :v-adjust 0.1 :face face-spec)
-                       (all-the-icons-octicon "package" :v-adjust 0 :face face-spec))
-         :extensions (tag-closed))
-        (treemacs-create-icon
-         :icon (format "%s\t" (all-the-icons-octicon "tag" :height 0.9 :v-adjust 0 :face face-spec))
-         :extensions (tag-leaf))
-        (treemacs-create-icon
-         :icon (format "%s\t" (all-the-icons-octicon "flame" :v-adjust 0 :face face-spec))
-         :extensions (error))
-        (treemacs-create-icon
-         :icon (format "%s\t" (all-the-icons-octicon "stop" :v-adjust 0 :face face-spec))
-         :extensions (warning))
-        (treemacs-create-icon
-         :icon (format "%s\t" (all-the-icons-octicon "info" :height 0.75 :v-adjust 0.1 :face face-spec))
-         :extensions (info))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-media" :v-adjust 0 :face face-spec))
-         :extensions ("png" "jpg" "jpeg" "gif" "ico" "tif" "tiff" "svg" "bmp"
-                      "psd" "ai" "eps" "indd" "mov" "avi" "mp4" "webm" "mkv"
-                      "wav" "mp3" "ogg" "midi"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-code" :v-adjust 0 :face face-spec))
-         :extensions ("yml" "yaml" "sh" "zsh" "fish" "c" "h" "cpp" "cxx" "hpp"
-                      "tpp" "cc" "hh" "hs" "lhs" "cabal" "py" "pyc" "rs" "el"
-                      "elc" "clj" "cljs" "cljc" "ts" "tsx" "vue" "css" "html"
-                      "htm" "dart" "java" "kt" "scala" "sbt" "go" "js" "jsx"
-                      "hy" "json" "jl" "ex" "exs" "eex" "ml" "mli" "pp" "dockerfile"
-                      "vagrantfile" "j2" "jinja2" "tex" "racket" "rkt" "rktl" "rktd"
-                      "scrbl" "scribble" "plt" "makefile" "elm" "xml" "xsl" "rb"
-                      "scss" "lua" "lisp" "scm" "sql" "toml" "nim" "pl" "pm" "perl"
-                      "vimrc" "tridactylrc" "vimperatorrc" "ideavimrc" "vrapperrc"
-                      "cask" "r" "re" "rei" "bashrc" "zshrc" "inputrc" "editorconfig"
-                      "gitconfig"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "book" :v-adjust 0 :face face-spec))
-         :extensions ("lrf" "lrx" "cbr" "cbz" "cb7" "cbt" "cba" "chm" "djvu"
-                      "doc" "docx" "pdb" "pdb" "fb2" "xeb" "ceb" "inf" "azw"
-                      "azw3" "kf8" "kfx" "lit" "prc" "mobi" "exe" "or" "html"
-                      "pkg" "opf" "txt" "pdb" "ps" "rtf" "pdg" "xml" "tr2"
-                      "tr3" "oxps" "xps"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
-         :extensions ("md" "markdown" "rst" "log" "org" "txt"
-                      "CONTRIBUTE" "LICENSE" "README" "CHANGELOG"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-binary" :v-adjust 0 :face face-spec))
-         :extensions ("exe" "dll" "obj" "so" "o" "out"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-pdf" :v-adjust 0 :face face-spec))
-         :extensions ("pdf"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-zip" :v-adjust 0 :face face-spec))
-         :extensions ("zip" "7z" "tar" "gz" "rar" "tgz"))
-        (treemacs-create-icon
-         :icon (format "  %s\t" (all-the-icons-octicon "file-text" :v-adjust 0 :face face-spec))
-         :extensions (fallback)))))
-  (treemacs-load-theme "doom"))
+                                  (buffer-face-mode 1))))
 
 (use-package treemacs-projectile
   :after treemacs projectile
   :straight t)
+
+(use-package all-the-icons
+  :straight t
+  :config
+  (setq all-the-icons-scale-factor 1.0))
+
+(use-package treemacs-all-the-icons
+  :straight t
+  :after treemacs all-the-icons
+  :config
+  (treemacs-load-theme "all-the-icons"))
 
 ;; Always enable eldoc
 (global-eldoc-mode +1)
@@ -1098,15 +1020,15 @@ This checks in turn:
     (setq-local company-prescient-sort-length-enable
                 (cl-dolist (w lsp--buffer-workspaces)
                   (when (thread-first w
-                          (lsp--workspace-client)
-                          (lsp--client-server-id)
-                          (memq '(jsts-ls
-                                  mspyls
-                                  bash-ls
-                                  texlab
-                                  ts-ls
-                                  svelte-ls))
-                          (not))
+                                      (lsp--workspace-client)
+                                      (lsp--client-server-id)
+                                      (memq '(jsts-ls
+                                              mspyls
+                                              bash-ls
+                                              texlab
+                                              ts-ls
+                                              svelte-ls))
+                                      (not))
                     (cl-return t)))))
   )
 
@@ -1402,6 +1324,7 @@ This checks in turn:
 
 (use-package lsp-python-ms
   :straight t
+  :mode "\\.py\\'"
   :init (setq lsp-python-ms-auto-install-server t)
   :hook (python-mode . (lambda ()
                          (require 'lsp-python-ms)
@@ -1653,15 +1576,7 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
-;; THEMES
-;; (use-package modus-themes
-;;   :straight (modus-themes
-;;              :host github :type git
-;;              :repo "protesilaos/modus-themes")
-;;   :custom
-;;   (modus-operandi-theme-distinct-org-blocks t)
-;;   (modus-operandi-theme-slanted-constructs t))
-
+;; --- THEMES ---
 (use-package nano
   :straight (nano-emacs
              :type git :host github
@@ -1689,7 +1604,7 @@ This checks in turn:
 (use-package frame
   :straight (:type built-in)
   :custom
-  (window-divider-default-right-width 12)
+  (window-divider-default-right-width 2)
   (window-divider-default-bottom-width 1)
   (window-divider-default-places 'right-only)
   (window-divider-mode t)
@@ -1712,15 +1627,6 @@ This checks in turn:
 
 (add-hook 'before-make-frame-hook 'window-divider-mode)
 
-(use-package bespoke-themes
-  :straight (:host github :repo "mclear-tools/bespoke-themes" :branch "main")
-  :config
-  (setq bespoke-set-italic-comments t
-        bespoke-set-italic-keywords t
-        bespoke-set-variable-pitch t)
-  (bespoke/light-theme)
-  (set-face-attribute 'region nil :inherit nil :background "yellow"))
-
 (use-package bespoke-modeline
   :straight (:type git :host github :repo "mclear-tools/bespoke-modeline")
   :init
@@ -1731,6 +1637,40 @@ This checks in turn:
   (setq bespoke-modeline-visual-bell t)
   :config
   (bespoke-modeline-mode))
+
+(use-package solaire-mode
+  :straight t
+  :hook ((change-major-mode . turn-on-solaire-mode)
+         (after-revert . turn-on-solaire-mode)
+         (ediff-prepare-buffer . solaire-mode))
+  :config
+  (setq solaire-mode-auto-swap-bg nil)
+  (solaire-global-mode +1))
+
+(use-package modus-themes
+  :straight t
+  :custom
+  ;; Add all your customizations prior to loading the themes
+  (modus-themes-italic-constructs t)
+  (modus-themes-bold-constructs nil)
+  (modus-themes-intense-markup t)
+  (modus-themes-region '(bg-only no-extend))
+  (modus-themes-paren-match nil)
+  (modus-themes-org-blocks 'tinted-background)
+  :init
+  ;; Load the theme files before enabling a theme
+  (modus-themes-load-themes)
+  :config
+  (mapc #'disable-theme custom-enabled-themes)
+  (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
+  :bind ("<f5>" . modus-themes-toggle))
+
+
+;;;; --- Interesting themes to keep an eye on ---
+;; (use-package sketch-themes
+;; :straight t)
+;; (use-package stimmung-themes
+;; :straight t)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)

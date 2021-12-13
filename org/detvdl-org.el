@@ -197,29 +197,29 @@
   :bind (:map org-mode-map
          (("<f12>" . org-transclusion-mode))))
 
-(use-package org-journal
-  :straight t
-  ;; :bind
-  ;; ("C-c n j" . org-journal-new-entry)
-  ;; ("C-c n t" . org-journal-today)
-  :custom
-  (org-journal-date-prefix "#+TITLE: [DAILY] ")
-  (org-journal-file-format "%Y-%m-%d.org")
-  (org-journal-dir (concat user-roam-dir "daily"))
-  (org-journal-date-format "%Y-%m-%d")
-  :config
-  (defun org-journal-today ()
-    (interactive)
-    (org-journal-new-entry t))
-  (defun org-journal-find-location ()
-    ;; Open today's journal, but specify a non-nil prefix argument in order to
-    ;; inhibit inserting the heading; org-capture will insert the heading.
-    (org-journal-new-entry t)
-    ;; Position point on the journal's top-level heading so that org-capture
-    ;; will add the new entry as a child entry.
-    (goto-char (point-min)))
-  (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
-                                 "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))))
+;; (use-package org-journal
+;;   :straight t
+;;   ;; :bind
+;;   ;; ("C-c n j" . org-journal-new-entry)
+;;   ;; ("C-c n t" . org-journal-today)
+;;   :custom
+;;   (org-journal-date-prefix "#+TITLE: [DAILY] ")
+;;   (org-journal-file-format "%Y-%m-%d.org")
+;;   (org-journal-dir (concat user-roam-dir "daily"))
+;;   (org-journal-date-format "%Y-%m-%d")
+;;   :config
+;;   (defun org-journal-today ()
+;;     (interactive)
+;;     (org-journal-new-entry t))
+;;   (defun org-journal-find-location ()
+;;     ;; Open today's journal, but specify a non-nil prefix argument in order to
+;;     ;; inhibit inserting the heading; org-capture will insert the heading.
+;;     (org-journal-new-entry t)
+;;     ;; Position point on the journal's top-level heading so that org-capture
+;;     ;; will add the new entry as a child entry.
+;;     (goto-char (point-min)))
+;;   (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
+;;                                  "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))))
 
 (use-package org-download
   :straight t
@@ -230,7 +230,7 @@
     ("s-y" . org-download-yank)))
   :config
   (when (eq system-type 'darwin)
-      (setq org-download-screenshot-method "screencapture -i %s")))
+    (setq org-download-screenshot-method "screencapture -i %s")))
 
 (use-package org-cliplink
   :straight t

@@ -7,8 +7,6 @@
 
 ;;; Code:
 
-(setq eclipse-dir "/Applications/Eclipse JEE.app/Contents/Eclipse/")
-
 (defun parse-version-in-directory (dir-name)
   "Extract JDK version from DIR-NAME."
   (if (string-match "\\(\\(1.[[:digit:]]\\)\\|\\([[:digit:]]+.[[:digit:]]+\\)\\).[[:digit:]]+\\(_[[:digit:]]+\\)?"
