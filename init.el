@@ -211,24 +211,6 @@
 ;;                         :data ,(format git--state-large-dot color)
 ;;                         :ascent center))))
 
-;; (setq-default mode-line-format
-;; 	          '("%e"
-;; 		        mode-line-front-space
-;; 		        (:eval (git--state-dot))
-;; 		        mode-line-mule-info
-;; 		        mode-line-client
-;; 		        mode-line-modified
-;; 		        mode-line-remote
-;; 		        mode-line-frame-identification
-;; 		        mode-line-buffer-identification
-;; 		        "   "
-;; 		        mode-line-position
-;; 		        (vc-mode vc-mode)
-;; 		        "  "
-;; 		        mode-line-modes
-;; 		        mode-line-misc-info
-;; 		        mode-line-end-spaces))
-
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
@@ -1632,14 +1614,17 @@ This checks in turn:
 
 (use-package bespoke-modeline
   :straight (:type git :host github :repo "mclear-tools/bespoke-modeline")
-  :init
-  (setq bespoke-modeline-position 'top)
-  (setq bespoke-modeline-size 2)
-  (setq bespoke-modeline-git-diff-mode-line t)
-  (setq bespoke-modeline-cleaner t)
-  (setq bespoke-modeline-visual-bell t)
+  :hook (after-init . bespoke-modeline-mode)
+  :custom
+  (bespoke-modeline-position 'top)
+  (bespoke-modeline-size 2)
+  (bespoke-modeline-git-diff-mode-line t)
+  (bespoke-modeline-cleaner t)
+  (bespoke-modeline-visual-bell t)
   :config
-  (bespoke-modeline-mode))
+  (add-hook 'bespoke-modeline-mode-hook
+            (lambda () (progn (setq-default mode-line-format nil)
+                              (setq mode-line-format nil)))))
 
 (use-package dimmer
   :straight t
@@ -1708,7 +1693,7 @@ This predicate prevents dimming the treemacs buffer."
   (modus-themes-load-themes)
   :config
   (mapc #'disable-theme custom-enabled-themes)
-  (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
+  (modus-themes-load-vivendi) ;; OR (modus-themes-load-vivendi)
   :bind ("<f5>" . modus-themes-toggle))
 
 
