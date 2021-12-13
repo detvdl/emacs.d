@@ -1670,8 +1670,10 @@ This predicate prevents dimming the treemacs buffer."
   :hook ((change-major-mode . turn-on-solaire-mode)
          (after-revert . turn-on-solaire-mode)
          (ediff-prepare-buffer . solaire-mode))
+  :custom
+  (solaire-mode-auto-swap-bg nil)
+  (solaire-mode-remap-fringe nil)
   :config
-  (setq solaire-mode-auto-swap-bg nil)
   (solaire-global-mode +1))
 
 (use-package modus-themes
