@@ -1616,7 +1616,7 @@ This checks in turn:
 	                     '(min-width  . 1)
                          '(width      . 81)
                          '(vertical-scroll-bars . nil)
-                         '(internal-border-width . 10)
+                         '(internal-border-width . 5)
                          '(left-fringe    . 1)
                          '(right-fringe   . 1)
                          '(tool-bar-lines . 0)
@@ -1637,6 +1637,33 @@ This checks in turn:
   (setq bespoke-modeline-visual-bell t)
   :config
   (bespoke-modeline-mode))
+
+(use-package dimmer
+  :straight t
+  :hook (after-init . dimmer-mode)
+  :init
+  (defun dimmer-configure-treemacs ()
+    "Convenience setting for treemacs users.
+This predicate prevents dimming the treemacs buffer."
+    (add-to-list
+     'dimmer-exclusion-regexp-list "^ \\*Treemacs-.+\\*$"))
+  (defun dimmer-configure-help ()
+    "This predicate prevents dimming the Help buffers."
+    (add-to-list
+     'dimmer-exclusion-regexp-list "^\\*Help\\*$"))
+  :custom
+  (dimmer-fraction 0.5)
+  (dimmer-adjustment-mode :foreground)
+  (dimmer-use-colorspace :rgb)
+  (dimmer-watch-frame-focus-events nil)
+  :config
+  (dimmer-configure-magit)
+  (dimmer-configure-org)
+  (dimmer-configure-posframe)
+  (dimmer-configure-which-key)
+  (dimmer-configure-company-box)
+  (dimmer-configure-treemacs)
+  (dimmer-configure-help))
 
 (use-package solaire-mode
   :straight t
