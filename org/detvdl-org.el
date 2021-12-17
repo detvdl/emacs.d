@@ -17,8 +17,25 @@
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
+         ("C-c c" . org-capture)
          :map org-mode-map
          ("C-c C-o" . org-open-maybe))
+  :init
+  (defun org-ask-location ()
+    (let* ((org-refile-targets '((nil :maxlevel . 9)))
+           (hd (condition-case nil
+                   (car (org-refile-get-location "Headline" nil t))
+                 (error (car org-refile-history)))))
+      (goto-char (point-min))
+      (outline-next-heading)
+      (if (re-search-forward
+           (format org-complex-heading-regexp-format (regexp-quote hd))
+           nil t)
+          (goto-char (point-at-bol))
+        (goto-char (point-max))
+        (or (bolp) (insert "\n"))
+        (insert "* " hd "\n")))
+    (end-of-line))
   :custom
   (org-agenda-files (directory-files-recursively user-roam-dailies-dir "\\.org$"))
   (org-log-done t)
@@ -34,6 +51,7 @@
   (org-fontify-quote-and-verse-blocks t)
   (org-image-actual-width nil)
   (org-hidden-keywords '())
+  (org-refile-allow-creating-parent-nodes t)
   (org-src-tab-acts-natively t)
   (org-src-window-setup 'current-window)
   (org-src-strip-leading-and-trailing-blank-lines t)
@@ -99,7 +117,7 @@
                              (push '("[ ]" . "☐") prettify-symbols-alist)
                              (push '("[X]" . "☑" ) prettify-symbols-alist)
                              (push '("[-]" . "❍" ) prettify-symbols-alist)
-                             (push '("--" . "⸺") prettify-symbols-alist)
+                             (push '("--" . "—") prettify-symbols-alist)
                              (push '("-->" . "⟶") prettify-symbols-alist)
                              (push '("<--" . "⟵") prettify-symbols-alist)
                              (push '("=>" . "⇒") prettify-symbols-alist)
@@ -172,7 +190,12 @@
          :map org-mode-map
          (("C-c n i" . org-roam-node-insert)))
   :config
-  (org-roam-db-autosync-mode))
+  (org-roam-db-autosync-mode)
+  (setq org-capture-templates `(("b" "bookmark" item
+                                 (file+function ,(org-roam-node-file (org-roam-node-from-title-or-alias "Browser: Bookmarks")) org-ask-location)
+                                 "- %(org-cliplink-capture)%?\n"
+                                 :unnarrowed t
+                                 :empty-lines 1))))
 
 (use-package org-roam-ui
   :straight (:host github
@@ -237,7 +260,7 @@
   :after org
   :bind
   (:map org-mode-map
-   (("C-c c" . org-cliplink))))
+   (("C-c v" . org-cliplink))))
 
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
