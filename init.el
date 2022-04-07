@@ -150,67 +150,6 @@
   :config
   (setq el-patch-enable-use-package-integration t))
 
-;; (defconst git--state-small-dot
-;;   "/* XPM */
-;; static char * data[] = {
-;; \"14 7 3 1\",
-;; \" 	c None\",
-;; \"+	c #202020\",
-;; \".	c %s\",
-;; \"      +++     \",
-;; \"     +...+    \",
-;; \"    +.....+   \",
-;; \"    +.....+   \",
-;; \"    +.....+   \",
-;; \"     +...+    \",
-;; \"      +++     \"};")
-
-;; (defconst git--state-large-dot
-;;   "/* XPM */
-;; static char * data[] = {
-;; \"18 13 3 1\",
-;; \" 	c None\",
-;; \"+	c #000000\",
-;; \".	c %s\",
-;; \"                  \",
-;; \"       +++++      \",
-;; \"      +.....+     \",
-;; \"     +.......+    \",
-;; \"    +.........+   \",
-;; \"    +.........+   \",
-;; \"    +.........+   \",
-;; \"    +.........+   \",
-;; \"    +.........+   \",
-;; \"     +.......+    \",
-;; \"      +.....+     \",
-;; \"       +++++      \",
-;; \"                  \"};")
-
-;; (defun git--state-color (state)
-;;   "Return an appropriate color string for the given Git STATE."
-;;   (cond ((eq state 'edited) "green")
-;;         ((eq state 'added) "blue")
-;;         ((memq state '(removed conflict unregistered)) "red")
-;;         ((memq state '(needs-update needs-merge)) "purple")
-;;         ((eq state 'up-to-date) "yellow")
-;;         ((eq state 'staged) "yellow")
-;;         ((memq state '(ignored unknown)) "gray50")
-;;         (t "gray50")))
-
-;; (defun git--state-dot (&optional state)
-;;   "Return the appropriate bitmap dot for the given Git STATE."
-;;   (let* ((backend (vc-backend buffer-file-name))
-;;          (state (or state (if (and backend buffer-file-name)
-;;                               (vc-state buffer-file-name backend)
-;;                             'unknown)))
-;;          (color (git--state-color state)))
-;;     (propertize "   "
-;;                 'help-echo (format "VC state: %s" state)
-;;                 'display
-;;                 `(image :type xpm
-;;                         :data ,(format git--state-large-dot color)
-;;                         :ascent center))))
-
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
@@ -898,9 +837,12 @@ This checks in turn:
 (use-package lsp-mode
   :straight t
   :commands (lsp lsp-deferred)
+  :custom
+  (lsp-hover-text-function #'lsp--text-document-signature-help)
   :config
   (setq lsp-eldoc-enable-hover t
         lsp-eldoc-render-all nil
+        lsp-signature-doc-lines 5
         lsp-prefer-flymake nil))
 
 (use-package lsp-ui
@@ -911,7 +853,7 @@ This checks in turn:
          ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
          ([remap xref-find-references] . lsp-ui-peek-find-references)
          ([remap describe-thing-at-point] . lsp-describe-thing-at-point)
-         ("C-. p" . lsp-ui-doc-glance))
+         ("C-. p" . lsp-signature-activate))
   :config
   (setq lsp-ui-flycheck-enable t
         lsp-ui-doc-enable nil
@@ -1231,29 +1173,6 @@ This checks in turn:
   (add-hook 'flycheck-mode-hook #'flycheck-rust-setup))
 
 ;;;; Java
-;; NOTE: possibly dap-java needs to be byte-compiled separately, to account for the following snippet:
-;; (eval-when-compile
-;;   (require 'cl-lib))
-;; (setq lsp-java-vmargs
-;;       (list "-noverify"
-;;             "-Xmx2G"
-;;             "-XX:+UseG1GC"
-;;             "-XX:+UseStringDeduplication"
-;;             (concat "-javaagent:" jmi/lombok-jar)
-;;             (concat "-Xbootclasspath/a:" jmi/lombok-jar))
-;;       lsp-file-watch-ignored
-;;       '(".idea" ".ensime_cache" ".eunit" "node_modules"
-;;         ".git" ".hg" ".fslckout" "_FOSSIL_"
-;;         ".bzr" "_darcs" ".tox" ".svn" ".stack-work"
-;;         "build")
-
-;;       lsp-java-import-order '["" "java" "javax" "#"]
-;;       ;; Don't organize imports on save
-;;       lsp-java-save-action-organize-imports nil
-
-;;       ;; Formatter profile
-;;       lsp-java-format-settings-url
-;;       (concat "file://" jmi/java-format-settings-file))
 (use-package dap-mode
   :straight t
   :functions (dap-breakpoint-toggle
@@ -1314,7 +1233,7 @@ This checks in turn:
 (use-package python-black
   :straight t
   :after python
-  :hook (python-mode . python-black-on-save-mode))
+  :hook (python-mode . python-black-on-save-mode-enable-dwim))
 
 ;;;; Ruby
 (use-package ruby-mode
@@ -1585,6 +1504,11 @@ This checks in turn:
 	        (lambda () (setq buffer-display-table (make-display-table))))
   (require 'nano-colors))
 
+(use-package hideshow
+  :hook (prog-mode . hs-minor-mode)
+  :bind (:map hs-minor-mode-map
+         ("C-c <tab>" . hs-toggle-hiding)))
+
 ;; Make sure new frames use window-divider
 ;; Make a clean & minimalist frame
 (use-package frame
@@ -1679,6 +1603,7 @@ This predicate prevents dimming the treemacs buffer."
   :config
   (solaire-global-mode +1))
 
+;; amazing themes provided by https://protesilaos.com/emacs/
 (use-package modus-themes
   :straight t
   :custom

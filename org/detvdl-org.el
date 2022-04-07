@@ -38,6 +38,7 @@
     (end-of-line))
   :custom
   (org-agenda-files (directory-files-recursively user-roam-dailies-dir "\\.org$"))
+  (org-babel-confirm-evaluate nil)
   (org-log-done t)
   (org-startup-folded nil)
   (org-startup-indented t)
@@ -196,7 +197,7 @@
                                  (file+function ,(org-roam-node-file (org-roam-node-from-title-or-alias "Browser: Bookmarks")) org-ask-location)
                                  "- %(org-cliplink-capture)%?\n"
                                  :unnarrowed t
-                                 :empty-lines 1))))
+                                 :empty-lines-before 0))))
 
 (use-package org-roam-ui
   :straight (:host github
