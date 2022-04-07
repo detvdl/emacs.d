@@ -109,9 +109,7 @@
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
-                                    "LOMBOK_JAR"
-                                    "GOPATH" "GOROOT"))
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
   (exec-path-from-shell-arguments '("-l"))
   :config
   (exec-path-from-shell-initialize))
@@ -773,7 +771,8 @@ This checks in turn:
           ;; now let it operate fully -- i.e. also check the
           ;; surrounding sexp for a function call.
           ((setq sym (function-at-point)) (describe-function sym)))))
-
+;; Always jump to help-window buffers
+(setq help-window-select t)
 ;;;; Xref
 (bind-key "M-." 'xref-find-definitions prog-mode-map)
 (bind-key "M-," 'xref-pop-marker-stack prog-mode-map)
@@ -1392,34 +1391,36 @@ This checks in turn:
 ;;;; Typescript
 (use-package typescript-mode
   :straight t
-  :mode "\\.ts\\'")
-
-(use-package tide
-  :straight t
-  :after (typescript-mode company flycheck)
-  :hook ((typescript-mode . tide-setup)
-         (typescript-mode . tide-hl-identifier-mode)
-         (before-save . tide-format-before-save))
-  :bind (:map tide-mode-map
-         ([remap xref-find-definition] . tide-goto-definition)
-         ([remap xref-find-references] . tide-references)
-         ([remap describe-thing-at-point] . tide-documentation-at-point)
-         ("C-; i" . tide-organize-imports)
-         ("C-; f" . tide-fix))
-  :init
-  (defun setup-tide-mode ()
-    (interactive)
-    (tide-setup)
-    (flycheck-mode +1)
-    ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (eldoc-mode +1)
-    (tide-hl-identifier-mode +1)
-    (company-mode +1))
-  (defun my/setup-tsx-mode ()
-    (when (string-equal "tsx" (file-name-extension buffer-file-name))
-      (setup-tide-mode)))
+  :mode "\\.ts\\'"
   :config
-  (setq typescript-indent-level 2))
+  (setq lsp-disabled-clients '(deno-lsp)))
+
+;; (use-package tide
+;;   :straight t
+;;   :after (typescript-mode company flycheck)
+;;   :hook ((typescript-mode . tide-setup)
+;;          (typescript-mode . tide-hl-identifier-mode)
+;;          (before-save . tide-format-before-save))
+;;   :bind (:map tide-mode-map
+;;          ([remap xref-find-definition] . tide-goto-definition)
+;;          ([remap xref-find-references] . tide-references)
+;;          ([remap describe-thing-at-point] . tide-documentation-at-point)
+;;          ("C-; i" . tide-organize-imports)
+;;          ("C-; f" . tide-fix))
+;;   :init
+;;   (defun setup-tide-mode ()
+;;     (interactive)
+;;     (tide-setup)
+;;     (flycheck-mode +1)
+;;     ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
+;;     (eldoc-mode +1)
+;;     (tide-hl-identifier-mode +1)
+;;     (company-mode +1))
+;;   (defun my/setup-tsx-mode ()
+;;     (when (string-equal "tsx" (file-name-extension buffer-file-name))
+;;       (setup-tide-mode)))
+;;   :config
+;;   (setq typescript-indent-level 2))
 
 ;;;; Markdown
 (use-package markdown-mode

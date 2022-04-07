@@ -60,6 +60,7 @@
   (org-src-preserve-indentation nil)
   (org-edit-src-content-indentation 0)
   (org-export-preserve-breaks t)
+  (org-export-copy-to-kill-ring 'if-interactive)
   ;; LaTeX preview size is a bit too small for comfort
   ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (org-highlight-latex-and-related '(latex))
@@ -142,10 +143,7 @@
 
 (use-package ox-jira
   :straight t
-  :after org
-  :config
-  (load-library "ox-jira")
-  (add-to-list 'org-export-backends 'jira))
+  :after org)
 
 (use-package org-contrib
   :straight t
