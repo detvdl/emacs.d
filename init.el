@@ -1312,6 +1312,7 @@ This checks in turn:
                          (lsp-deferred))))
 
 (use-package python-black
+  :straight t
   :after python
   :hook (python-mode . python-black-on-save-mode))
 

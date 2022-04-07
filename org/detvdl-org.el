@@ -48,6 +48,7 @@
   (org-src-fontify-natively t)
   (org-return-follows-link t)
   (org-hide-emphasis-markers t)
+  (org-fontify-whole-heading-line t)
   (org-fontify-quote-and-verse-blocks t)
   (org-image-actual-width nil)
   (org-hidden-keywords '())
@@ -190,7 +191,7 @@
          :map org-mode-map
          (("C-c n i" . org-roam-node-insert)))
   :config
-  (org-roam-db-autosync-mode)
+  (org-roam-db-autosync-mode +1)
   (setq org-capture-templates `(("b" "bookmark" item
                                  (file+function ,(org-roam-node-file (org-roam-node-from-title-or-alias "Browser: Bookmarks")) org-ask-location)
                                  "- %(org-cliplink-capture)%?\n"
@@ -322,9 +323,6 @@
 (use-package ob-restclient
   :after org
   :straight t)
-
-;; Make the whole heading line fontified
-(setq org-fontify-whole-heading-line t)
 
 (use-package adaptive-wrap
   :straight t
