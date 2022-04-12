@@ -1505,6 +1505,10 @@ This checks in turn:
 	        (lambda () (setq buffer-display-table (make-display-table))))
   (require 'nano-colors))
 
+(use-package display-line-numbers
+  :hook (prog-mode . display-line-numbers-mode)
+  :bind ("<f12>" . display-line-numbers-mode))
+
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode)
   :bind (:map hs-minor-mode-map

@@ -141,6 +141,10 @@
         (list 'org-mode 'org-journal-mode))
   (blackout 'org-indent-mode))
 
+(use-package ox-gfm
+  :straight t
+  :after org)
+
 (use-package ox-jira
   :straight t
   :after org)
@@ -151,6 +155,11 @@
   :config
   (require 'ox-confluence)
   (add-to-list 'org-export-backends 'confluence))
+
+(use-package org-num
+  :straight nil
+  :after org
+  :hook (org-mode . org-num-mode))
 
 ;; Org-mode buffer-local variables
 (put 'org-src-preserve-indentation 'safe-local-variable (lambda (val) #'booleanp))
@@ -278,7 +287,10 @@
   :straight (org-appear
              :type git :host github
              :repo "awth13/org-appear")
-  :hook (org-mode . org-appear-mode))
+  :hook (org-mode . org-appear-mode)
+  :custom
+  (org-appear-autolinks t)
+  (org-appear-delay 0.8))
 
 (use-package darkroom
   :straight t
