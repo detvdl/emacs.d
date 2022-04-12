@@ -197,7 +197,7 @@
          ("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n u" . org-roam-dailies-goto-today)
          :map org-mode-map
-         (("C-c n i" . org-roam-node-insert)))
+         ("C-c n i" . org-roam-node-insert))
   :config
   (org-roam-db-autosync-mode +1)
   (setq org-capture-templates `(("b" "bookmark" item
