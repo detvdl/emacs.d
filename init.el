@@ -13,6 +13,15 @@
 ;; Manually rebuild packages when needed/required with `straight-rebuild-all'
 (setq straight-check-for-modifications nil)
 
+;; MACROS
+(defmacro pushnew! (place &rest values)
+  "Push VALUES sequentially into PLACE, if they aren't already present.
+This is a variadic `cl-pushnew'."
+  (let ((var (make-symbol "result")))
+    `(dolist (,var (list ,@values) (with-no-warnings ,place))
+       (cl-pushnew ,var ,place :test #'equal))))
+
+;; Bootstrapping
 (defvar bootstrap-version)
 (let ((bootstrap-file
        (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
@@ -48,6 +57,17 @@
 
 ;; TODO: fix
 (setq x-select-request-type 'STRING)
+
+(use-package recentf
+  :straight nil
+  :config
+  (recentf-mode 1)
+  (run-at-time nil 600 'recentf-save-list))
+
+(use-package savehist
+  :straight nil
+  :init
+  (savehist-mode 1))
 
 (use-package no-littering
   :straight t
@@ -250,7 +270,9 @@
 (use-package wgrep
   :straight t
   :defer t
-  :bind (("C-x C-q" . wgrep-change-to-wgrep-mode)
+  :bind (:map grep-mode-map
+         ("C-x C-q" . wgrep-change-to-wgrep-mode)
+         ("e" . wgrep-change-to-wgrep-mode)
          ("C-c C-c" . wgrep-finish-edit))
   :config
   (setq wgrep-auto-save-buffer t))
@@ -367,87 +389,87 @@
   )
 
 (use-package vertico
-  :straight t
+  :straight (vertico :files (:defaults "extensions/*"
+                             (:exclude ".git"))
+                     :includes (vertico-buffer
+                                vertico-directory
+                                vertico-flat
+                                vertico-indexed
+                                vertico-mouse
+                                vertico-quick
+                                vertico-repeat
+                                vertico-reverse))
+  :custom
+  (vertico-cycle t)
+  (enable-recursive-minibuffers t)
+  :init
+  (vertico-mode)
   :config
-  (vertico-mode 1))
+  (when (version<= "28" emacs-version)
+    (setq read-extended-command-predicate
+          #'command-completion-default-include-p)))
+
+;; Configure directory extension.
+(use-package vertico-directory
+  :straight nil
+  :after vertico
+  ;; More convenient directory navigation commands
+  :bind (:map vertico-map
+         ("RET" . vertico-directory-enter)
+         ("<backspace>" . vertico-directory-delete-char)
+         ("DEL" . vertico-directory-delete-char)
+         ("M-DEL" . vertico-directory-delete-word))
+  ;; Tidy shadowed file names
+  :hook (rfn-eshadow-update-overlay . vertico-directory-tidy))
+
+;; TODO: check out https://github.com/minad/corfu for (auto-)completion
 
 (use-package marginalia
   :straight t
   :bind (:map minibuffer-local-map
          ("M-A" . marginalia-cycle))
   :init
-  (marginalia-mode))
+  (marginalia-mode)
+  :config
+  (pushnew! marginalia-command-categories
+            '(projectile-find-file . project-file)
+            '(projectile-recentf . project-file)
+            '(projectile-switch-to-buffer . buffer)
+            '(projectile-switch-project . project-file)))
 
 ;; TODO: read https://github.com/oantolin/orderless#company for company issues
 (use-package orderless
   :straight t
+  :demand t
   :custom
   (completion-styles '(orderless basic))
+  (completion-category-defaults nil)
   (completion-category-overrides '((file (styles basic partial-completion)))))
 
 (use-package consult
-  :straight t)
+  :straight t
+  :bind (([remap switch-to-buffer] . consult-buffer)
+         ([remap yank-pop] . consult-yank-pop)
+         ("C-c g" . consult-ripgrep)
+         ("C-s" . consult-line)
+         ("C-c m" . consult-mark))
+  :custom
+  (xref-show-xrefs-function 'consult-xref)
+  (xref-show-xrefs-definition 'consult-xref))
 
-;; ;;;; Ivy
-;; (use-package ivy
-;;   :straight t
-;;   :blackout ivy-mode
-;;   :hook (after-init . ivy-mode)
-;;   :bind (("C-s" . swiper-isearch)
-;;          ("C-r" . swiper-isearch-backward)
-;;          ("C-x C-f" . counsel-find-file)
-;;          ("C-c y" . counsel-yank-pop)
-;;          ("C-c g" . counsel-rg)
-;;          ("C-x l" . counsel-locate)
-;;          ("C-h v" . counsel-describe-variable)
-;;          ("C-h f" . counsel-describe-function)
-;;          ("C-x 8" . counsel-unicode-char)
-;;          ("C-x b" . ivy-switch-buffer)
-;; 	     ("C-c C-r" . ivy-resume)
-;;          ("C-c C-u" . swiper-all)
-;;          ("M-x" . counsel-M-x)
-;;          :map ivy-occur-mode-map
-;;          ("w" . ivy-wgrep-change-to-wgrep-mode)
-;;          ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)
-;;          :map ivy-minibuffer-map
-;;          ("RET" . ivy-alt-done)
-;;          ("C-m" . ivy-alt-done)
-;;          ("C-j" . ivy-done)
-;;          ("<escape>" . minibuffer-keyboard-quit))
-;;   :custom
-;;   (ivy-use-virtual-buffers t)
-;;   (ivy-use-selectable-prompt t)
-;;   (enable-recursive-minibuffers t)
-;;   (ivy-display-style nil)
-;;   (ivy-height 8) ;; used when posframe is not available
-;;   (ivy-virtual-abbreviate 'full)
-;;   (ivy-extra-directories nil)
-;;   (ivy-re-builders-alist '((swiper . ivy--regex-plus)
-;;                            (counsel-ag-function . ivy--regex-plus)
-;;                            (counsel-grep-function . ivy--regex-plus)
-;;                            (swiper-all . ivy--regex-plus)
-;;                            (swiper-isearch . ivy--regex-plus)
-;;                            (t . ivy--regex-fuzzy)))
-;;   (counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
-;;   (counsel-rg-base-command '("rg" "--max-columns" "240" "--with-filename" "--no-heading"
-;;                              "--line-number" "--color" "never" "%s"))
-;;   :config
-;;   ;; Fuzzy matching
-;;   (use-package flx :straight t))
+(use-package embark
+  :straight t
+  :custom
+  (embark-prompter 'embark-completing-read-prompter)
+  :bind (:map minibuffer-local-map
+         ("M-." . embark-dwim)
+         ("C-." . embark-act)
+         ("M-e" . embark-export)
+         ("M-c" . embark-collect)))
 
-;; (use-package swiper
-;;   :straight t
-;;   :after ivy
-;;   :bind ("M-n" . swiper-thing-at-point)
-;;   :config
-;;   (setq swiper-use-visual-line-p #'ignore))
-
-;; (use-package counsel
-;;   :straight t
-;;   :after swiper
-;;   :hook (ivy-mode . counsel-mode)
-;;   :config
-;;   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
+(use-package embark-consult
+  :straight t
+  :after (embark consult))
 
 (use-package aweshell
   :straight (aweshell
@@ -605,16 +627,6 @@ This functions should be added to the hooks of major modes for programming."
                   "\\_<\\(\\(?:\\s_\\|\\sw\\)+\\)"
                   (nil)))))
 
-;;;; Movement
-(use-package avy
-  :straight t
-  ;; :bind (("M-n l" . avy-goto-line)
-  ;;        ("M-n c" . avy-goto-char)
-  ;;        ("M-n f" . avy-goto-char-2)
-  ;;        ("M-n w" . avy-goto-word-1))
-  :config
-  (avy-setup-default))
-
 ;;; Treemacs
 (use-package treemacs
   :straight t
@@ -676,7 +688,6 @@ This functions should be added to the hooks of major modes for programming."
   (eldoc-echo-area-use-multiline-p t)
   :config
   (global-eldoc-mode +1))
-
 
 ;;;; Error checking
 (use-package flycheck
@@ -964,16 +975,6 @@ This checks in turn:
   :straight t
   :config
   (prescient-persist-mode +1))
-
-(use-package ivy-prescient
-  :straight t
-  :after (ivy counsel prescient)
-  :custom
-  (ivy-prescient-enable-filtering nil)
-  (ivy-prescient-sort-commands
-   '(:not swiper swiper-isearch ivy-switch-buffer vrt-news))
-  :config
-  (ivy-prescient-mode))
 
 (use-package company-prescient
   :straight t
@@ -1488,8 +1489,12 @@ This checks in turn:
   :config
   (setq haskell-stylish-on-save t))
 
+;; LSP supports terraform!
 (use-package terraform-mode
-  :straight t)
+  :straight t
+  :mode (("\\.tf\\'"
+          "\\.hcl\\'"
+          "\\.tpl\\'")))
 
 (use-package ereader
   :straight t
@@ -1623,7 +1628,7 @@ This predicate prevents dimming the treemacs buffer."
   (modus-themes-load-themes)
   :config
   (mapc #'disable-theme custom-enabled-themes)
-  (modus-themes-load-vivendi) ;; OR (modus-themes-load-vivendi)
+  (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
   :bind ("<f5>" . modus-themes-toggle))
 
 
