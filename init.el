@@ -148,6 +148,12 @@
   :config
   (setq el-patch-enable-use-package-integration t))
 
+;; Garbage Collector Magic Hack
+(use-package gcmh
+  :straight t
+  :config
+  (gcmh-mode 1))
+
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
@@ -664,8 +670,13 @@ This functions should be added to the hooks of major modes for programming."
   (treemacs-load-theme "all-the-icons"))
 
 ;; Always enable eldoc
-(global-eldoc-mode +1)
-(blackout 'eldoc-mode)
+(use-package eldoc
+  :blackout
+  :custom
+  (eldoc-echo-area-use-multiline-p t)
+  :config
+  (global-eldoc-mode +1))
+
 
 ;;;; Error checking
 (use-package flycheck
@@ -808,6 +819,7 @@ This checks in turn:
 (use-package yasnippet
   :if (not noninteractive)
   :straight t
+  :hook (prog-mode . yas-minor-mode)
   :blackout yas-minor-mode
   :commands (yas-reload-all yas-minor-mode))
 
@@ -867,7 +879,8 @@ This checks in turn:
   :config
   (setq lsp-eldoc-enable-hover t
         lsp-eldoc-render-all nil
-        lsp-signature-doc-lines 5
+        lsp-signature-auto-activate t
+        lsp-signature-render-documentation nil
         lsp-prefer-flymake nil))
 
 (use-package lsp-ui
@@ -885,7 +898,9 @@ This checks in turn:
         lsp-ui-doc-include-signature t
         lsp-ui-doc-use-childframe t
         lsp-ui-doc-position 'at-point
-        lsp-ui-sideline-update-mode 'line))
+        lsp-ui-sideline-update-mode 'line
+        lsp-lens-enable t
+        lsp-modeline-diagnostics-enable t))
 
 ;;;; Magit
 (use-package magit
@@ -1078,7 +1093,6 @@ This checks in turn:
   :config
   (defun my-clojure-mode-hook ()
     (clj-refactor-mode 1)
-    (yas-minor-mode 1) ; for adding require/use/import statements
     ;; This choice of keybinding leaves cider-macroexpand-1 unbound
     (cljr-add-keybindings-with-prefix "C-c C-m"))
   (add-hook 'clojure-mode-hook #'my-clojure-mode-hook)
@@ -1150,7 +1164,6 @@ This checks in turn:
     (setq-local indent-tabs-mode 1)
     (setq-local tab-width 4)
     (subword-mode +1)
-    (yas-minor-mode)
     (lsp-deferred)
     (if (not (string-match "go" compile-command))
         (set (make-local-variable 'compile-command)
