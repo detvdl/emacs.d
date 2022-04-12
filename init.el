@@ -1542,20 +1542,6 @@ This checks in turn:
 
 (add-hook 'before-make-frame-hook 'window-divider-mode)
 
-(use-package bespoke-modeline
-  :straight (:type git :host github :repo "mclear-tools/bespoke-modeline")
-  :hook (after-init . bespoke-modeline-mode)
-  :custom
-  (bespoke-modeline-position 'top)
-  (bespoke-modeline-size 2)
-  (bespoke-modeline-git-diff-mode-line t)
-  (bespoke-modeline-cleaner t)
-  (bespoke-modeline-visual-bell t)
-  :config
-  (add-hook 'bespoke-modeline-mode-hook
-            (lambda () (progn (setq-default mode-line-format nil)
-                              (setq mode-line-format nil)))))
-
 (use-package dimmer
   :straight t
   :hook (after-init . dimmer-mode)
