@@ -347,75 +347,101 @@
 
 (use-package deadgrep
   :straight t
-  :bind (("C-c k" . deadgrep))
+  :bind (("C-c k" . deadgrep)
+         :map deadgrep-mode-map
+         ("w" . deadgrep-edit-mode)
+         :map deadgrep-edit-mode-map
+         ("C-x C-q" . deadgrep-mode))
   :config
   (require 'dash)
   (defun deadgrep--arguments-patch (rg-arguments)
     "Add --no-ignore-vcs to rg-command."
     (-insert-at (- (length rg-arguments) 3) "--no-ignore-vcs" rg-arguments))
-  (advice-add 'deadgrep--arguments :filter-return #'deadgrep--arguments-patch))
+  ;; (advice-add 'deadgrep--arguments :filter-return #'deadgrep--arguments-patch)
+  )
 
-;;;; Ivy
-(use-package ivy
+(use-package vertico
   :straight t
-  :blackout ivy-mode
-  :hook (after-init . ivy-mode)
-  :bind (("C-s" . swiper-isearch)
-         ("C-r" . swiper-isearch-backward)
-         ("C-x C-f" . counsel-find-file)
-         ("C-c y" . counsel-yank-pop)
-         ;; TODO: investigate https://github.com/Wilfred/deadgrep as a possible substitute/enrichment
-         ("C-c g" . counsel-rg)
-         ("C-x l" . counsel-locate)
-         ("C-h v" . counsel-describe-variable)
-         ("C-h f" . counsel-describe-function)
-         ("C-x 8" . counsel-unicode-char)
-         ("C-x b" . ivy-switch-buffer)
-	     ("C-c C-r" . ivy-resume)
-         ("C-c C-u" . swiper-all)
-         ("M-x" . counsel-M-x)
-         :map ivy-occur-mode-map
-         ("w" . ivy-wgrep-change-to-wgrep-mode)
-         ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)
-         :map ivy-minibuffer-map
-         ("RET" . ivy-alt-done)
-         ("C-m" . ivy-alt-done)
-         ("C-j" . ivy-done)
-         ("<escape>" . minibuffer-keyboard-quit))
+  :config
+  (vertico-mode 1))
+
+(use-package marginalia
+  :straight t
+  :bind (:map minibuffer-local-map
+         ("M-A" . marginalia-cycle))
+  :init
+  (marginalia-mode))
+
+;; TODO: read https://github.com/oantolin/orderless#company for company issues
+(use-package orderless
+  :straight t
   :custom
-  (ivy-use-virtual-buffers t)
-  (ivy-use-selectable-prompt t)
-  (enable-recursive-minibuffers t)
-  (ivy-display-style nil)
-  (ivy-height 8) ;; used when posframe is not available
-  (ivy-virtual-abbreviate 'full)
-  (ivy-extra-directories nil)
-  (ivy-re-builders-alist '((swiper . ivy--regex-plus)
-                           (counsel-ag-function . ivy--regex-plus)
-                           (counsel-grep-function . ivy--regex-plus)
-                           (swiper-all . ivy--regex-plus)
-                           (swiper-isearch . ivy--regex-plus)
-                           (t . ivy--regex-fuzzy)))
-  (counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
-  (counsel-rg-base-command '("rg" "--max-columns" "240" "--with-filename" "--no-heading"
-                             "--line-number" "--color" "never" "--no-ignore-vcs" "%s"))
-  :config
-  ;; Fuzzy matching
-  (use-package flx :straight t))
+  (completion-styles '(orderless basic))
+  (completion-category-overrides '((file (styles basic partial-completion)))))
 
-(use-package swiper
-  :straight t
-  :after ivy
-  :bind ("M-n" . swiper-thing-at-point)
-  :config
-  (setq swiper-use-visual-line-p #'ignore))
+(use-package consult
+  :straight t)
 
-(use-package counsel
-  :straight t
-  :after swiper
-  :hook (ivy-mode . counsel-mode)
-  :config
-  (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
+;; ;;;; Ivy
+;; (use-package ivy
+;;   :straight t
+;;   :blackout ivy-mode
+;;   :hook (after-init . ivy-mode)
+;;   :bind (("C-s" . swiper-isearch)
+;;          ("C-r" . swiper-isearch-backward)
+;;          ("C-x C-f" . counsel-find-file)
+;;          ("C-c y" . counsel-yank-pop)
+;;          ("C-c g" . counsel-rg)
+;;          ("C-x l" . counsel-locate)
+;;          ("C-h v" . counsel-describe-variable)
+;;          ("C-h f" . counsel-describe-function)
+;;          ("C-x 8" . counsel-unicode-char)
+;;          ("C-x b" . ivy-switch-buffer)
+;; 	     ("C-c C-r" . ivy-resume)
+;;          ("C-c C-u" . swiper-all)
+;;          ("M-x" . counsel-M-x)
+;;          :map ivy-occur-mode-map
+;;          ("w" . ivy-wgrep-change-to-wgrep-mode)
+;;          ("C-x C-q" . ivy-wgrep-change-to-wgrep-mode)
+;;          :map ivy-minibuffer-map
+;;          ("RET" . ivy-alt-done)
+;;          ("C-m" . ivy-alt-done)
+;;          ("C-j" . ivy-done)
+;;          ("<escape>" . minibuffer-keyboard-quit))
+;;   :custom
+;;   (ivy-use-virtual-buffers t)
+;;   (ivy-use-selectable-prompt t)
+;;   (enable-recursive-minibuffers t)
+;;   (ivy-display-style nil)
+;;   (ivy-height 8) ;; used when posframe is not available
+;;   (ivy-virtual-abbreviate 'full)
+;;   (ivy-extra-directories nil)
+;;   (ivy-re-builders-alist '((swiper . ivy--regex-plus)
+;;                            (counsel-ag-function . ivy--regex-plus)
+;;                            (counsel-grep-function . ivy--regex-plus)
+;;                            (swiper-all . ivy--regex-plus)
+;;                            (swiper-isearch . ivy--regex-plus)
+;;                            (t . ivy--regex-fuzzy)))
+;;   (counsel-grep-base-command "rg -i -M 120 --no-heading --line-number --color never '%s' %s")
+;;   (counsel-rg-base-command '("rg" "--max-columns" "240" "--with-filename" "--no-heading"
+;;                              "--line-number" "--color" "never" "%s"))
+;;   :config
+;;   ;; Fuzzy matching
+;;   (use-package flx :straight t))
+
+;; (use-package swiper
+;;   :straight t
+;;   :after ivy
+;;   :bind ("M-n" . swiper-thing-at-point)
+;;   :config
+;;   (setq swiper-use-visual-line-p #'ignore))
+
+;; (use-package counsel
+;;   :straight t
+;;   :after swiper
+;;   :hook (ivy-mode . counsel-mode)
+;;   :config
+;;   (setq counsel-find-file-ignore-regexp "\\.DS_Store\\'"))
 
 (use-package aweshell
   :straight (aweshell
@@ -1219,7 +1245,6 @@ This checks in turn:
 (add-hook 'java-mode-hook 'my--java-mode-hook)
 
 ;;;; Python
-;; System dependencies for the following packages: jedi flake8 autopep8 yap
 (add-hook 'python-mode-hook #'subword-mode)
 
 (use-package lsp-python-ms
@@ -1392,35 +1417,10 @@ This checks in turn:
 (use-package typescript-mode
   :straight t
   :mode "\\.ts\\'"
+  :custom
+  (typescript-indent-level 2)
   :config
   (setq lsp-disabled-clients '(deno-lsp)))
-
-;; (use-package tide
-;;   :straight t
-;;   :after (typescript-mode company flycheck)
-;;   :hook ((typescript-mode . tide-setup)
-;;          (typescript-mode . tide-hl-identifier-mode)
-;;          (before-save . tide-format-before-save))
-;;   :bind (:map tide-mode-map
-;;          ([remap xref-find-definition] . tide-goto-definition)
-;;          ([remap xref-find-references] . tide-references)
-;;          ([remap describe-thing-at-point] . tide-documentation-at-point)
-;;          ("C-; i" . tide-organize-imports)
-;;          ("C-; f" . tide-fix))
-;;   :init
-;;   (defun setup-tide-mode ()
-;;     (interactive)
-;;     (tide-setup)
-;;     (flycheck-mode +1)
-;;     ;; (setq flycheck-check-syntax-automatically '(save mode-enabled))
-;;     (eldoc-mode +1)
-;;     (tide-hl-identifier-mode +1)
-;;     (company-mode +1))
-;;   (defun my/setup-tsx-mode ()
-;;     (when (string-equal "tsx" (file-name-extension buffer-file-name))
-;;       (setup-tide-mode)))
-;;   :config
-;;   (setq typescript-indent-level 2))
 
 ;;;; Markdown
 (use-package markdown-mode
