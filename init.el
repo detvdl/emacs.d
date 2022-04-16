@@ -43,8 +43,8 @@ This is a variadic `cl-pushnew'."
 
 (use-package blackout :straight t)
 (use-package bind-key :straight t)
-(use-package s :straight t)
-(use-package dash :straight t)
+(use-package s        :straight t)
+(use-package dash     :straight t)
 
 ;;; Emacs 28 introduced an extra parameter to `define-obsolete-function-alias'
 (when (version<= "28" emacs-version)
@@ -1552,9 +1552,9 @@ This checks in turn:
 ;; LSP supports terraform!
 (use-package terraform-mode
   :straight t
-  :mode (("\\.tf\\'"
-          "\\.hcl\\'"
-          "\\.tpl\\'")))
+  :mode ("\\.tf\\'"
+         "\\.hcl\\'"
+         "\\.tpl\\'"))
 
 (use-package ereader
   :straight t
