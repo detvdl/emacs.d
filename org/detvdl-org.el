@@ -336,5 +336,18 @@
   :config
   (setq-default adaptive-wrap-extra-indent 2))
 
+(use-package olivetti
+  :straight t
+  :bind ("<f9>" . olivetti-mode)
+  :custom
+  (olivetti-body-width 0.7)
+  (olivetti-minimum-body-width 80)
+  (olivetti-recall-visual-line-mode-entry-state t)
+  :config
+  (add-hook 'olivetti-mode-on-hook (lambda () (progn (display-line-numbers-mode 0)
+                                                     (highlight-indent-guides-mode 0))))
+  (add-hook 'olivetti-mode-off-hook (lambda () (progn (display-line-numbers-mode +1)
+                                                      (highlight-indent-guides-mode +1)))))
+
 (provide 'detvdl-org)
 ;;; detvdl-org.el ends here
