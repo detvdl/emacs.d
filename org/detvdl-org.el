@@ -292,11 +292,6 @@
   (org-appear-autolinks t)
   (org-appear-delay 0.8))
 
-(use-package darkroom
-  :straight t
-  :custom
-  (darkroom-margins 0.1))
-
 ;; DEFT
 (use-package deft
   :after org

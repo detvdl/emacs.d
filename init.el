@@ -407,7 +407,15 @@ This is a variadic `cl-pushnew'."
   :config
   (when (version<= "28" emacs-version)
     (setq read-extended-command-predicate
-          #'command-completion-default-include-p)))
+          #'command-completion-default-include-p))
+  (advice-add #'vertico--format-candidate :around
+              (lambda (orig cand prefix suffix index _start)
+                (setq cand (funcall orig cand prefix suffix index _start))
+                (concat
+                 (if (= vertico--index index)
+                     (propertize "» " 'face 'vertico-current)
+                   "  ")
+                 cand))))
 
 ;; Configure directory extension.
 (use-package vertico-directory
@@ -452,20 +460,77 @@ This is a variadic `cl-pushnew'."
          ([remap yank-pop] . consult-yank-pop)
          ("C-c g" . consult-ripgrep)
          ("C-s" . consult-line)
+         ("C-'" . consult-imenu)
          ("C-c m" . consult-mark))
   :custom
   (xref-show-xrefs-function 'consult-xref)
   (xref-show-xrefs-definition 'consult-xref))
 
+(use-package consult-dir
+  :ensure t
+  :bind (("C-x C-d" . consult-dir)
+         :map vertico-map
+         ("C-x C-d" . consult-dir)
+         ("C-x C-j" . consult-dir-jump-file)))
+
 (use-package embark
   :straight t
   :custom
-  (embark-prompter 'embark-completing-read-prompter)
-  :bind (:map minibuffer-local-map
+  (embark-prompter 'embark-keymap-prompter)
+  (prefix-help-command #'embark-prefix-help-command)
+  (embark-quit-after-action t)
+  (embark-cycle-key (kbd "C-."))
+  (embark-confirm-act-all nil)
+  (embark-indicators '(embark-mixed-indicator
+                       embark-highlight-indicator))
+  :bind (("C-," . embark-act)
+         :map embark-region-map
+         ("a" . align-regexp)
+         :map embark-collect-mode-map
+         ("C-," . embark-act)
+         :map minibuffer-local-map
          ("M-." . embark-dwim)
-         ("C-." . embark-act)
+         ("C-," . embark-act)
          ("M-e" . embark-export)
-         ("M-c" . embark-collect)))
+         ("M-c" . embark-collect))
+  :config
+  (defun embark-which-key-indicator ()
+    "An embark indicator that displays keymaps using which-key.
+The which-key help message will show the type and value of the
+current target followed by an ellipsis if there are further
+targets."
+    (lambda (&optional keymap targets prefix)
+      (if (null keymap)
+          (which-key--hide-popup-ignore-command)
+        (which-key--show-keymap
+         (if (eq (plist-get (car targets) :type) 'embark-become)
+             "Become"
+           (format "Act on %s '%s'%s"
+                   (plist-get (car targets) :type)
+                   (embark--truncate-target (plist-get (car targets) :target))
+                   (if (cdr targets) "…" "")))
+         (if prefix
+             (pcase (lookup-key keymap prefix 'accept-default)
+               ((and (pred keymapp) km) km)
+               (_ (key-binding prefix 'accept-default)))
+           keymap)
+         nil nil t (lambda (binding)
+                     (not (string-suffix-p "-argument" (cdr binding))))))))
+
+  (setq embark-indicators
+        '(embark-which-key-indicator
+          embark-highlight-indicator
+          embark-isearch-highlight-indicator))
+
+  (defun embark-hide-which-key-indicator (fn &rest args)
+    "Hide the which-key indicator immediately when using the completing-read prompter."
+    (which-key--hide-popup-ignore-command)
+    (let ((embark-indicators
+           (remq #'embark-which-key-indicator embark-indicators)))
+      (apply fn args)))
+
+  (advice-add #'embark-completing-read-prompter
+              :around #'embark-hide-which-key-indicator))
 
 (use-package embark-consult
   :straight t
@@ -497,14 +562,14 @@ This is a variadic `cl-pushnew'."
 ;; ensure no stale imenu tags in treemacs or otherwise
 (setq imenu-auto-rescan t)
 
-(use-package imenu-list
-  :straight t
-  :bind ("C-'" . imenu-list-smart-toggle)
-  :config
-  (setq imenu-list-focus-after-activation t
-        imenu-list-auto-resize nil
-        imenu-list-size 0.25
-        imenu-list-position 'right))
+;; (use-package imenu-list
+;;   :straight t
+;;   :bind ("C-'" . imenu-list-smart-toggle)
+;;   :config
+;;   (setq imenu-list-focus-after-activation t
+;;         imenu-list-auto-resize nil
+;;         imenu-list-size 0.25
+;;         imenu-list-position 'right))
 
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
@@ -597,14 +662,9 @@ This functions should be added to the hooks of major modes for programming."
   :bind (:map projectile-mode-map
          ("C-c p" . projectile-command-map))
   :config
-  (setq projectile-completion-system 'ivy
+  (setq projectile-completion-system 'auto
         projectile-sort-order 'recentf
-        projectile-indexing-method 'alien)
-  (with-eval-after-load "ivy"
-    (ivy-set-actions 'projectile-find-file
-                     '(("j" find-file-other-window "other window")))
-    (ivy-set-actions 'projectile-switch-project
-                     '(("g" magit-status "magit status")))))
+        projectile-indexing-method 'alien))
 
 ;;;; Rainbows
 (use-package rainbow-delimiters
