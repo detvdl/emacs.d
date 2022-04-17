@@ -139,10 +139,34 @@ This is a variadic `cl-pushnew'."
   (interactive "r")
   (align-regexp BEG END "\\(\\s-*\\)\\S-+" 1 1 t))
 
-(push '(tool-bar-lines . 0) default-frame-alist)
-(push '(tool-bar-lines . 0) initial-frame-alist)
-(push '(menu-bar-lines . 0) default-frame-alist)
-(push '(vertical-scroll-bars . nil) default-frame-alist)
+;; Make sure new frames use window-divider
+;; Make a clean & minimalist frame
+(use-package frame
+  :straight (:type built-in)
+  :custom
+  (window-divider-default-right-width 2)
+  (window-divider-default-bottom-width 1)
+  (window-divider-default-places 'right-only)
+  (window-divider-mode t)
+  :config
+  (setq-default default-frame-alist
+                (append (list
+                         '(min-height . 1)
+                         '(height     . 60)
+	                     '(min-width  . 1)
+                         '(width      . 135)
+                         '(vertical-scroll-bars . nil)
+                         '(internal-border-width . 5)
+                         '(left-fringe    . 1)
+                         '(right-fringe   . 1)
+                         '(tool-bar-lines . 0)
+                         '(menu-bar-lines . 0))))
+  (push '(tool-bar-lines . 0) initial-frame-alist)
+  (setq-default window-resize-pixelwise t)
+  (setq-default frame-resize-pixelwise t))
+
+(add-hook 'before-make-frame-hook 'window-divider-mode)
+
 (blink-cursor-mode -1)
 (show-paren-mode 1)
 
@@ -205,11 +229,16 @@ This is a variadic `cl-pushnew'."
 (add-hook 'prog-mode-hook (lambda () (setq-local show-trailing-whitespace t)))
 
 ;; Show me which line I'm on.
-(global-hl-line-mode +1)
+(use-package hl-line
+  :straight (:type built-in)
+  :blackout
+  :init (global-hl-line-mode +1))
 
 ;; Proper line wrapping.
-(global-visual-line-mode +1)
-(blackout 'visual-line-mode)
+(use-package simple
+  :straight (:type built-in)
+  :blackout visual-line-mode
+  :init (global-visual-line-mode +1))
 
 ;; Uniquify buffers with the same name instead of appending a number.
 (setq uniquify-buffer-name-style 'forward
@@ -245,8 +274,10 @@ This is a variadic `cl-pushnew'."
 
 ;;;; Auto-revert
 ;; Automatically revert buffers that have changed on disk
-(auto-revert-mode +1)
-(blackout 'auto-revert-mode)
+(use-package autorevert
+  :straight (:type built-in)
+  :blackout auto-revert-mode
+  :init (auto-revert-mode +1))
 
 ;;;; Clipboard
 (setq select-enable-clipboard t)
@@ -486,7 +517,9 @@ This is a variadic `cl-pushnew'."
                        embark-highlight-indicator))
   :bind (("C-," . embark-act)
          :map embark-region-map
-         ("a"   . align-regexp)
+         ("a" . align-regexp)
+         ("i" . iedit)
+         ("I" . iedit-dwim)
          :map embark-collect-mode-map
          ("C-," . embark-act)
          :map minibuffer-local-map
@@ -561,16 +594,10 @@ targets."
   (unbind-key "M-o" ggtags-navigation-map))
 
 ;; ensure no stale imenu tags in treemacs or otherwise
-(setq imenu-auto-rescan t)
-
-;; (use-package imenu-list
-;;   :straight t
-;;   :bind ("C-'" . imenu-list-smart-toggle)
-;;   :config
-;;   (setq imenu-list-focus-after-activation t
-;;         imenu-list-auto-resize nil
-;;         imenu-list-size 0.25
-;;         imenu-list-position 'right))
+(use-package imenu
+  :straight (:type built-in)
+  :config
+  (setq imenu-auto-rescan t))
 
 ;;;; Symbol Highlighting
 (use-package symbol-overlay
@@ -880,8 +907,7 @@ This checks in turn:
           ;; now let it operate fully -- i.e. also check the
           ;; surrounding sexp for a function call.
           ((setq sym (function-at-point)) (describe-function sym)))))
-;; Always jump to help-window buffers
-(setq help-window-select t)
+
 ;;;; Xref
 (bind-key "M-." 'xref-find-definitions prog-mode-map)
 (bind-key "M-," 'xref-pop-marker-stack prog-mode-map)
@@ -981,16 +1007,16 @@ This checks in turn:
   :config
   (setq magit-completing-read-function 'magit-builtin-completing-read
         vc-follow-symlinks t)
-  (use-package other-frame-window
-    :straight t
-    :config
-    (defun magit-display-buffer-popup-frame (buffer)
-      (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
-          (display-buffer buffer '((display-buffer-reuse-window
-                                    ofw-display-buffer-other-frame)
-                                   (reusable-frames . t)))
-        (magit-display-buffer-traditional buffer)))
-    (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+  ;; (use-package other-frame-window
+  ;;   :straight t
+  ;;   :config
+  ;;   (defun magit-display-buffer-popup-frame (buffer)
+  ;;     (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
+  ;;         (display-buffer buffer '((display-buffer-reuse-window
+  ;;                                   ofw-display-buffer-other-frame)
+  ;;                                  (reusable-frames . t)))
+  ;;       (magit-display-buffer-traditional buffer)))
+  ;;   (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
   (advice-add #'magit-key-mode-popup-committing :after
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
@@ -1062,7 +1088,8 @@ This checks in turn:
 ;;;; PlantUML
 (use-package plantuml-mode
   :straight t
-  :mode ("\\.puml\\'" . plantuml-mode)
+  :mode ("\\.puml\\'"
+         "\\.plantuml\\'")
   :custom
   (plantuml-default-exec-mode 'jar))
 
@@ -1563,7 +1590,6 @@ This checks in turn:
 
 (use-package shackle
   :straight t
-  :init (shackle-mode +1)
   :custom
   (shackle-default-rule '(:select t))
   (shackle-rules
@@ -1579,19 +1605,22 @@ This checks in turn:
      ("\\*\\(?:Warnings\\|Compile-Log\\|Messages\\|Tex Help\\|TeX errors\\)\\*"
       :regexp t :noselect t :align 'below :size 0.33)
      (help-mode
-      :noselect t :align 'below :size 0.33)
-     (backtrace-mode
+      :select t :align 'below :size 0.33)
+     ("*Backtrace*"
       :noselect t :align 'below :size 0.33)
      (magit-status-mode
       :select t :align 'below :size 0.66)
      ;; Right
      (apropos-mode
-      :select t :align 'right :size 0.33)
+      :select t :other t :align 'right :size 0.33)
      )
-   ))
+   )
+  :config
+  (shackle-mode +1))
 
 (use-package popper
   :straight t
+  :after shackle
   :init
   (popper-mode +1)
   (popper-echo-mode +1)
@@ -1605,9 +1634,12 @@ This checks in turn:
    '("\\*Messages\\*"
      "Output\\*$"
      "\\*Async Shell Command\\*"
+     "\\*Warnings\\*"
      apropos-mode
      help-mode
      compilation-mode
+     backtrace-mode
+     "\\*Backtrace\\*"
      "^magit*"
      )))
 
@@ -1646,34 +1678,6 @@ This checks in turn:
   :hook (prog-mode . hs-minor-mode)
   :bind (:map hs-minor-mode-map
          ("C-c <tab>" . hs-toggle-hiding)))
-
-;; Make sure new frames use window-divider
-;; Make a clean & minimalist frame
-(use-package frame
-  :straight (:type built-in)
-  :custom
-  (window-divider-default-right-width 2)
-  (window-divider-default-bottom-width 1)
-  (window-divider-default-places 'right-only)
-  (window-divider-mode t)
-  :config
-  (setq-default default-frame-alist
-                (append (list
-                         '(min-height . 1)
-                         '(height     . 45)
-	                     '(min-width  . 1)
-                         '(width      . 81)
-                         '(vertical-scroll-bars . nil)
-                         '(internal-border-width . 5)
-                         '(left-fringe    . 1)
-                         '(right-fringe   . 1)
-                         '(tool-bar-lines . 0)
-                         '(menu-bar-lines . 0)
-                         '(vertical-scroll-bars . nil))))
-  (setq-default window-resize-pixelwise t)
-  (setq-default frame-resize-pixelwise t))
-
-(add-hook 'before-make-frame-hook 'window-divider-mode)
 
 (use-package dimmer
   :straight t
