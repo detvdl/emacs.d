@@ -409,9 +409,9 @@ This is a variadic `cl-pushnew'."
   :straight t
   :bind (("C-c k" . deadgrep)
          :map deadgrep-mode-map
-         ("w" . deadgrep-edit-mode)
+         ("e" . deadgrep-edit-mode)
          :map deadgrep-edit-mode-map
-         ("C-x C-q" . deadgrep-mode))
+         ("C-c C-c" . deadgrep-mode))
   :config
   (require 'dash)
   (defun deadgrep--arguments-patch (rg-arguments)
@@ -1590,32 +1590,35 @@ This checks in turn:
 
 (use-package shackle
   :straight t
-  :custom
-  (shackle-default-rule '(:select t))
-  (shackle-rules
-   '(;; Below
-     (compilation-mode
-      :noselect t :align 'below :size 0.33)
-     ("*Buffer List*"
-      :select t :align 'below :size 0.33)
-     ("*Async Shell Command*"
-      :noselect t :align 'below :size 0.20)
-     ("\\(?:[Oo]utput\\)\\*"
-      :regexp t :noselect t :align 'below :size 0.33)
-     ("\\*\\(?:Warnings\\|Compile-Log\\|Messages\\|Tex Help\\|TeX errors\\)\\*"
-      :regexp t :noselect t :align 'below :size 0.33)
-     (help-mode
-      :select t :align 'below :size 0.33)
-     ("*Backtrace*"
-      :noselect t :align 'below :size 0.33)
-     (magit-status-mode
-      :select t :align 'below :size 0.66)
-     ;; Right
-     (apropos-mode
-      :select t :other t :align 'right :size 0.33)
-     )
-   )
   :config
+  (setq shackle-default-rule '(:select t)
+        shackle-rules
+        '(;; Below
+          (compilation-mode
+           :noselect t :align below :size 0.33)
+          ("*Buffer List*"
+           :select t :align below :size 0.33)
+          ("*Async Shell Command*"
+           :noselect t :align below :size 0.20)
+          ("\\(?:[Oo]utput\\)\\*"
+           :regexp t :noselect t :align below :size 0.33)
+          ("\\*\\(?:Warnings\\|Compile-Log\\|Messages\\|Tex Help\\|TeX errors\\)\\*"
+           :regexp t :noselect t :align below :size 0.33)
+          (help-mode
+           :select t :align below :size 0.33)
+          ("*Backtrace*"
+           :noselect t :align below :size 0.33)
+          (magit-status-mode
+           :select t :align below :size 0.66)
+          ("magit-*"
+           :regexp t :align below :size 0.33)
+          ("^\\*deadgrep"
+           :regexp t :align below :size 0.33)
+          ;; Right
+          ("\\*Apropos"
+           :regexp t :select t :align right :size 0.45)
+          )
+        )
   (shackle-mode +1))
 
 (use-package popper
@@ -1627,21 +1630,35 @@ This checks in turn:
   :bind (("C-`" . popper-toggle-latest)
          ("M-`" . popper-cycle)
          ("C-M-`" . popper-toggle-type))
-  :custom
-  (popper-group-function #'popper-group-by-projectile)
-  (popper-display-control nil)
-  (popper-reference-buffers
-   '("\\*Messages\\*"
-     "Output\\*$"
-     "\\*Async Shell Command\\*"
-     "\\*Warnings\\*"
-     apropos-mode
-     help-mode
-     compilation-mode
-     backtrace-mode
-     "\\*Backtrace\\*"
-     "^magit*"
-     )))
+  :config
+  (setq popper-group-function #'popper-group-by-projectile
+        popper-display-control nil
+        popper-reference-buffers
+        '(occur-mode
+          grep-mode
+          locate-mode
+          embark-collect-mode
+          deadgrep-mode
+          "^\\*deadgrep"
+          help-mode
+          compilation-mode
+          ("^\\*Compile-Log\\*$" . hide)
+          backtrace-mode
+          "^\\*Backtrace\\*"
+          ("^\\*Warnings\\*$" . hide)
+          "^\\*Messages\\*$"
+          "^\\*Apropos"
+          "^\\*eldoc\\*"
+          "^\\*TeX errors\\*"
+          "^\\*ielm\\*"
+          "^\\*TeX Help\\*"
+          "\\*Shell Command Output\\*"
+          ("\\*Async Shell Command\\*" . hide)
+          "\\*Completions\\*"
+          "[Oo]utput\\*$"
+          "^magit*"
+          )
+        ))
 
 (use-package so-long
   :straight t
