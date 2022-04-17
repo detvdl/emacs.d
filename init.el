@@ -1,9 +1,9 @@
 ;; -*- lexical-binding: t -*-
 
 (require 'package)
-(setq package-archives '(("gnu" . "https://elpa.gnu.org/packages/")
-			             ("melpa" . "https://melpa.org/packages/")
-			             ("org" . "http://orgmode.org/elpa/")
+(setq package-archives '(("gnu"    . "https://elpa.gnu.org/packages/")
+			             ("melpa"  . "https://melpa.org/packages/")
+			             ("org"    . "http://orgmode.org/elpa/")
                          ("nongnu" . "https://elpa.nongnu.org/nongnu")))
 (setq package-user-dir (expand-file-name "elpa" user-emacs-directory)
       package--init-file-ensured t
@@ -171,6 +171,7 @@ This is a variadic `cl-pushnew'."
 ;; Garbage Collector Magic Hack
 (use-package gcmh
   :straight t
+  :blackout
   :config
   (gcmh-mode 1))
 
@@ -485,7 +486,7 @@ This is a variadic `cl-pushnew'."
                        embark-highlight-indicator))
   :bind (("C-," . embark-act)
          :map embark-region-map
-         ("a" . align-regexp)
+         ("a"   . align-regexp)
          :map embark-collect-mode-map
          ("C-," . embark-act)
          :map minibuffer-local-map
@@ -978,7 +979,7 @@ This checks in turn:
   :straight t
   :bind (("C-x g" . magit-status))
   :config
-  (setq magit-completing-read-function 'ivy-completing-read
+  (setq magit-completing-read-function 'magit-builtin-completing-read
         vc-follow-symlinks t)
   (use-package other-frame-window
     :straight t
@@ -1560,6 +1561,60 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
+(use-package shackle
+  :straight t
+  :init (shackle-mode +1)
+  :custom
+  (shackle-default-rule '(:select t))
+  (shackle-rules
+   '(;; Below
+     (compilation-mode
+      :noselect t :align 'below :size 0.33)
+     ("*Buffer List*"
+      :select t :align 'below :size 0.33)
+     ("*Async Shell Command*"
+      :noselect t :align 'below :size 0.20)
+     ("\\(?:[Oo]utput\\)\\*"
+      :regexp t :noselect t :align 'below :size 0.33)
+     ("\\*\\(?:Warnings\\|Compile-Log\\|Messages\\|Tex Help\\|TeX errors\\)\\*"
+      :regexp t :noselect t :align 'below :size 0.33)
+     (help-mode
+      :noselect t :align 'below :size 0.33)
+     (backtrace-mode
+      :noselect t :align 'below :size 0.33)
+     (magit-status-mode
+      :select t :align 'below :size 0.66)
+     ;; Right
+     (apropos-mode
+      :select t :align 'right :size 0.33)
+     )
+   ))
+
+(use-package popper
+  :straight t
+  :init
+  (popper-mode +1)
+  (popper-echo-mode +1)
+  :bind (("C-`" . popper-toggle-latest)
+         ("M-`" . popper-cycle)
+         ("C-M-`" . popper-toggle-type))
+  :custom
+  (popper-group-function #'popper-group-by-projectile)
+  (popper-display-control nil)
+  (popper-reference-buffers
+   '("\\*Messages\\*"
+     "Output\\*$"
+     "\\*Async Shell Command\\*"
+     apropos-mode
+     help-mode
+     compilation-mode
+     "^magit*"
+     )))
+
+(use-package so-long
+  :straight t
+  :init (global-so-long-mode +1))
+
 ;; --- THEMES ---
 (use-package nano
   :straight (nano-emacs
@@ -1659,6 +1714,7 @@ This predicate prevents dimming the treemacs buffer."
   (dimmer-configure-treemacs)
   (dimmer-configure-help)
   (dimmer-configure-lsp-ui-doc)
+  (add-to-list 'dimmer-exclusion-regexp-list "^\\*compilation\\*$")
   (advice-add 'dimmer-config-change-handler :override #'advices/dimmer-config-change-handler))
 
 (use-package solaire-mode
