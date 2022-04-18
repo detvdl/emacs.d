@@ -78,11 +78,11 @@
   (org-level-4 ((t (:inherit outline-4 :height 1.00))))
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   ;; Apply fixed-pitch font to all org text that is in code blocks or tables
-  (org-code ((t (:inherit fixed-pitch))))
-  (org-block ((t (:inherit fixed-pitch))))
-  (org-block-begin-line ((t (:inherit fixed-pitch))))
-  (org-block-end-line ((t (:inherit fixed-pitch))))
-  (org-table ((t (:inherit fixed-pitch))))
+  (org-code ((t (:inherit default))))
+  (org-block ((t (:inherit default))))
+  (org-block-begin-line ((t (:inherit default))))
+  (org-block-end-line ((t (:inherit default))))
+  (org-table ((t (:inherit default))))
   :config
   (add-to-list 'org-export-backends 'md)
   (require 'ob-shell)
