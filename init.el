@@ -1064,6 +1064,11 @@ This checks in turn:
                     (cl-return t)))))
   )
 
+(use-package flymake-shellcheck
+  :straight t
+  :commands flymake-shellcheck-load
+  :init
+  (add-hook 'sh-mode-hook 'flymake-shellcheck-load))
 
 ;;;; PlantUML
 (use-package plantuml-mode
