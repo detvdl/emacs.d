@@ -126,13 +126,14 @@ This is a variadic `cl-pushnew'."
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns x))
   :straight t
+  :demand t
   :custom
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
                                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
   (exec-path-from-shell-arguments '("-l"))
-  :config
+  :init
   (exec-path-from-shell-initialize))
 
 (defun align-non-space (BEG END)
@@ -158,7 +159,7 @@ This is a variadic `cl-pushnew'."
                          '(width      . 135)
                          '(vertical-scroll-bars . nil)
                          '(internal-border-width . 5)
-                         '(left-fringe    . 1)
+                         '(left-fringe    . 2)
                          '(right-fringe   . 1)
                          '(tool-bar-lines . 0)
                          '(menu-bar-lines . 0))))
@@ -170,7 +171,6 @@ This is a variadic `cl-pushnew'."
 
 (blink-cursor-mode -1)
 (show-paren-mode 1)
-
 (column-number-mode)
 
 (setq-default indicate-empty-lines t)
@@ -333,9 +333,6 @@ This is a variadic `cl-pushnew'."
   :bind (([remap kill-ring-save] . easy-kill)
          ([remap mark-sexp] . easy-mark)))
 
-(use-package hydra
-  :straight t)
-
 (use-package iedit
   :straight t
   :bind (("C-;" . iedit-mode)
@@ -378,32 +375,7 @@ This is a variadic `cl-pushnew'."
          ("C-. >" . hydra-multiple-cursors/body)
          :map global-map
          ("C-S-<mouse-1>" . mc/add-cursor-on-click)
-         ("M-S-<mouse-1>" . mc/add-cursor-on-click))
-  :config
-  (defhydra hydra-multiple-cursors (:hint nil)
-    "
- Up^^             Down^^           Miscellaneous           % 2(mc/num-cursors) cursor%s(if (> (mc/num-cursors) 1) \"s\" \"\")
-------------------------------------------------------------------
- [_p_]   Next     [_n_]   Next     [_l_] Edit lines  [_0_] Insert numbers
- [_P_]   Skip     [_N_]   Skip     [_a_] Mark all    [_A_] Insert letters
- [_M-p_] Unmark   [_M-n_] Unmark   [_s_] Search
- [Click] Cursor at point       [_q_] Quit"
-    ("l" mc/edit-lines :exit t)
-    ("a" mc/mark-all-like-this :exit t)
-    ("n" mc/mark-next-like-this)
-    ("N" mc/skip-to-next-like-this)
-    ("M-n" mc/unmark-next-like-this)
-    ("p" mc/mark-previous-like-this)
-    ("P" mc/skip-to-previous-like-this)
-    ("M-p" mc/unmark-previous-like-this)
-    ("s" mc/mark-all-in-region-regexp :exit t)
-    ("0" mc/insert-numbers :exit t)
-    ("A" mc/insert-letters :exit t)
-    ("<mouse-1>" mc/add-cursor-on-click)
-    ;; Help with click recognition in this hydra
-    ("<down-mouse-1>" ignore)
-    ("<drag-mouse-1>" ignore)
-    ("q" nil)))
+         ("M-S-<mouse-1>" . mc/add-cursor-on-click)))
 
 (use-package deadgrep
   :straight t
@@ -614,8 +586,7 @@ targets."
   :config
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
-  (setq highlight-indent-guides-auto-enabled nil)
-  (set-face-foreground 'highlight-indent-guides-character-face "darkgray"))
+  (setq highlight-indent-guides-auto-enabled nil))
 
 ;;;; Dired
 (use-package dired-subtree
@@ -1034,7 +1005,13 @@ This checks in turn:
   (set-face-attribute 'diff-hl-insert nil :height font-height)
   (global-diff-hl-mode +1)
   (diff-hl-flydiff-mode +1)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh))
+  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+  (let* ((height (frame-char-height))
+         (width 2)
+         (ones (1- (expt 2 width)))
+         (bits (make-vector height ones)))
+    (define-fringe-bitmap 'my-diff-hl-bitmap bits height width))
+  (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my-diff-hl-bitmap)))
 ;; Only load the diff-hl package once we actually visit a file
 ;; This hook gets added by global-diff-hl mode anyway
 (add-hook 'find-file-hook #'diff-hl-update)
@@ -1054,8 +1031,9 @@ This checks in turn:
 
 (use-package direnv
   :straight t
+  :demand t
   :config
-  (direnv-mode))
+  (direnv-mode +1))
 
 ;; Prescient: sorting by frecency
 (use-package prescient
@@ -1752,6 +1730,8 @@ This predicate prevents dimming the treemacs buffer."
 ;; amazing themes provided by https://protesilaos.com/emacs/
 (use-package modus-themes
   :straight t
+  :after highlight-indent-guides
+  :bind ("<f5>" . modus-themes-toggle)
   :custom
   ;; Add all your customizations prior to loading the themes
   (modus-themes-italic-constructs t)
@@ -1764,9 +1744,14 @@ This predicate prevents dimming the treemacs buffer."
   ;; Load the theme files before enabling a theme
   (modus-themes-load-themes)
   :config
+  ;; customized faces
+  (defun my--modus-themes-custom-faces ()
+    (set-face-attribute 'highlight-indent-guides-character-face nil
+                        :foreground (modus-themes-color-alts 'bg-active 'bg-special-cold)))
+  (add-hook 'modus-themes-after-load-theme-hook #'my--modus-themes-custom-faces)
   (mapc #'disable-theme custom-enabled-themes)
   (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
-  :bind ("<f5>" . modus-themes-toggle))
+  )
 
 
 ;;;; --- Interesting themes to keep an eye on ---
