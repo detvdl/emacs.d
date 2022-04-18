@@ -21,3 +21,4 @@ flycheck_*.el
 /straight/**
 /var/**
 !/var/elfeed.org
+!/var/elfeed.score

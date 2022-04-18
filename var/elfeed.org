@@ -4,11 +4,18 @@
 ** entry-title: \(linux\|linus\|ubuntu\|kde\|gnome\) :linux:
 ** entry-title: \(emacs\) :emacs:
 ** entry-title: \(clojure\) :clojure:
-** [[https://www.instapaper.com/rss/6436730/aAzvYopNslgQPU2arTDVThHW4][Instapaper]] :instapaper:mustread:backlog:
+
+** [[https://www.instapaper.com/rss/6436730/aAzvYopNslgQPU2arTDVThHW4][Instapaper]] :instapaper:mustread:
 ** [[https://news.ycombinator.com/rss][Hacker News]] :HN:daily:
 ** [[http://showrss.info/user/174140.rss?magnets=true&namespaces=true&name=null&quality=null&re=null][showRSS]] :shows:
 ** [[https://blog.acolyer.org/feed/][The Morning Paper]] :daily:mustread:
 ** [[http://feeds.feedburner.com/webdesignernews][WebdesignerNews]] :frontend:web:
+** Emacs :emacs:
+*** [[https://emacsair.me/feed.xml][Emacsair]]
+*** [[http://planet.emacsen.org/atom.xml][Planet Emacsen]]
+*** [[http://pragmaticemacs.com/feed/][Pragmatic Emacs]]
+*** [[https://www.reddit.com/r/emacs/.rss][r/Emacs]] :reddit:
+*** [[https://planet.emacslife.com/atom.xml][EmacsLife]]
 ** Programming :programming:
 *** Languages :lang:
 **** Clojure :clojure:
@@ -17,6 +24,9 @@
 **** Golang :golang:
 ***** [[https://www.reddit.com/r/golang/.rss][r/Golang]] :reddit:
 ***** [[http://schier.co/rss.xml][Schier blog]]
+**** Java :java:
+***** [[https://www.reddit.com/r/java/.rss][r/Java]]
+***** [[https://www.reddit.com/r/SpringBoot/.rss][r/SpringBoot]]
 **** Javascript :JS:
 ***** [[https://medium.com/feed/topic/javascript][Medium:Javascript]] :frontend:medium:
 ***** [[https://refind.com/feed/javascript.rss][Refind:Javascript]] :frontend:refind:
@@ -32,12 +42,6 @@
 ***** [[https://readrust.net/all/feed.rss][ReadRust]]
 ***** [[http://smallcultfollowing.com/babysteps/atom.xml][Baby Steps]]
 ***** [[https://this-week-in-rust.org/rss.xml][This Week in Rust]]
-*** Emacs :emacs:mustread:
-**** [[https://emacsair.me/feed.xml][Emacsair]]
-**** [[http://planet.emacsen.org/atom.xml][Planet Emacsen]]
-**** [[http://pragmaticemacs.com/feed/][Pragmatic Emacs]]
-**** [[https://www.reddit.com/r/emacs/.rss][r/Emacs]] :reddit:
-**** [[https://planet.emacslife.com/atom.xml][EmacsLife]]
 *** Medium :medium:
 **** [[https://medium.com/feed/topic/artificial-intelligence][Artificial Intelligence]] :AI:
 **** [[https://medium.com/feed/topic/data-science][Data Science]]

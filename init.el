@@ -1762,9 +1762,12 @@ This predicate prevents dimming the treemacs buffer."
   :config
   (defface emacs-elfeed-entry '((t :background "Lightblue1"))
     "Elfeed face for Emacs entries")
-  (pushnew! elfeed-search-face-alist '(emacs emacs-elfeed-entry))
+  (defface java-elfeed-entry '((t :background "DarkOrange2"))
+    "Elfeed face for Java entries")
+  (pushnew! elfeed-search-face-alist '(emacs emacs-elfeed-entry) '(java java-elfeed-entry))
   (defun my--elfeed-modus-faces ()
-    (set-face-attribute 'emacs-elfeed-entry nil :background (modus-themes-color-alts 'blue-subtle-bg 'blue-alt-other-faint)))
+    (set-face-attribute 'emacs-elfeed-entry nil :background (modus-themes-color-alts 'blue-subtle-bg 'blue-alt-other-faint))
+    (set-face-attribute 'java-elfeed-entry nil :background (modus-themes-color-alts 'red-graph-1-bg 'red-alt-faint)))
   (add-hook 'modus-themes-after-load-theme-hook #'my--elfeed-modus-faces)
   (defmacro elfeed-keymap-filters (alist)
     (let ((var (make-symbol "mapping")))
@@ -1774,7 +1777,9 @@ This predicate prevents dimming the treemacs buffer."
              (elfeed-search-set-filter (cdr ,var))
              (goto-char (point-min)))))))
   (elfeed-keymap-filters '(("e" . "@6-months-ago +unread +emacs")
-                           ("c" . "@6-months-ago +unread"))))
+                           ("c" . "@6-months-ago +unread")
+                           ("t" . "@1-day-ago +unread")
+                           ("j" . "@6-months-ago +unread +java"))))
 
 (use-package elfeed-org
   :straight t
