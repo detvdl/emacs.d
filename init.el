@@ -1758,6 +1758,7 @@ This predicate prevents dimming the treemacs buffer."
 (use-package elfeed
   :straight t
   :commands (elfeed)
+  :bind (("<f4>" . elfeed))
   :config
   (defface emacs-elfeed-entry '((t :background "Lightblue1"))
     "Elfeed face for Emacs entries")
