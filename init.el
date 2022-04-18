@@ -55,28 +55,29 @@ This is a variadic `cl-pushnew'."
           (docstring (if ll (pop ll) nil)))
       (list obsolete-name current-name when docstring))))
 
-;; TODO: fix
-(setq x-select-request-type 'STRING)
-
-(use-package recentf
-  :straight nil
-  :config
-  (recentf-mode 1)
-  (run-at-time nil 600 'recentf-save-list))
-
-(use-package savehist
-  :straight nil
-  :init
-  (savehist-mode 1))
-
 (use-package no-littering
   :straight t
   :config
   (setq auto-save-file-name-transforms
-        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-  (with-eval-after-load "recentf"
+        `((".*" ,(no-littering-expand-var-file-name "auto-save/") t))))
+
+(use-package recentf
+  :straight nil
+  :demand t
+  :after no-littering
+  :config
+  (recentf-mode +1)
+  (with-eval-after-load "no-littering"
     (add-to-list 'recentf-exclude no-littering-var-directory)
     (add-to-list 'recentf-exclude no-littering-etc-directory)))
+
+(use-package savehist
+  :straight nil
+  :demand t
+  :after no-littering
+  :config
+  (add-to-list 'savehist-additional-variables 'command-history)
+  (savehist-mode +1))
 
 (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
 (when (file-exists-p custom-file)
@@ -296,8 +297,7 @@ This is a variadic `cl-pushnew'."
         aw-dispatch-always nil))
 
 ;; Edit multiple occurences of a code fragment in one buffer.
-;; Used in combination with ivy/swiper and rg for easy refactoring.
-;; To refactor for example, search with swiper =C-s=, then activate ivy-occur =C-c C-o=.
+;; To refactor for example, search with `consult-line' <C-s>, then export with `embark-export' <M-e>.
 ;; This opens an occur buffer with all results. Now you can activate wgrep and edit to your heart's content
 (use-package wgrep
   :straight t
@@ -1590,6 +1590,7 @@ This checks in turn:
 
 (use-package shackle
   :straight t
+  :demand t
   :config
   (setq shackle-default-rule '(:select t)
         shackle-rules
@@ -1613,7 +1614,7 @@ This checks in turn:
           ("magit-*"
            :regexp t :align below :size 0.33)
           ("^\\*deadgrep"
-           :regexp t :align below :size 0.33)
+           :regexp t :select t :align below :size 0.33)
           ;; Right
           ("\\*Apropos"
            :regexp t :select t :align right :size 0.45)
@@ -1624,9 +1625,6 @@ This checks in turn:
 (use-package popper
   :straight t
   :after shackle
-  :init
-  (popper-mode +1)
-  (popper-echo-mode +1)
   :bind (("C-`" . popper-toggle-latest)
          ("M-`" . popper-cycle)
          ("C-M-`" . popper-toggle-type))
@@ -1658,7 +1656,9 @@ This checks in turn:
           "[Oo]utput\\*$"
           "^magit*"
           )
-        ))
+        )
+  (popper-mode +1)
+  (popper-echo-mode +1))
 
 (use-package so-long
   :straight t

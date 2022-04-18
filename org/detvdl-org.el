@@ -14,6 +14,7 @@
 
 (use-package org
   :straight org
+  :blackout org-indent-mode
   :mode ("\\.org\\'" . org-mode)
   :bind (("C-c l" . org-store-link)
          ("C-c a" . org-agenda)
@@ -41,11 +42,10 @@
   (org-babel-confirm-evaluate nil)
   (org-log-done t)
   (org-startup-folded nil)
-  (org-startup-indented t)
+  (org-startup-indented t) ;; org-indent-mode doesn't play well with pretty org-src blocks from `org-modern.el'
   (org-link-descriptive t) ;; set to nil to avoid immediately formatted links
   (org-list-indent-offset 2)
   (org-hide-leading-stars t)
-  (org-ellipsis " ⧩" )
   (org-src-fontify-natively t)
   (org-return-follows-link t)
   (org-hide-emphasis-markers t)
@@ -77,13 +77,18 @@
   (org-level-3 ((t (:inherit outline-3 :height 1.00))))
   (org-level-4 ((t (:inherit outline-4 :height 1.00))))
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
+  ;; Apply fixed-pitch font to all org text that is in code blocks or tables
+  (org-code ((t (:inherit fixed-pitch))))
+  (org-block ((t (:inherit fixed-pitch))))
+  (org-block-begin-line ((t (:inherit fixed-pitch))))
+  (org-block-end-line ((t (:inherit fixed-pitch))))
+  (org-table ((t (:inherit fixed-pitch))))
   :config
   (add-to-list 'org-export-backends 'md)
   (require 'ob-shell)
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell . t)
                                  (awk . t)))
-  ;; (require 'ox-confluence)
   ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)
@@ -102,24 +107,8 @@
       (org-force-open-current-window)))
   (when (version<= "9.2" (org-version))
     (require 'org-tempo))
-  (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
-    (let ((list (if (not (listp list-or-symbol))
-                    (list list-or-symbol)
-                  list-or-symbol)))
-      (require 'cl-lib)
-      (cl-adjoin element list)))
-  ;; Apply fixed-pitch font to all org text that is in code blocks or tables
-  (mapc (lambda (face)
-          (set-face-attribute face nil :inherit
-                              (my-adjoin-to-list-or-symbol 'fixed-pitch
-                                                           (face-attribute face :inherit))))
-        (list 'org-code 'org-block 'org-table))
   (add-hook 'org-mode-hook (lambda ()
                              (setq line-spacing .2)
-                             "Beautify Org Checkbox Symbol"
-                             (push '("[ ]" . "☐") prettify-symbols-alist)
-                             (push '("[X]" . "☑" ) prettify-symbols-alist)
-                             (push '("[-]" . "❍" ) prettify-symbols-alist)
                              (push '("--" . "—") prettify-symbols-alist)
                              (push '("-->" . "⟶") prettify-symbols-alist)
                              (push '("<--" . "⟵") prettify-symbols-alist)
@@ -138,8 +127,30 @@
              ("^ *\\([X]\\) "
               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "\u2023")))))
            'append))
-        (list 'org-mode 'org-journal-mode))
-  (blackout 'org-indent-mode))
+        (list 'org-mode 'org-journal-mode)))
+
+(use-package org-modern
+  :straight t
+  :after org
+  :hook (org-mode . org-modern-mode)
+  :custom-face
+  (org-modern-block-keyword ((t (:inherit default))))
+  :custom
+  (org-pretty-entities t)
+  (org-auto-align-tags nil)
+  (org-tags-column 0)
+  (org-insert-heading-respect-content t)
+  (org-ellipsis "…")
+  (org-modern-label-border 0)
+  (org-modern-variable-pitch nil)
+  (org-modern-timestamp t)
+  (org-modern-table t)
+  (org-modern-table-vertical 2)
+  (org-modern-table-horizontal 1)
+  (org-modern-list '((?+ . "•")
+                     (?- . "–")
+                     (?* . "◦")))
+  (org-modern-block t))
 
 (use-package ox-gfm
   :straight t
@@ -177,7 +188,6 @@
   (setq org-roam-v2-ack t)
   :custom
   (org-roam-directory user-roam-dir)
-  (org-roam-completion-system 'ivy)
   (org-roam-link-title-format "[[%s]]")
   ;; enable to have automatic completion anywhere in the buffer
   (org-roam-completion-everywhere nil)
@@ -273,15 +283,15 @@
 
 ;;;; Look & feel
 ;; Prettifying org-mode buffers.
-(use-package org-superstar
-  :straight t
-  :after org
-  :hook (org-mode . org-superstar-mode)
-  :custom
-  (org-superstar-prettify-item-bullets t)
-  (org-superstar-item-bullet-alist '((?- . ?•)
-                                     (?+ . ?▸)
-                                     (?* . ?▪))))
+;; (use-package org-superstar
+;;   :straight t
+;;   :after org
+;;   :hook (org-mode . org-superstar-mode)
+;;   :custom
+;;   (org-superstar-prettify-item-bullets t)
+;;   (org-superstar-item-bullet-alist '((?- . ?•)
+;;                                      (?+ . ?▸)
+;;                                      (?* . ?▪))))
 
 (use-package org-appear
   :straight (org-appear
@@ -346,8 +356,9 @@
   :config
   (add-hook 'olivetti-mode-on-hook (lambda () (progn (display-line-numbers-mode 0)
                                                      (highlight-indent-guides-mode 0))))
-  (add-hook 'olivetti-mode-off-hook (lambda () (progn (display-line-numbers-mode +1)
-                                                      (highlight-indent-guides-mode +1)))))
+  (add-hook 'olivetti-mode-off-hook (lambda () (when (not (eq major-mode 'org-mode))
+                                                 (progn (display-line-numbers-mode +1)
+                                                        (highlight-indent-guides-mode +1))))))
 
 (provide 'detvdl-org)
 ;;; detvdl-org.el ends here
