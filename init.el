@@ -540,7 +540,9 @@ targets."
 
 (use-package embark-consult
   :straight t
-  :after (embark consult))
+  :after (embark consult)
+  :config
+  (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))
 
 (use-package aweshell
   :straight (aweshell
