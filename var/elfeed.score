@@ -3,13 +3,13 @@
 (("title")
  ("content")
  ("title-or-content"
-  (:text "emacs" :title-value 50 :content-value 50 :type s)
-  (:text "\\(consult|embark|marginalia|vertico\\)" :title-value 200 :content-value 100 :type r :tags (t emacs))
-  (:text "protesilaos" :title-value 200 :content-value 75 :type s :tags (t emacs))
-  (:text "magit" :title-value 150 :content-value 50 :type s :tags (t emacs))
+  (:text "emacs" :title-value 5 :content-value 5 :type s)
+  (:text "\\(consult|embark|marginalia|vertico\\)" :title-value 20 :content-value 10 :type r :tags (t emacs))
+  (:text "protesilaos" :title-value 20 :content-value 10 :type s :tags (t emacs))
+  (:text "magit" :title-value 15 :content-value 5 :type s :tags (t emacs))
 
-  (:text "spring\\([- ]?boot\\)?" :title-value 100 :content-value 25 :type r)
-  (:text "\\(jetbrains|intellij\\)" :title-value 50 :content-value 5 :type r)
+  (:text "spring\\([- ]?boot\\)?" :title-value 5 :content-value 0 :type r)
+  (:text "\\(jetbrains|intellij\\)" :title-value 5 :content-value 0 :type r)
   )
  ("tag"
   (:tags (t emacs) :value 5)
