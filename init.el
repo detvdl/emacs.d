@@ -1755,6 +1755,41 @@ This predicate prevents dimming the treemacs buffer."
   (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
   )
 
+(use-package elfeed
+  :straight t
+  :commands (elfeed)
+  :config
+  (defface emacs-elfeed-entry '((t :background "Lightblue1"))
+    "Elfeed face for Emacs entries")
+  (pushnew! elfeed-search-face-alist '(emacs emacs-elfeed-entry))
+  (defun my--elfeed-modus-faces ()
+    (set-face-attribute 'emacs-elfeed-entry nil :background (modus-themes-color-alts 'blue-subtle-bg 'blue-alt-other-faint)))
+  (add-hook 'modus-themes-after-load-theme-hook #'my--elfeed-modus-faces)
+  (defmacro elfeed-keymap-filters (alist)
+    (let ((var (make-symbol "mapping")))
+      `(dolist (,var (,@alist))
+         (define-key elfeed-search-mode-map (kbd (car ,var))
+           (lambda () (interactive)
+             (elfeed-search-set-filter (cdr ,var))
+             (goto-char (point-min)))))))
+  (elfeed-keymap-filters '(("e" . "@6-months-ago +unread +emacs")
+                           ("c" . "@6-months-ago +unread"))))
+
+(use-package elfeed-org
+  :straight t
+  :after (elfeed org)
+  :config
+  (setq rmh-elfeed-org-files `(,(expand-file-name "elfeed.org" no-littering-var-directory)))
+  (elfeed-org))
+
+(use-package elfeed-score
+  :straight t
+  :after elfeed
+  :config
+  (setq elfeed-score-serde-score-file (concat (expand-file-name no-littering-var-directory) "elfeed.score"))
+  (define-key elfeed-search-mode-map "=" elfeed-score-map)
+  (setq elfeed-search-print-entry-function #'elfeed-score-print-entry)
+  (elfeed-score-enable))
 
 ;;;; --- Interesting themes to keep an eye on ---
 ;; (use-package sketch-themes

@@ -142,7 +142,7 @@
   (org-insert-heading-respect-content t)
   (org-ellipsis "…")
   (org-modern-label-border 0)
-  (org-modern-variable-pitch nil)
+  (org-modern-variable-pitch 'fixed-pitch)
   (org-modern-timestamp t)
   (org-modern-table t)
   (org-modern-table-vertical 2)
@@ -150,7 +150,8 @@
   (org-modern-list '((?+ . "•")
                      (?- . "–")
                      (?* . "◦")))
-  (org-modern-block t))
+  (org-modern-block t)
+  )
 
 (use-package ox-gfm
   :straight t
