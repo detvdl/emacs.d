@@ -562,6 +562,8 @@ targets."
 (use-package ggtags
   :straight t
   :hook ((c-mode c++-mode java-mode) . ggtags-mode)
+  :bind (:map ggtags-mode-map
+         ("M-." . ggtags-find-tag-dwim))
   :config
   (setq-local imenu-create-index-function #'ggtags-build-imenu-index)
   ;; ensure ace-window keybind doesn't get overridden in ggtags-mode buffers
@@ -1208,7 +1210,7 @@ This checks in turn:
          ("\\.java\\'" . java-mode))
   :init
   (defun c-mode-common-defaults ()
-    (setq c-default-style "gnu"
+    (setq c-default-style "linux"
           c-basic-offset 4
           c-tab-always-indent t)
     (c-set-offset 'substatement-open 0)
