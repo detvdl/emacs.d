@@ -1575,6 +1575,11 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
+;; (use-package cue-mode
+;;   :straight (cue-mode
+;;              :type git :host github
+;;              :repo "detvdl/cue-mode.el"))
+
 (use-package shackle
   :straight t
   :demand t

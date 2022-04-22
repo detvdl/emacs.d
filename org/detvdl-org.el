@@ -78,12 +78,10 @@
   (org-level-4 ((t (:inherit outline-4 :height 1.00))))
   (org-level-5 ((t (:inherit outline-5 :height 1.00))))
   ;; Apply fixed-pitch font to all org text that is in code blocks or tables
-  (org-code ((t (:inherit default))))
-  (org-block ((t (:inherit default))))
-  (org-block-begin-line ((t (:inherit default))))
-  (org-block-end-line ((t (:inherit default))))
-  (org-table ((t (:inherit default))))
   :config
+  (mapc (lambda (face)
+          (set-face-attribute face t :family (face-attribute 'default :family)))
+        '(org-code org-block org-block-begin-line org-block-end-line org-table))
   (add-to-list 'org-export-backends 'md)
   (require 'ob-shell)
   (org-babel-do-load-languages 'org-babel-load-languages
@@ -136,6 +134,7 @@
   :custom-face
   (org-modern-block-keyword ((t (:inherit default))))
   :custom
+  (org-pretty-entities-include-sub-superscripts nil)
   (org-pretty-entities t)
   (org-auto-align-tags nil)
   (org-tags-column 0)
