@@ -84,6 +84,7 @@
         '(org-code org-block org-block-begin-line org-block-end-line org-table))
   (add-to-list 'org-export-backends 'md)
   (require 'ob-shell)
+  (require 'ob-clojure)
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell      . t)
                                  (js         . t)
@@ -96,6 +97,8 @@
                                  (css        . t)
                                  (plantuml   . t)
                                  (awk        . t)))
+  (with-eval-after-load "cider"
+    (setq org-babel-clojure-backend 'cider))
   ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)

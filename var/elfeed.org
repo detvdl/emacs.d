@@ -4,7 +4,6 @@
 ** entry-title: \(linux\|linus\|ubuntu\|kde\|gnome\) :linux:
 ** entry-title: \(emacs\) :emacs:
 ** entry-title: \(clojure\) :clojure:
-
 ** [[https://www.instapaper.com/rss/6436730/aAzvYopNslgQPU2arTDVThHW4][Instapaper]] :instapaper:mustread:
 ** [[https://news.ycombinator.com/rss][Hacker News]] :HN:daily:
 ** [[http://showrss.info/user/174140.rss?magnets=true&namespaces=true&name=null&quality=null&re=null][showRSS]] :shows:
