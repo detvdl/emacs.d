@@ -141,6 +141,36 @@ This is a variadic `cl-pushnew'."
   (interactive "r")
   (align-regexp BEG END "\\(\\s-*\\)\\S-+" 1 1 t))
 
+(use-package emacs
+  :straight nil
+  :config
+  (when (version<= "28.1" emacs-version)
+    (setq read-minibuffer-restore-windows nil)))
+
+(use-package esh-mode
+  :straight (:type built-in)
+  :demand t
+  :config
+  (defun eshell-here ()
+    "Opens up a new shell in the directory associated with the
+    current buffer's file. The eshell is renamed to match that
+    directory to make multiple eshell windows easier."
+    (interactive)
+    (let* ((parent (if (buffer-file-name)
+                       (file-name-directory (buffer-file-name))
+                     default-directory))
+           (new-window (split-window-no-error))
+           (name   (car (last (split-string parent "/" t)))))
+      (select-window new-window)
+      (eshell "new")
+      (rename-buffer (concat "*eshell: " name "*"))))
+  (global-set-key (kbd "C-!") 'eshell-here))
+
+(use-package tab-bar
+  :straight (:type built-in)
+  :bind (("<f6>" . tab-bar-mode))
+  :config (tab-bar-mode +1))
+
 ;; Make sure new frames use window-divider
 ;; Make a clean & minimalist frame
 (use-package frame
@@ -544,20 +574,20 @@ targets."
   :config
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))
 
-(use-package aweshell
-  :straight (aweshell
-             :host github :type git
-             :repo "manateelazycat/aweshell"
-             :fork t)
-  :commands (aweshell-new aweshell-toggle aweshell-dedicated)
-  :bind (("C-c s t" . aweshell-toggle)
-         ("C-c s s" . aweshell-new)
-         ("C-c s n" . aweshell-next)
-         ("C-c s p" . aweshell-prev)
-         ("C-c s d" . aweshell-dedicated-toggle))
-  :custom
-  (aweshell-search-history-key "C-r")
-  (aweshell-auto-suggestion-p nil))
+;; (use-package aweshell
+;;   :straight (aweshell
+;;              :host github :type git
+;;              :repo "manateelazycat/aweshell"
+;;              :fork t)
+;;   :commands (aweshell-new aweshell-toggle aweshell-dedicated)
+;;   :bind (("C-c s t" . aweshell-toggle)
+;;          ("C-c s s" . aweshell-new)
+;;          ("C-c s n" . aweshell-next)
+;;          ("C-c s p" . aweshell-prev)
+;;          ("C-c s d" . aweshell-dedicated-toggle))
+;;   :custom
+;;   (aweshell-search-history-key "C-r")
+;;   (aweshell-auto-suggestion-p nil))
 
 (use-package ggtags
   :straight t
@@ -922,7 +952,10 @@ This checks in turn:
     :blackout
     :custom
     (company-box-scrollbar nil)
-    :hook (company-mode . company-box-mode))
+    :hook (company-mode . company-box-mode)
+    :config
+    ;; disable tab-bar on the company-box frames
+    (add-to-list 'company-box-frame-parameters '(tab-bar-lines . 0)))
   )
 
 (use-package company-quickhelp
@@ -995,6 +1028,10 @@ This checks in turn:
   (advice-add #'magit-key-mode-popup-committing :after
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
+
+(use-package forge
+  :straight t
+  :after magit)
 
 ;; Git Diff
 ;; Visual diff feedback in the margin/gutter
@@ -1575,10 +1612,12 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
-;; (use-package cue-mode
-;;   :straight (cue-mode
-;;              :type git :host github
-;;              :repo "detvdl/cue-mode.el"))
+(use-package cue-mode
+  :straight (cue-mode
+             :type git :host github
+             :repo "detvdl/cue-mode.el")
+  :custom
+  (cue-vet-extra-arguments '()))
 
 (use-package shackle
   :straight t
@@ -1606,6 +1645,8 @@ This checks in turn:
           ("magit-*"
            :regexp t :align below :size 0.33)
           ("^\\*deadgrep"
+           :regexp t :select t :align below :size 0.33)
+          ("^\\*eshell"
            :regexp t :select t :align below :size 0.33)
           ;; Right
           ("\\*Apropos"
@@ -1635,6 +1676,7 @@ This checks in turn:
           ("^\\*Compile-Log\\*$" . hide)
           backtrace-mode
           "^\\*Backtrace\\*"
+          "^\\*eshell"
           ("^\\*Warnings\\*$" . hide)
           "^\\*Messages\\*$"
           "^\\*Apropos"
@@ -1765,7 +1807,7 @@ This predicate prevents dimming the treemacs buffer."
   (add-hook 'modus-themes-after-load-theme-hook #'my--modus-themes-custom-faces)
   (mapc #'disable-theme custom-enabled-themes)
   (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
-  )
+)
 
 (use-package elfeed
   :straight t
@@ -1795,7 +1837,7 @@ This predicate prevents dimming the treemacs buffer."
 
 (use-package elfeed-org
   :straight t
-  :after (elfeed org)
+  :after elfeed
   :config
   (setq rmh-elfeed-org-files `(,(expand-file-name "elfeed.org" no-littering-var-directory)))
   (elfeed-org))
