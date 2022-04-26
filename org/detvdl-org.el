@@ -168,6 +168,10 @@
   :straight t
   :after org)
 
+(use-package ox-gist
+  :straight t
+  :after org)
+
 (use-package ox-jira
   :straight t
   :after org)
