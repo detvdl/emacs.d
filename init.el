@@ -124,16 +124,16 @@ This is a variadic `cl-pushnew'."
 
 ;; Source environment variables from init shell on non-shell based init systems
 (use-package exec-path-from-shell
-  :if (memq window-system '(mac ns x))
   :straight t
+  :if (memq window-system '(mac ns x))
   :demand t
   :custom
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
                                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
-  (exec-path-from-shell-arguments '("-l"))
-  :init
+  (exec-path-from-shell-arguments '("--login"))
+  :config
   (exec-path-from-shell-initialize))
 
 (defun align-non-space (BEG END)
@@ -147,9 +147,55 @@ This is a variadic `cl-pushnew'."
   (when (version<= "28.1" emacs-version)
     (setq read-minibuffer-restore-windows nil)))
 
+;;; Prevent Emacs-provided Org from being loaded
+
+;; Our real configuration for Org comes much later. Doing this now
+;; means that if any packages that are installed in the meantime
+;; depend on Org, they will not accidentally cause the Emacs-provided
+;; (outdated and duplicated) version of Org to be loaded before the
+;; real one is registered.
+
+(straight-register-package 'org)
+(straight-register-package 'org-contrib)
+
+;;; el-patch
+
+;; Package `el-patch' provides a way to override the definition of an
+;; internal function from another package by providing an s-expression
+;; based diff which can later be validated to ensure that the upstream
+;; definition has not changed.
+(use-package el-patch)
+
+;; Only needed at compile time, thanks to Jon
+;; <https://github.com/raxod502/el-patch/pull/11>.
+(eval-when-compile
+  (require 'el-patch))
+
 (use-package esh-mode
   :straight (:type built-in)
-  :demand t
+  :config/el-patch
+  (defcustom eshell-buffer-name "*eshell*"
+    :type 'string
+    :group 'eshell)
+  (defun eshell (&optional arg)
+    (interactive "P")
+    (cl-assert eshell-buffer-name)
+    (let ((buf (cond ((numberp arg)
+		              (get-buffer-create (format "%s<%d>"
+					                             eshell-buffer-name
+					                             arg)))
+		             (arg
+		              (generate-new-buffer eshell-buffer-name))
+		             (t
+		              (get-buffer-create eshell-buffer-name)))))
+      (cl-assert (and buf (buffer-live-p buf)))
+      (el-patch-swap (pop-to-buffer-same-window buf)
+                     (display-buffer buf 'display-buffer-pop-up-window))
+      (el-patch-wrap 1 0
+        (with-current-buffer buf
+          (unless (derived-mode-p 'eshell-mode)
+            (eshell-mode))))
+      buf))
   :config
   (defun eshell-here ()
     "Opens up a new shell in the directory associated with the
@@ -159,9 +205,7 @@ This is a variadic `cl-pushnew'."
     (let* ((parent (if (buffer-file-name)
                        (file-name-directory (buffer-file-name))
                      default-directory))
-           (new-window (split-window-no-error))
            (name   (car (last (split-string parent "/" t)))))
-      (select-window new-window)
       (eshell "new")
       (rename-buffer (concat "*eshell: " name "*"))))
   (global-set-key (kbd "C-!") 'eshell-here))
@@ -216,12 +260,6 @@ This is a variadic `cl-pushnew'."
 
 (defvar font-height (face-attribute 'default :height))
 (setq inhibit-compacting-font-caches t)
-
-;; PATCHing stuff
-(use-package el-patch
-  :straight t
-  :config
-  (setq el-patch-enable-use-package-integration t))
 
 ;; Garbage Collector Magic Hack
 (use-package gcmh
@@ -1072,6 +1110,7 @@ This checks in turn:
 
 (use-package direnv
   :straight t
+  :after (exec-path-from-shell)
   :demand t
   :config
   (direnv-mode +1))
