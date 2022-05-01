@@ -185,7 +185,11 @@ This is a variadic `cl-pushnew'."
 					                             eshell-buffer-name
 					                             arg)))
 		             (arg
-		              (generate-new-buffer eshell-buffer-name))
+		              (generate-new-buffer (el-patch-swap
+                                             eshell-buffer-name
+                                             (format "%s[%s]"
+                                                     eshell-buffer-name
+                                                     arg))))
 		             (t
 		              (get-buffer-create eshell-buffer-name)))))
       (cl-assert (and buf (buffer-live-p buf)))
@@ -206,8 +210,7 @@ This is a variadic `cl-pushnew'."
                        (file-name-directory (buffer-file-name))
                      default-directory))
            (name   (car (last (split-string parent "/" t)))))
-      (eshell "new")
-      (rename-buffer (concat "*eshell: " name "*"))))
+      (eshell name)))
   (global-set-key (kbd "C-!") 'eshell-here))
 
 (use-package tab-bar
@@ -445,6 +448,16 @@ This is a variadic `cl-pushnew'."
          ("C-S-<mouse-1>" . mc/add-cursor-on-click)
          ("M-S-<mouse-1>" . mc/add-cursor-on-click)))
 
+;; isearch alternative that works well with multiple-cursors
+;; for more information see https://github.com/zk-phi/phi-search
+(use-package phi-search
+  :straight t
+  :bind (("C-S-s" . phi-search)
+         ("C-S-r" . phi-search-backward)
+         :map mc/keymap
+         ("C-s" . phi-search)
+         ("C-r" . phi-search-backward)))
+
 (use-package deadgrep
   :straight t
   :bind (("C-c k" . deadgrep)
@@ -611,21 +624,6 @@ targets."
   :after (embark consult)
   :config
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))
-
-;; (use-package aweshell
-;;   :straight (aweshell
-;;              :host github :type git
-;;              :repo "manateelazycat/aweshell"
-;;              :fork t)
-;;   :commands (aweshell-new aweshell-toggle aweshell-dedicated)
-;;   :bind (("C-c s t" . aweshell-toggle)
-;;          ("C-c s s" . aweshell-new)
-;;          ("C-c s n" . aweshell-next)
-;;          ("C-c s p" . aweshell-prev)
-;;          ("C-c s d" . aweshell-dedicated-toggle))
-;;   :custom
-;;   (aweshell-search-history-key "C-r")
-;;   (aweshell-auto-suggestion-p nil))
 
 (use-package ggtags
   :straight t
@@ -1585,7 +1583,7 @@ This checks in turn:
   :custom
   (typescript-indent-level 2)
   :config
-  (setq lsp-disabled-clients '(deno-lsp)))
+  (add-to-list 'lsp-disabled-clients 'deno-lsp))
 
 ;;;; Markdown
 (use-package markdown-mode
@@ -1656,7 +1654,7 @@ This checks in turn:
              :type git :host github
              :repo "detvdl/cue-mode.el")
   :custom
-  (cue-vet-extra-arguments '()))
+  (flycheck-cue-vet-concrete-types t))
 
 (use-package shackle
   :straight t
@@ -1686,7 +1684,7 @@ This checks in turn:
           ("^\\*deadgrep"
            :regexp t :select t :align below :size 0.33)
           ("^\\*eshell"
-           :regexp t :select t :align below :size 0.33)
+           :regexp t :select t :align below :size 0.20)
           ;; Right
           ("\\*Apropos"
            :regexp t :select t :align right :size 0.45)
@@ -1898,3 +1896,4 @@ This predicate prevents dimming the treemacs buffer."
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
+(put 'downcase-region 'disabled nil)

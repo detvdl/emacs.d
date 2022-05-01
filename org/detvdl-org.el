@@ -7,10 +7,16 @@
 
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
-(use-package variable-pitch
-  :straight nil
-  :after org
-  :hook (org-mode . variable-pitch-mode))
+;; (use-package variable-pitch
+;;   :straight nil
+;;   :after org
+;;   :hook (org-mode . variable-pitch-mode))
+
+(use-package mixed-pitch
+  :straight t
+  :hook (text-mode . mixed-pitch-mode)
+  :custom
+  (mixed-pitch-variable-pitch-cursor 'box))
 
 (use-package org
   :straight org
@@ -20,7 +26,9 @@
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          :map org-mode-map
-         ("C-c C-o" . org-open-maybe))
+         ("C-c C-o" . org-open-maybe)
+         ("M-<up>" . org-move-subtree-up)
+         ("M-<down>" . org-move-subtree-down))
   :init
   (defun org-ask-location ()
     (let* ((org-refile-targets '((nil :maxlevel . 9)))
@@ -139,6 +147,10 @@
            'append))
         (list 'org-mode 'org-journal-mode)))
 
+(use-package org-capture
+  :straight nil
+  :after org)
+
 (use-package org-modern
   :straight t
   :after org
@@ -146,14 +158,15 @@
   :custom-face
   (org-modern-block-keyword ((t (:inherit default))))
   :custom
+  (org-modern-keyword "‣")
   (org-pretty-entities-include-sub-superscripts nil)
   (org-pretty-entities t)
   (org-auto-align-tags nil)
-  (org-tags-column 0)
+  (org-tags-column 90)
   (org-insert-heading-respect-content t)
   (org-ellipsis "…")
-  (org-modern-label-border 0)
-  (org-modern-variable-pitch 'fixed-pitch)
+  (org-modern-label-border 'auto)
+  (org-modern-variable-pitch 'variable-pitch)
   (org-modern-timestamp t)
   (org-modern-table t)
   (org-modern-table-vertical 2)
@@ -171,6 +184,30 @@
 (use-package ox-gist
   :straight t
   :after org)
+
+(use-package ox-hugo
+  :straight t
+  :after (ox org)
+  :config
+  (defun org-hugo-new-subtree-post-capture-template ()
+    "Returns `org-capture' template string for new Hugo post.
+See `org-capture-templates' for more information."
+    (let* ((title (read-from-minibuffer "Post Title: ")) ;Prompt to enter the post title
+           (fname (org-hugo-slug title)))
+      (mapconcat #'identity
+                 `(
+                   ,(concat "* TODO " title)
+                   ":PROPERTIES:"
+                   ,(concat ":EXPORT_FILE_NAME: " fname)
+                   ":END:"
+                   "%?\n")                ;Place the cursor here finally
+                 "\n")))
+  (add-to-list 'org-capture-templates
+               '("h"
+                 "Hugo post"
+                 entry
+                 (file+olp "~/Blog/content-org/all-posts.org" "Posts")
+                 (function org-hugo-new-subtree-post-capture-template))))
 
 (use-package ox-jira
   :straight t
