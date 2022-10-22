@@ -228,6 +228,7 @@ This is a variadic `cl-pushnew'."
   (window-divider-default-places 'right-only)
   (window-divider-mode t)
   :config
+  (blink-cursor-mode -1)
   (setq-default default-frame-alist
                 (append (list
                          '(min-height . 1)
@@ -238,15 +239,24 @@ This is a variadic `cl-pushnew'."
                          '(internal-border-width . 5)
                          '(left-fringe    . 2)
                          '(right-fringe   . 1)
-                         '(tool-bar-lines . 0)
-                         '(menu-bar-lines . 0))))
+                         '(tool-bar-lines . 0))))
   (push '(tool-bar-lines . 0) initial-frame-alist)
   (setq-default window-resize-pixelwise t)
-  (setq-default frame-resize-pixelwise t))
+  (setq-default frame-resize-pixelwise t)
+  (if (and (eq system-type 'darwin)
+           (display-graphic-p))
+      (menu-bar-mode 1)
+    (menu-bar-mode -1)))
 
 (add-hook 'before-make-frame-hook 'window-divider-mode)
 
-(blink-cursor-mode -1)
+(use-package cursor-sensor
+  :straight (:type built-in)
+  :custom
+  (cursor-type 'box)
+  :config
+  (cursor-intangible-mode t))
+
 (show-paren-mode 1)
 (column-number-mode)
 
@@ -274,8 +284,10 @@ This is a variadic `cl-pushnew'."
 ;; smart tab behavior - indent or complete
 (setq tab-always-indent 'complete)
 
-;; Never type "yes" or "no" again.
-(fset 'yes-or-no-p 'y-or-n-p)
+;; Never type "yes" or "no" again
+(if (version<= "28" emacs-version)
+    (setq-default use-short-answers t)
+  (fset 'yes-or-no-p 'y-or-n-p))
 
 ;; Always delete selection when typing over or pasting
 (delete-selection-mode +1)
@@ -283,6 +295,7 @@ This is a variadic `cl-pushnew'."
 ;; Remove trailing whitespace when saving a file
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
+(setq-default confirm-nonexistent-file-or-buffer nil)
 ;; Automatically create missing parent directories when visiting a new file.
 (defun create-non-existent-directory ()
   (let ((parent-directory (file-name-directory buffer-file-name)))
@@ -452,6 +465,7 @@ This is a variadic `cl-pushnew'."
 ;; for more information see https://github.com/zk-phi/phi-search
 (use-package phi-search
   :straight t
+  :after multiple-cursors
   :bind (("C-S-s" . phi-search)
          ("C-S-r" . phi-search-backward)
          :map mc/keymap
@@ -530,7 +544,6 @@ This is a variadic `cl-pushnew'."
             '(projectile-switch-to-buffer . buffer)
             '(projectile-switch-project . project-file)))
 
-;; TODO: read https://github.com/oantolin/orderless#company for company issues
 (use-package orderless
   :straight t
   :demand t
@@ -624,6 +637,63 @@ targets."
   :after (embark consult)
   :config
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))
+
+(use-package corfu
+  :straight t
+  :custom
+  (corfu-auto t)
+  (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
+  (corfu-quit-at-boundary 'separator) ; Never quit at completion boundary
+  (corfu-quit-no-match t)             ; Never quit, even if there is no match
+  (corfu-preview-current nil)         ; Disable current candidate preview
+  (corfu-preselect-first nil)         ; Disable candidate preselection
+  (corfu-on-exact-match 'insert)      ; Configure handling of exact matches
+  (corfu-echo-documentation nil)      ; Disable documentation in the echo area
+  (corfu-scroll-margin 5)             ; Use scroll margin
+  (corfu-auto-prefix 2)
+  :init
+  (global-corfu-mode))
+
+(use-package corfu-doc
+  :straight t
+  :after corfu
+  :hook (corfu-mode . corfu-doc-mode))
+
+(use-package kind-icon
+  :straight t
+  :after corfu
+  :custom
+  (kind-icon-default-face 'corfu-default)
+  :config
+  (add-to-list 'corfu-margin-formatters #'kind-icon-margin-formatter))
+
+(use-package dabbrev
+  :straight (:type built-in)
+  :bind ("M-\\" . dabbrev-completion)
+  :custom
+  (dabbrev-ignored-buffer-regexps '("\\.\\(?:pdf\\|jpe?g\\|png\\)\\'")))
+
+(use-package cape
+  :straight t
+  :init
+  ;; Add `completion-at-point-functions', used by `completion-at-point'.
+  (add-to-list 'completion-at-point-functions #'cape-file)
+  (add-to-list 'completion-at-point-functions #'cape-dabbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-history)
+  ;;(add-to-list 'completion-at-point-functions #'cape-keyword)
+  ;;(add-to-list 'completion-at-point-functions #'cape-tex)
+  ;;(add-to-list 'completion-at-point-functions #'cape-sgml)
+  ;;(add-to-list 'completion-at-point-functions #'cape-rfc1345)
+  ;;(add-to-list 'completion-at-point-functions #'cape-abbrev)
+  ;;(add-to-list 'completion-at-point-functions #'cape-ispell)
+  ;;(add-to-list 'completion-at-point-functions #'cape-dict)
+  (add-to-list 'completion-at-point-functions #'cape-symbol)
+  ;; (add-to-list 'completion-at-point-functions #'cape-line)
+  )
+
+(use-package keycast
+  :straight t
+  :defer t)
 
 (use-package ggtags
   :straight t
@@ -966,52 +1036,6 @@ This checks in turn:
   :straight t
   :after yasnippet)
 
-;;;; Company
-(use-package company
-  :straight t
-  :blackout company-mode
-  :bind (("M-\\" . company-select-next))
-  :hook ((org-mode prog-mode) . company-mode)
-  :config
-  (setq company-idle-delay 0.5
-        company-tooltip-limit 10
-        company-minimum-prefix-length 2
-        company-tooltip-flip-when-above t
-        company-tooltip-align-annotations t)
-  (add-hook 'org-mode-hook (lambda () (cl-pushnew 'company-capf company-backends))))
-
-(when (and (version<= "26" emacs-version)
-           (display-graphic-p))
-  (use-package company-box
-    :straight t
-    :after company
-    :blackout
-    :custom
-    (company-box-scrollbar nil)
-    :hook (company-mode . company-box-mode)
-    :config
-    ;; disable tab-bar on the company-box frames
-    (add-to-list 'company-box-frame-parameters '(tab-bar-lines . 0)))
-  )
-
-(use-package company-quickhelp
-  :straight t
-  :after company
-  :config
-  (use-package pos-tip :straight t)
-  (company-quickhelp-mode 1)
-  (setq company-quickhelp-delay 0.5
-        company-quickhelp-use-propertized-text t))
-
-(bind-key "M-\\" #'company-complete-common-or-cycle global-map)
-
-(defun company:add-local-backend (backend)
-  "Add the BACKEND to the local `company-backends' variable."
-  (if (local-variable-if-set-p 'company-backends)
-      (add-to-list 'company-backends `(:separate ,backend company-yasnippet))
-    (add-to-list (make-local-variable 'company-backends)
-                 `(:separate ,backend company-yasnippet))))
-
 ;;;; Language Server Protocol (LSP)
 (use-package lsp-mode
   :straight t
@@ -1044,23 +1068,13 @@ This checks in turn:
         lsp-lens-enable t
         lsp-modeline-diagnostics-enable t))
 
+(setq vc-follow-symlinks t)
 ;;;; Magit
 (use-package magit
   :straight t
   :bind (("C-x g" . magit-status))
   :config
-  (setq magit-completing-read-function 'magit-builtin-completing-read
-        vc-follow-symlinks t)
-  ;; (use-package other-frame-window
-  ;;   :straight t
-  ;;   :config
-  ;;   (defun magit-display-buffer-popup-frame (buffer)
-  ;;     (if (with-current-buffer buffer (eq major-mode 'magit-status-mode))
-  ;;         (display-buffer buffer '((display-buffer-reuse-window
-  ;;                                   ofw-display-buffer-other-frame)
-  ;;                                  (reusable-frames . t)))
-  ;;       (magit-display-buffer-traditional buffer)))
-  ;;   (setq magit-display-buffer-function #'magit-display-buffer-fullframe-status-v1))
+  (setq magit-completing-read-function 'magit-builtin-completing-read)
   (advice-add #'magit-key-mode-popup-committing :after
               (lambda ()
                 (magit-key-mode-toggle-option (quote committing) "--verbose"))))
@@ -1114,31 +1128,11 @@ This checks in turn:
   (direnv-mode +1))
 
 ;; Prescient: sorting by frecency
-(use-package prescient
-  :straight t
-  :config
-  (prescient-persist-mode +1))
-
-(use-package company-prescient
-  :straight t
-  :after company prescient
-  :hook (company-mode . company-prescient-mode)
-  :config
-  (defadvice lsp (after advice-lsp activate)
-    (setq-local company-prescient-sort-length-enable
-                (cl-dolist (w lsp--buffer-workspaces)
-                  (when (thread-first w
-                                      (lsp--workspace-client)
-                                      (lsp--client-server-id)
-                                      (memq '(jsts-ls
-                                              mspyls
-                                              bash-ls
-                                              texlab
-                                              ts-ls
-                                              svelte-ls))
-                                      (not))
-                    (cl-return t)))))
-  )
+;; Not compatible with vertico/orderless
+;; (use-package prescient
+;;   :straight t
+;;   :config
+;;   (prescient-persist-mode +1))
 
 (use-package flymake-shellcheck
   :straight t
@@ -1155,7 +1149,7 @@ This checks in turn:
   (plantuml-default-exec-mode 'jar))
 
 ;;;; Emacs Lisp
-(add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
+;;(add-hook 'emacs-lisp-mode-hook (lambda () (company:add-local-backend 'company-elisp)))
 
 (use-package emr
   :straight (emr
@@ -1193,6 +1187,10 @@ This checks in turn:
 ;;              :files (:defaults "*.lisp" "*.asd" (:exclude "sly-stepper-autoloads.el")))
 ;;   :after sly sly-stickers)
 
+;;;; OCaml
+(use-package tuareg
+  :straight t)
+
 ;;;; Clojure
 (use-package clojure-mode
   :straight t
@@ -1226,8 +1224,8 @@ This checks in turn:
           cider-dynamic-indentation t)
     (add-hook 'cider-mode-hook #'subword-mode)
     (add-hook 'cider-mode-hook #'eldoc-mode)
-    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+;;    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+;;    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
     (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
 
 (use-package clojure-snippets
@@ -1286,7 +1284,7 @@ This checks in turn:
   (defun c-mode-common-defaults ()
     (setq c-default-style "linux"
           c-basic-offset 4
-          c-tab-always-indent t)
+          c-tab-always-indent 'complete)
     (c-set-offset 'substatement-open 0)
     ;; make the underscore part of a word in C and C++ modes
     (modify-syntax-entry ?_ "w" c++-mode-syntax-table)
@@ -1396,7 +1394,7 @@ This checks in turn:
 (defun my--java-mode-hook ()
   (setq lsp-prefer-flymake nil)
   (lsp-deferred)
-  (company:add-local-backend 'company-lsp)
+;;  (company:add-local-backend 'company-lsp)
   (dap-mode t)
   (dap-ui-mode t)
   (local-set-key (kbd "C-; i") #'lsp-java-organize-imports)
@@ -1406,6 +1404,21 @@ This checks in turn:
   (dap:set-local-keybindings))
 
 (add-hook 'java-mode-hook 'my--java-mode-hook)
+
+(use-package kotlin-mode
+  :straight t
+  :after (lsp-mode dap-mode)
+  :config
+  (require 'dap-kotlin)
+  ;; should probably have been in dap-kotlin instead of lsp-kotlin
+  (setq lsp-kotlin-debug-adapter-path (or (executable-find "kotlin-debug-adapter") "~/Git/kotlin-debug-adapter/adapter/build/install/adapter/bin/kotlin-debug-adapter"))
+  :hook
+  (kotlin-mode . lsp))
+
+(use-package dap-mode
+  :after lsp-mode
+  :init
+  (dap-auto-configure-mode))
 
 ;;;; Python
 (add-hook 'python-mode-hook #'subword-mode)
@@ -1446,30 +1459,6 @@ This checks in turn:
   :interpreter "ruby"
   :config
   (add-hook 'ruby-mode-hook #'subword-mode))
-
-(use-package yari
-  :straight t
-  :defer t)
-
-(use-package inf-ruby
-  :straight t
-  :bind (:map inf-ruby-minor-mode-map
-         ("C-x C-e" . ruby-send-last-sexp))
-  :hook (ruby-mode . inf-ruby-minor-mode))
-
-(use-package ruby-tools
-  :straight t
-  :hook (ruby-mode . ruby-tools-mode))
-
-(use-package robe
-  :straight t
-  :hook (ruby-mode . robe-mode)
-  :config
-  (add-hook 'robe-mode (lambda () (company:add-local-backend 'company-robe))))
-
-(use-package rubocop
-  :straight t
-  :hook (ruby-mode . rubocop-mode))
 
 (use-package feature-mode
   :straight t
@@ -1626,12 +1615,6 @@ This checks in turn:
   :straight t
   :mode (("\\.rest\\'" . restclient-mode)))
 
-(use-package company-restclient
-  :straight t
-  :after restclient
-  :config
-  (add-hook 'restclient-mode-hook (lambda () (company:add-local-backend 'company-restclient))))
-
 (use-package haskell-mode
   :straight t
   :mode (("\\.hs\\'" . haskell-mode))
@@ -1685,9 +1668,13 @@ This checks in turn:
            :regexp t :select t :align below :size 0.33)
           ("^\\*eshell"
            :regexp t :select t :align below :size 0.20)
+          (comint-mode
+           :select t :align below :size 0.33)
           ;; Right
           ("\\*Apropos"
            :regexp t :select t :align right :size 0.45)
+          ("\\*org-roam"
+           :regexp t :select t :align right :size 0.33)
           )
         )
   (shackle-mode +1))
@@ -1764,13 +1751,14 @@ This checks in turn:
 
 (use-package hideshow
   :hook (prog-mode . hs-minor-mode)
+  :blackout hs-minor-mode
   :bind (:map hs-minor-mode-map
          ("C-c <tab>" . hs-toggle-hiding)))
 
 (use-package dimmer
   :straight t
   :hook (after-init . dimmer-mode)
-  :init
+  :config
   (defun dimmer-configure-treemacs ()
     "Convenience setting for treemacs users.
 This predicate prevents dimming the treemacs buffer."
@@ -1785,11 +1773,32 @@ This predicate prevents dimming the treemacs buffer."
     (string-prefix-p " *lsp-ui-doc-" (buffer-name)))
   (defun dimmer-configure-lsp-ui-doc ()
     (add-to-list 'dimmer-prevent-dimming-predicates #'dimmer-lsp-ui-doc-p))
-  (defun advices/dimmer-config-change-handler ()
-    (dimmer--dbg-buffers 1 "dimmer-config-change-handler")
+  (with-eval-after-load "corfu"
+    (defun corfu-frame-p ()
+      "Check if the buffer is a corfu frame buffer."
+      (string-match-p "\\` \\*corfu" (buffer-name)))
+    (defun dimmer-configure-corfu ()
+      "Convenience settings for corfu users."
+      (add-to-list
+       'dimmer-prevent-dimming-predicates
+       #'corfu-frame-p))
+    (dimmer-configure-corfu))
+  (with-eval-after-load "corfu-doc"
+    (defun dimmer-corfu-doc-p ()
+      (string-prefix-p " *corfu-doc" (buffer-name)))
+    (defun dimmer-configure-corfu-doc ()
+      (add-to-list 'dimmer-prevent-dimming-predicates #'dimmer-corfu-doc-p))
+    (dimmer-configure-corfu-doc))
+  (defun advise-dimmer-config-change-handler ()
+    "Advise to only force process if no predicate is truthy."
     (let ((ignore (cl-some (lambda (f) (and (fboundp f) (funcall f)))
                            dimmer-prevent-dimming-predicates)))
-      (dimmer-process-all (not ignore))))
+      (unless ignore
+        (when (fboundp 'dimmer-process-all)
+          (dimmer-process-all t)))))
+  (advice-add
+   'dimmer-config-change-handler
+   :override 'advise-dimmer-config-change-handler)
   ;;- endref
   :custom
   (dimmer-fraction 0.5)
@@ -1801,13 +1810,10 @@ This predicate prevents dimming the treemacs buffer."
   (dimmer-configure-org)
   (dimmer-configure-posframe)
   (dimmer-configure-which-key)
-  (dimmer-configure-company-box)
-  (dimmer-configure-hydra)
   (dimmer-configure-treemacs)
   (dimmer-configure-help)
   (dimmer-configure-lsp-ui-doc)
-  (add-to-list 'dimmer-exclusion-regexp-list "^\\*compilation\\*$")
-  (advice-add 'dimmer-config-change-handler :override #'advices/dimmer-config-change-handler))
+  (add-to-list 'dimmer-exclusion-regexp-list "^\\*compilation\\*$"))
 
 (use-package solaire-mode
   :straight t

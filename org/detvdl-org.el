@@ -26,6 +26,7 @@
          ("C-c a" . org-agenda)
          ("C-c c" . org-capture)
          :map org-mode-map
+         ("C-'" . nil)
          ("C-c C-o" . org-open-maybe)
          ("M-<up>" . org-move-subtree-up)
          ("M-<down>" . org-move-subtree-down))
