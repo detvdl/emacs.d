@@ -582,6 +582,8 @@ This is a variadic `cl-pushnew'."
   (embark-indicators '(embark-mixed-indicator
                        embark-highlight-indicator))
   :bind (("C-," . embark-act)
+         :org-mode-map
+         ("C-," . embark-act)
          :map embark-region-map
          ("a" . align-regexp)
          ("i" . iedit)
