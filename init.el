@@ -13,6 +13,8 @@
 ;; Manually rebuild packages when needed/required with `straight-rebuild-all'
 (setq straight-check-for-modifications nil)
 
+(prefer-coding-system 'utf-8-unix)
+
 ;; MACROS
 (defmacro pushnew! (place &rest values)
   "Push VALUES sequentially into PLACE, if they aren't already present.
@@ -656,11 +658,6 @@ targets."
   :init
   (global-corfu-mode))
 
-(use-package corfu-doc
-  :straight t
-  :after corfu
-  :hook (corfu-mode . corfu-doc-mode))
-
 (use-package kind-icon
   :straight t
   :after corfu
@@ -756,10 +753,7 @@ This functions should be added to the hooks of major modes for programming."
 (use-package smartparens
   :straight (smartparens
              :host github :type git
-             :repo "Fuco1/smartparens"
-             :fork (:host github
-                    :repo "sirikid/smartparens"
-                    :branch "hotfix/when-let"))
+             :repo "Fuco1/smartparens")
   :blackout smartparens-mode
   :hook ((prolog-mode prog-mode ess-mode sly-mode slime-mode slime-repl-mode org-mode) . smartparens-mode)
   :functions (sp-wrap-with-pair)
@@ -1076,14 +1070,15 @@ This checks in turn:
   :straight t
   :bind (("C-x g" . magit-status))
   :config
-  (setq magit-completing-read-function 'magit-builtin-completing-read)
-  (advice-add #'magit-key-mode-popup-committing :after
-              (lambda ()
-                (magit-key-mode-toggle-option (quote committing) "--verbose"))))
+  ;; (setq magit-completing-read-function 'magit-builtin-completing-read)
+  ;; (advice-add #'magit-key-mode-popup-committing :after
+  ;;             (lambda ()
+  ;;               (magit-key-mode-toggle-option (quote committing) "--verbose")))
+  )
 
-(use-package forge
-  :straight t
-  :after magit)
+;; (use-package forge
+;;   :straight t
+;;   :after magit)
 
 ;; Git Diff
 ;; Visual diff feedback in the margin/gutter
@@ -1190,8 +1185,17 @@ This checks in turn:
 ;;   :after sly sly-stickers)
 
 ;;;; OCaml
+;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
+(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+;; ## end of OPAM user-setup addition for emacs / base ## keep this line
+
 (use-package tuareg
   :straight t)
+
+(use-package ocamlformat
+  :straight t
+  :custom (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (before-save . ocamlformat-before-save))
 
 ;;;; Clojure
 (use-package clojure-mode
@@ -1425,12 +1429,12 @@ This checks in turn:
 ;;;; Python
 (add-hook 'python-mode-hook #'subword-mode)
 
-(use-package lsp-python-ms
-  :straight t
-  :init (setq lsp-python-ms-auto-install-server t)
-  :hook (python-mode . (lambda ()
-                         (require 'lsp-python-ms)
-                         (lsp-deferred))))
+;; (use-package lsp-python-ms
+;;   :straight t
+;;   :init (setq lsp-python-ms-auto-install-server t)
+;;   :hook (python-mode . (lambda ()
+;;                          (require 'lsp-python-ms)
+;;                          (lsp-deferred))))
 
 (use-package python-black
   :straight t
@@ -1634,12 +1638,12 @@ This checks in turn:
   :straight t
   :mode ("\\.epub\\'" . ereader-mode))
 
-(use-package cue-mode
-  :straight (cue-mode
-             :type git :host github
-             :repo "detvdl/cue-mode.el")
-  :custom
-  (flycheck-cue-vet-concrete-types t))
+;; (use-package cue-mode
+;;   :straight (cue-mode
+;;              :type git :host github
+;;              :repo "detvdl/cue-mode.el")
+;;   :custom
+;;   (flycheck-cue-vet-concrete-types t))
 
 (use-package shackle
   :straight t
@@ -1833,6 +1837,7 @@ This predicate prevents dimming the treemacs buffer."
   :straight t
   :after highlight-indent-guides
   :bind ("<f5>" . modus-themes-toggle)
+  :demand t
   :custom
   ;; Add all your customizations prior to loading the themes
   (modus-themes-italic-constructs t)
@@ -1841,18 +1846,16 @@ This predicate prevents dimming the treemacs buffer."
   (modus-themes-region '(bg-only no-extend))
   (modus-themes-paren-match nil)
   (modus-themes-org-blocks 'tinted-background)
-  :init
-  ;; Load the theme files before enabling a theme
-  (modus-themes-load-themes)
   :config
   ;; customized faces
   (defun my--modus-themes-custom-faces ()
-    (set-face-attribute 'highlight-indent-guides-character-face nil
-                        :foreground (modus-themes-color-alts 'bg-active 'bg-special-cold)))
+    (modus-themes-with-colors
+      (custom-set-faces
+       `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim))))))
   (add-hook 'modus-themes-after-load-theme-hook #'my--modus-themes-custom-faces)
   (mapc #'disable-theme custom-enabled-themes)
-  (modus-themes-load-operandi) ;; OR (modus-themes-load-vivendi)
-)
+  (modus-themes-load-theme 'modus-operandi)
+  )
 
 (use-package elfeed
   :straight t
@@ -1864,10 +1867,10 @@ This predicate prevents dimming the treemacs buffer."
   (defface java-elfeed-entry '((t :background "DarkOrange2"))
     "Elfeed face for Java entries")
   (pushnew! elfeed-search-face-alist '(emacs emacs-elfeed-entry) '(java java-elfeed-entry))
-  (defun my--elfeed-modus-faces ()
-    (set-face-attribute 'emacs-elfeed-entry nil :background (modus-themes-color-alts 'blue-subtle-bg 'blue-alt-other-faint))
-    (set-face-attribute 'java-elfeed-entry nil :background (modus-themes-color-alts 'red-graph-1-bg 'red-alt-faint)))
-  (add-hook 'modus-themes-after-load-theme-hook #'my--elfeed-modus-faces)
+  ;; (defun my--elfeed-modus-faces ()
+  ;;   (set-face-attribute 'emacs-elfeed-entry nil :background (modus-themes-color-alts 'blue-subtle-bg 'blue-alt-other-faint))
+  ;;   (set-face-attribute 'java-elfeed-entry nil :background (modus-themes-color-alts 'red-graph-1-bg 'red-alt-faint)))
+  ;; (add-hook 'modus-themes-after-load-theme-hook #'my--elfeed-modus-faces)
   (defmacro elfeed-keymap-filters (alist)
     (let ((var (make-symbol "mapping")))
       `(dolist (,var (,@alist))

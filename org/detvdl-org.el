@@ -240,6 +240,7 @@ See `org-capture-templates' for more information."
   :straight t
   :init
   (setq org-roam-v2-ack t)
+  (setq org-roam-database-connector 'sqlite-builtin)
   :custom
   (org-roam-directory user-roam-dir)
   (org-roam-link-title-format "[[%s]]")
@@ -268,7 +269,8 @@ See `org-capture-templates' for more information."
                                  (file+function ,(org-roam-node-file (org-roam-node-from-title-or-alias "Browser: Bookmarks")) org-ask-location)
                                  "- %(org-cliplink-capture)%?\n"
                                  :unnarrowed t
-                                 :empty-lines-before 0))))
+                                 :empty-lines-before 0)))
+  )
 
 (use-package org-roam-ui
   :straight (:host github
