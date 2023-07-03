@@ -1429,12 +1429,11 @@ This checks in turn:
 ;;;; Python
 (add-hook 'python-mode-hook #'subword-mode)
 
-;; (use-package lsp-python-ms
-;;   :straight t
-;;   :init (setq lsp-python-ms-auto-install-server t)
-;;   :hook (python-mode . (lambda ()
-;;                          (require 'lsp-python-ms)
-;;                          (lsp-deferred))))
+(use-package lsp-pyright
+  :straight t
+  :hook (python-mode . (lambda ()
+                         (require 'lsp-pyright)
+                         (lsp-deferred))))
 
 (use-package python-black
   :straight t
