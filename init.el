@@ -584,7 +584,7 @@ This is a variadic `cl-pushnew'."
   (embark-indicators '(embark-mixed-indicator
                        embark-highlight-indicator))
   :bind (("C-," . embark-act)
-         :org-mode-map
+         :map org-mode-map
          ("C-," . embark-act)
          :map embark-region-map
          ("a" . align-regexp)
@@ -643,10 +643,12 @@ targets."
   (add-hook 'embark-collect-mode-hook #'consult-preview-at-point-mode))
 
 (use-package corfu
-  :straight t
+  :straight (:files (:defaults "extensions/*"))
+  :after eldoc
   :custom
   (corfu-auto t)
   (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
+  (corfu-preselect 'prompt)
   (corfu-quit-at-boundary 'separator) ; Never quit at completion boundary
   (corfu-quit-no-match t)             ; Never quit, even if there is no match
   (corfu-preview-current nil)         ; Disable current candidate preview
@@ -655,8 +657,11 @@ targets."
   (corfu-echo-documentation nil)      ; Disable documentation in the echo area
   (corfu-scroll-margin 5)             ; Use scroll margin
   (corfu-auto-prefix 2)
+  :hook ((corfu-mode . corfu-popupinfo-mode))
   :init
-  (global-corfu-mode))
+  (global-corfu-mode)
+  :config
+  (eldoc-add-command #'corfu-insert))
 
 (use-package kind-icon
   :straight t
@@ -1190,7 +1195,30 @@ This checks in turn:
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 
 (use-package tuareg
+  :straight t
+  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+
+(use-package dune
   :straight t)
+
+(use-package merlin
+  :straight t
+  :hook ((tuareg-mode . merlin-mode))
+  :config
+  (setq merlin-error-after-save nil))
+
+(use-package merlin-eldoc
+  :straight t
+  :hook ((tuareg-mode) . merlin-eldoc-setup))
+
+(use-package flycheck-ocaml
+  :straight t
+  :config
+  (flycheck-ocaml-setup))
+
+(use-package utop
+  :straight t
+  :hook ((tuareg-mode . utop-minor-mode)))
 
 (use-package ocamlformat
   :straight t
