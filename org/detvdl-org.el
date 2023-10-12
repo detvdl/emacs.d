@@ -5,6 +5,22 @@
 (defvar user-roam-dir "~/stack/Documents/roam")
 (defvar user-roam-dailies-dir (file-name-as-directory (expand-file-name "daily" user-roam-dir)))
 
+(add-to-list 'org-capture-templates
+             `("i"
+               "Inbox"
+               entry
+               (file "inbox.org")
+               ,(concat "* TODO %?\n"
+                        "/Entered on/ %U")))
+
+(defun org-capture-inbox ()
+  (interactive)
+  (ignore-errors
+    (call-interactively 'org-store-link))
+  (org-capture nil "i"))
+
+(define-key global-map (kbd "C-c i") 'org-capture-inbox)
+
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
 ;; (use-package variable-pitch
@@ -47,7 +63,14 @@
         (insert "* " hd "\n")))
     (end-of-line))
   :custom
-  (org-agenda-files (directory-files-recursively user-roam-dailies-dir "\\.org$"))
+  (org-agenda-files '("inbox.org"))
+  (org-agenda-hide-tags-regexp ".")
+  (org-agenda-prefix-format
+   '((agenda . " %i %-12:c%?-12t% s")
+     (todo   . " %i %-12:c")
+     (tags   . " %i %-12:c")
+     (search . " %i %-12:c")))
+  (org-directory user-roam-dir)
   (org-babel-confirm-evaluate nil)
   (org-log-done t)
   (org-startup-folded nil)
@@ -295,29 +318,6 @@ See `org-capture-templates' for more information."
   :bind (:map org-mode-map
          (("<f12>" . org-transclusion-mode))))
 
-;; (use-package org-journal
-;;   :straight t
-;;   ;; :bind
-;;   ;; ("C-c n j" . org-journal-new-entry)
-;;   ;; ("C-c n t" . org-journal-today)
-;;   :custom
-;;   (org-journal-date-prefix "#+TITLE: [DAILY] ")
-;;   (org-journal-file-format "%Y-%m-%d.org")
-;;   (org-journal-dir (concat user-roam-dir "daily"))
-;;   (org-journal-date-format "%Y-%m-%d")
-;;   :config
-;;   (defun org-journal-today ()
-;;     (interactive)
-;;     (org-journal-new-entry t))
-;;   (defun org-journal-find-location ()
-;;     ;; Open today's journal, but specify a non-nil prefix argument in order to
-;;     ;; inhibit inserting the heading; org-capture will insert the heading.
-;;     (org-journal-new-entry t)
-;;     ;; Position point on the journal's top-level heading so that org-capture
-;;     ;; will add the new entry as a child entry.
-;;     (goto-char (point-min)))
-;;   (setq org-capture-templates '(("j" "Journal entry" entry (function org-journal-find-location)
-;;                                  "* %(format-time-string org-journal-time-format)%^{Title}\n%i%?"))))
 
 (use-package org-download
   :straight t
@@ -338,17 +338,6 @@ See `org-capture-templates' for more information."
    (("C-c v" . org-cliplink))))
 
 ;;;; Look & feel
-;; Prettifying org-mode buffers.
-;; (use-package org-superstar
-;;   :straight t
-;;   :after org
-;;   :hook (org-mode . org-superstar-mode)
-;;   :custom
-;;   (org-superstar-prettify-item-bullets t)
-;;   (org-superstar-item-bullet-alist '((?- . ?•)
-;;                                      (?+ . ?▸)
-;;                                      (?* . ?▪))))
-
 (use-package org-appear
   :straight (org-appear
              :type git :host github

@@ -916,7 +916,7 @@ This functions should be added to the hooks of major modes for programming."
 (defun indent-whole-file ()
   (interactive)
   (indent-region (point-min) (point-max)))
-(bind-key "C-c i f" #'indent-whole-file global-map)
+(bind-key "M-s-l" #'indent-whole-file global-map)
 
 ;; Emacs-lisp does not indent keyword-plists correctly. This function fixes that
 ;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
