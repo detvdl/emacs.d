@@ -5,22 +5,6 @@
 (defvar user-roam-dir "~/stack/Documents/roam")
 (defvar user-roam-dailies-dir (file-name-as-directory (expand-file-name "daily" user-roam-dir)))
 
-(add-to-list 'org-capture-templates
-             `("i"
-               "Inbox"
-               entry
-               (file "inbox.org")
-               ,(concat "* TODO %?\n"
-                        "/Entered on/ %U")))
-
-(defun org-capture-inbox ()
-  (interactive)
-  (ignore-errors
-    (call-interactively 'org-store-link))
-  (org-capture nil "i"))
-
-(define-key global-map (kbd "C-c i") 'org-capture-inbox)
-
 ;; TEXT
 ;;; Apply variable-pitch font to all text-related buffers
 ;; (use-package variable-pitch
@@ -62,6 +46,19 @@
         (or (bolp) (insert "\n"))
         (insert "* " hd "\n")))
     (end-of-line))
+  :custom-face
+  ;; (org-block-begin-line
+  ;;  '((t (:underline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
+  ;;  "Face used for the line delimiting the begin of source blocks.")
+  ;; (org-block-background
+  ;;  '((t (:background "#FFFFEA")))
+  ;;  "Face used for the source block background.")
+  ;; (org-block-end-line
+  ;;  '((t (:overline "#A7A6AA" :foreground "#008ED1" :background "#EAEAFF")))
+  ;;  "Face used for the line delimiting the end of source blocks.")
+  (org-checkbox-done-text
+   '((t (:foreground "#71696A" :strike-through t)))
+   "Face for the text part of a checked org-mode checkbox.")
   :custom
   (org-agenda-files '("inbox.org"))
   (org-agenda-hide-tags-regexp ".")
@@ -97,7 +94,9 @@
   ;; (org-format-latex-options (plist-put org-format-latex-options :scale 2.0))
   (org-highlight-latex-and-related '(latex))
   (org-todo-keywords
-   '((sequence "TODO(t)" "IN PROGRESS(i!)" "VERIFY(v@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
+   '((sequence "TODO(t)" "IN PROGRESS(i!)" "BLOCKED(b@/!)" "VERIFY(v@/!)" "|" "DONE(d!)" "CANCELED(c@/!)")))
+  (org-todo-keyword-faces
+   '(("BLOCKED" . "gold3")))
   (org-log-into-drawer "LOGBOOK")
   :custom-face
   (org-document-title ((t (:inherit outline-1 :height 1.20 :underline t))))
@@ -131,7 +130,6 @@
                                  (awk        . t)))
   (with-eval-after-load "cider"
     (setq org-babel-clojure-backend 'cider))
-  ;; (org-link-frame-setup '((file . find-file))) ;; don't split windows from org-mode
   (defun org-force-open-current-window ()
     (interactive)
     (let ((org-link-frame-setup (quote
@@ -156,9 +154,6 @@
                              (push '("<--" . "⟵") prettify-symbols-alist)
                              (push '("=>" . "⇒") prettify-symbols-alist)
                              (prettify-symbols-mode)))
-  (defface org-checkbox-done-text
-    '((t (:foreground "#71696A" :strike-through t)))
-    "Face for the text part of a checked org-mode checkbox.")
   (mapc (lambda (mode)
           (font-lock-add-keywords
            mode
@@ -173,7 +168,23 @@
 
 (use-package org-capture
   :straight nil
-  :after org)
+  :after org
+  :config
+  (add-to-list 'org-capture-templates
+               `("i"
+                 "Inbox"
+                 entry
+                 (file "inbox.org")
+                 ,(concat "* TODO %?\n"
+                          "/Entered on/ %U")))
+
+  (defun org-capture-inbox ()
+    (interactive)
+    (ignore-errors
+      (call-interactively 'org-store-link))
+    (org-capture nil "i"))
+  (define-key global-map (kbd "C-c i") 'org-capture-inbox)
+  )
 
 (use-package org-modern
   :straight t

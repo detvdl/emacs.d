@@ -579,13 +579,11 @@ This is a variadic `cl-pushnew'."
   (embark-prompter 'embark-keymap-prompter)
   (prefix-help-command #'embark-prefix-help-command)
   (embark-quit-after-action t)
-  (embark-cycle-key (kbd "C-."))
+  ;; (embark-cycle-key (kbd "C-."))
   (embark-confirm-act-all nil)
   (embark-indicators '(embark-mixed-indicator
                        embark-highlight-indicator))
   :bind (("C-," . embark-act)
-         :map org-mode-map
-         ("C-," . embark-act)
          :map embark-region-map
          ("a" . align-regexp)
          ("i" . iedit)
@@ -598,6 +596,8 @@ This is a variadic `cl-pushnew'."
          ("M-e" . embark-export)
          ("M-c" . embark-collect))
   :config
+  (with-eval-after-load "org"
+    (bind-key "C-," #'embark-act org-mode-map))
   (defun embark-which-key-indicator ()
     "An embark indicator that displays keymaps using which-key.
 The which-key help message will show the type and value of the
@@ -1191,7 +1191,7 @@ This checks in turn:
 
 ;;;; OCaml
 ;; ## added by OPAM user-setup for emacs / base ## 56ab50dc8996d2bb95e7856a6eddb17b ## you can edit, but keep this line
-(require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
+;; (require 'opam-user-setup "~/.emacs.d/opam-user-setup.el")
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 
 (use-package tuareg
@@ -1258,8 +1258,8 @@ This checks in turn:
           cider-dynamic-indentation t)
     (add-hook 'cider-mode-hook #'subword-mode)
     (add-hook 'cider-mode-hook #'eldoc-mode)
-;;    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
-;;    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
+    ;;    (add-hook 'cider-repl-mode-hook #'cider-company-enable-fuzzy-completion)
+    ;;    (add-hook 'cider-mode-hook #'cider-company-enable-fuzzy-completion)
     (add-hook 'cider-repl-mode-hook #'eldoc-mode)))
 
 (use-package clojure-snippets
@@ -1428,7 +1428,7 @@ This checks in turn:
 (defun my--java-mode-hook ()
   (setq lsp-prefer-flymake nil)
   (lsp-deferred)
-;;  (company:add-local-backend 'company-lsp)
+  ;;  (company:add-local-backend 'company-lsp)
   (dap-mode t)
   (dap-ui-mode t)
   (local-set-key (kbd "C-; i") #'lsp-java-organize-imports)
@@ -1703,6 +1703,8 @@ This checks in turn:
            :regexp t :select t :align below :size 0.20)
           (comint-mode
            :select t :align below :size 0.33)
+          ("^\\*.*-shell\\*"
+           :regexp t :select t :align below :size 0.33)
           ;; Right
           ("\\*Apropos"
            :regexp t :select t :align right :size 0.45)
@@ -1746,6 +1748,7 @@ This checks in turn:
           "\\*Completions\\*"
           "[Oo]utput\\*$"
           "^magit*"
+          "\\**-shell\\*"
           )
         )
   (popper-mode +1)
@@ -1866,23 +1869,24 @@ This predicate prevents dimming the treemacs buffer."
   :bind ("<f5>" . modus-themes-toggle)
   :demand t
   :custom
-  ;; Add all your customizations prior to loading the themes
   (modus-themes-italic-constructs t)
   (modus-themes-bold-constructs nil)
   (modus-themes-intense-markup t)
   (modus-themes-region '(bg-only no-extend))
   (modus-themes-paren-match nil)
-  (modus-themes-org-blocks 'tinted-background)
+  ;; (modus-themes-org-blocks 'tinted-background)
   :config
-  ;; customized faces
   (defun my--modus-themes-custom-faces ()
     (modus-themes-with-colors
       (custom-set-faces
        `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim))))))
   (add-hook 'modus-themes-after-load-theme-hook #'my--modus-themes-custom-faces)
-  (mapc #'disable-theme custom-enabled-themes)
-  (modus-themes-load-theme 'modus-operandi)
-  )
+  ;; change org-mode code block looks
+  (setq modus-themes-common-palette-overrides
+        '((bg-prose-block-contents bg-yellow-nuanced)
+          (bg-prose-block-delimiter bg-ochre)
+          (fg-prose-block-delimiter fg-main)))
+  (modus-themes-load-theme 'modus-operandi))
 
 (use-package elfeed
   :straight t
@@ -1925,12 +1929,6 @@ This predicate prevents dimming the treemacs buffer."
   (define-key elfeed-search-mode-map "=" elfeed-score-map)
   (setq elfeed-search-print-entry-function #'elfeed-score-print-entry)
   (elfeed-score-enable))
-
-;;;; --- Interesting themes to keep an eye on ---
-;; (use-package sketch-themes
-;; :straight t)
-;; (use-package stimmung-themes
-;; :straight t)
 
 (put 'narrow-to-region 'disabled nil)
 (put 'upcase-region 'disabled nil)
