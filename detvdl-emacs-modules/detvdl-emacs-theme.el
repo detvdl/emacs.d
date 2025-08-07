@@ -1,0 +1,249 @@
+;;; Theme setup and related
+
+;;;; Load the desired theme module
+;; These all reference my packages: `modus-themes', `ef-themes',
+;; `doric-themes', `standard-themes'.
+(when detvdl-emacs-load-theme-family
+  (require
+   (pcase detvdl-emacs-load-theme-family
+     ('doric 'detvdl-emacs-doric-themes)
+     ('ef 'detvdl-emacs-ef-themes)
+     ('modus 'detvdl-emacs-modus-themes)
+     ('standard 'detvdl-emacs-standard-themes))))
+
+;;;; Lin
+;; Read the lin manual: <https://protesilaos.com/emacs/lin>.
+(use-package lin
+  :ensure t
+  :hook (after-init . lin-global-mode) ; applies to all `lin-mode-hooks'
+  :config
+  ;; You can use this to live update the face:
+  ;;
+  ;; (customize-set-variable 'lin-face 'lin-green)
+  ;;
+  ;; Or `setopt' on Emacs 29: (setopt lin-face 'lin-yellow)
+  ;;
+  ;; I still prefer `setq' for consistency.
+  (setq lin-face 'lin-cyan))
+
+;;;; Increase padding of windows/frames
+;; Yet another one of my packages:
+;; <https://protesilaos.com/codelog/2023-06-03-emacs-spacious-padding/>.
+(use-package spacious-padding
+  :ensure t
+  :if (display-graphic-p)
+  :hook (after-init . spacious-padding-mode)
+  :bind ("<f8>" . spacious-padding-mode)
+  :init
+  (setq spacious-padding-widths
+        `( :internal-border-width 15
+           :header-line-width 4
+           :mode-line-width 6
+           :tab-width 4
+           :right-divider-width 15
+           :scroll-bar-width ,(if x-toolkit-scroll-bars 8 6)
+           :left-fringe-width 20
+           :right-fringe-width 20))
+
+  ;; (setq spacious-padding-subtle-mode-line nil)
+
+  ;; Read the doc string of `spacious-padding-subtle-mode-line' as it
+  ;; is very flexible.  Here we make the mode lines be a single
+  ;; overline.
+  (setq spacious-padding-subtle-frame-lines
+        '( :mode-line-active spacious-padding-line-active
+           :mode-line-inactive spacious-padding-line-inactive
+           :header-line-active spacious-padding-line-active
+           :header-line-inactive spacious-padding-line-inactive))
+
+  (when (< emacs-major-version 29)
+    (setq x-underline-at-descent-line (when spacious-padding-subtle-frame-lines t))))
+
+;;;; Rainbow mode for colour previewing (rainbow-mode.el)
+(use-package rainbow-mode
+  :ensure t
+  :init
+  (setq rainbow-ansi-colors nil)
+  (setq rainbow-x-colors nil)
+
+  (defun prot/rainbow-mode-in-themes ()
+    (when-let* ((file (buffer-file-name))
+                ((derived-mode-p 'emacs-lisp-mode))
+                ((string-match-p "-theme" file)))
+      (rainbow-mode 1)))
+  :config
+  (defun prot/rainbow-colorize-match (color &optional match)
+  "Like `rainbow-colorize-match' but works with `hl-line-mode'."
+  (let ((match (or match 0)))
+    (put-text-property
+     (match-beginning match) (match-end match)
+     'face `((:background ,(if (> 0.5 (rainbow-x-color-luminance color))
+                               "white" "black"))
+             (:foreground ,color)
+             (:inverse-video t)))))
+
+  (advice-add #'rainbow-colorize-match :override #'prot/rainbow-colorize-match)
+  :bind ( :map ctl-x-x-map
+          ("c" . rainbow-mode)) ; C-x x c
+  :hook (emacs-lisp-mode . prot/rainbow-mode-in-themes))
+
+;;;; Fontaine (font configurations)
+;; Read the manual: <https://protesilaos.com/emacs/fontaine>
+(use-package fontaine
+  :ensure t
+  :hook
+  ;; Persist the latest font preset when closing/starting Emacs.
+  ((after-init . fontaine-mode)
+   (after-init . (lambda ()
+                   ;; Set last preset or fall back to desired style from `fontaine-presets'.
+                   (fontaine-set-preset (or (fontaine-restore-latest-preset) 'large)))))
+  :bind (("C-c f" . fontaine-set-preset)
+         ("C-c F" . fontaine-toggle-preset))
+  :config
+  ;; And this is for Emacs28.
+  (setq-default text-scale-remap-header-line t)
+
+  ;; This is the default value.  Just including it here for
+  ;; completeness.
+  (setq fontaine-latest-state-file (locate-user-emacs-file "fontaine-latest-state.eld"))
+
+  (setq fontaine-presets
+        '((small
+           :default-height 80)
+          (regular) ; like this it uses all the fallback values and is named `regular'
+          (medium
+           :default-family "iA Writer"
+           :default-height 115
+           :fixed-pitch-family "iA Writer Mono V"
+           :variable-pitch-family "iA Writer Quattro V")
+          (large
+           :default-height 150)
+          (presentation
+           :default-height 180)
+          (jumbo
+           :inherit medium
+           :default-height 260)
+          (t
+           ;; I keep all properties for didactic purposes, but most can be
+           ;; omitted.  See the fontaine manual for the technicalities:
+           ;; <https://protesilaos.com/emacs/fontaine>.
+           :default-family "iA Writer Mono V"
+           :default-weight regular
+           :default-slant normal
+           :default-width normal
+           :default-height 100
+
+           :fixed-pitch-family "iA Writer Mono V"
+           :fixed-pitch-weight light
+           :fixed-pitch-slant nil
+           :fixed-pitch-width nil
+           :fixed-pitch-height 1.0
+
+           :fixed-pitch-serif-family nil
+           :fixed-pitch-serif-weight nil
+           :fixed-pitch-serif-slant nil
+           :fixed-pitch-serif-width nil
+           :fixed-pitch-serif-height 1.0
+
+           :variable-pitch-family "iA Writer Quattro V"
+           :variable-pitch-weight regular
+           :variable-pitch-slant nil
+           :variable-pitch-width nil
+           :variable-pitch-height 1.0
+
+           :mode-line-active-family nil
+           :mode-line-active-weight nil
+           :mode-line-active-slant nil
+           :mode-line-active-width nil
+           :mode-line-active-height 1.0
+
+           :mode-line-inactive-family nil
+           :mode-line-inactive-weight nil
+           :mode-line-inactive-slant nil
+           :mode-line-inactive-width nil
+           :mode-line-inactive-height 1.0
+
+           :header-line-family nil
+           :header-line-weight nil
+           :header-line-slant nil
+           :header-line-width nil
+           :header-line-height 1.0
+
+           :line-number-family nil
+           :line-number-weight nil
+           :line-number-slant nil
+           :line-number-width nil
+           :line-number-height 1.0
+
+           :tab-bar-family nil
+           :tab-bar-weight nil
+           :tab-bar-slant nil
+           :tab-bar-width nil
+           :tab-bar-height 1.0
+
+           :tab-line-family nil
+           :tab-line-weight nil
+           :tab-line-slant nil
+           :tab-line-width nil
+           :tab-line-height 1.0
+
+           :bold-family nil
+           :bold-slant nil
+           :bold-weight bold
+           :bold-width nil
+           :bold-height 1.0
+
+           :italic-family nil
+           :italic-weight nil
+           :italic-slant italic
+           :italic-width nil
+           :italic-height 1.0
+
+           :line-spacing nil))))
+
+;;;; Show Font (preview fonts)
+;; Read the manual: <https://protesilaos.com/emacs/show-font>
+(use-package show-font
+  :ensure t
+  :if (display-graphic-p)
+  :commands (show-font-select-preview show-font-list show-font-tabulated)
+  :config
+  ;; These are the defaults, but I keep them here for easier access.
+  (setq show-font-pangram 'prot)
+  (setq show-font-character-sample
+        "
+ABCDEFGHIJKLMNOPQRSTUVWXYZ
+abcdefghijklmnopqrstuvwxyz
+0123456789   !@#$¢%^&*~|
+`'\"‘’“”.,;:  ()[]{}—-_+=<>
+
+()[]{}<>«»‹› 6bB8&0ODdoa 1tiIlL|\/
+!ij c¢ 5$Ss 7Z2z 9gqp nmMNNMW uvvwWuuw
+x×X .,·°;:¡!¿?`'‘’   ÄAÃÀ TODO
+")
+
+(setq show-font-display-buffer-action-alist '(display-buffer-full-frame)))
+
+;;;;; `variable-pitch-mode' setup
+(use-package face-remap
+  :ensure nil
+  :functions prot/enable-variable-pitch
+  :bind ( :map ctl-x-x-map
+          ("v" . variable-pitch-mode))
+  :hook ((text-mode) . prot/enable-variable-pitch)
+  :config
+  ;; NOTE 2022-11-20: This may not cover every case, though it works
+  ;; fine in my workflow.  I am still undecided by EWW.
+  (defun prot/enable-variable-pitch ()
+    (unless (derived-mode-p 'mhtml-mode 'nxml-mode 'yaml-mode)
+      (variable-pitch-mode 1)))
+;;;;; Resize keys with global effect
+  :bind
+  ;; Emacs 29 introduces commands that resize the font across all
+  ;; buffers (including the minibuffer), which is what I want, as
+  ;; opposed to doing it only in the current buffer.  The keys are the
+  ;; same as the defaults.
+  (("C-x C--" . text-scale-decrease)
+   ("C-x C-+" . text-scale-increase)))
+
+(provide 'detvdl-emacs-theme)

@@ -1,4 +1,6 @@
 *.elc
+/.cache
+/eln-cache
 /auto-save-list
 /.mc-lists.el
 /smex-items

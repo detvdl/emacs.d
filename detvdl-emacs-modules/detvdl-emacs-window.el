@@ -1,0 +1,239 @@
+(use-package tab-bar
+  :ensure nil
+  :config
+  (setq tab-bar-new-button-show nil)
+  (setq tab-bar-close-button-show nil)
+  (setq tab-bar-show 1))
+
+;;; General window and buffer configurations
+(use-package uniquify
+  :ensure nil
+  :config
+;;;; `uniquify' (unique names for buffers)
+  (setq uniquify-buffer-name-style 'forward)
+  (setq uniquify-strip-common-suffix t)
+  (setq uniquify-after-kill-buffer-p t))
+
+;;;; Line highlight
+(use-package hl-line
+  :ensure nil
+  :commands (hl-line-mode)
+  :config
+  (setq hl-line-sticky-flag nil)
+  (setq hl-line-overlay-priority -50)) ; emacs28
+
+;;;; Negative space highlight
+(use-package whitespace
+  :ensure nil
+  :bind
+  (("<f6>" . whitespace-mode)
+   ("C-c z" . delete-trailing-whitespace))
+  :config
+  ;; NOTE 2023-08-14: This is experimental.  I am not sure I like it.
+  (setq whitespace-style
+        '(face
+          tabs
+          spaces
+          newline
+          tab-mark
+          space-mark
+          newline-mark
+          trailing
+          missing-newline-at-eof
+          space-after-tab::tab
+          space-after-tab::space
+          space-before-tab::tab
+          space-before-tab::space)))
+
+;;; Line numbers on the side of the window
+(use-package display-line-numbers
+  :ensure nil
+  :bind
+  ("<f7>" . display-line-numbers-mode)
+  :hook (prog-mode . display-line-numbers-mode)
+  :config
+  (setq-default display-line-numbers-type t)
+  ;; Those two variables were introduced in Emacs 27.1
+  (setq display-line-numbers-major-tick 0)
+  (setq display-line-numbers-minor-tick 0)
+  ;; Use absolute numbers in narrowed buffers
+  (setq-default display-line-numbers-widen t))
+
+  ;;;; `window', `display-buffer-alist', and related
+  (use-package prot-window
+    :ensure nil
+    :demand t
+    :config
+    ;; NOTE 2023-03-17: Remember that I am using development versions of
+    ;; Emacs.  Some of my `display-buffer-alist' contents are for Emacs
+    ;; 29+.
+    (setq display-buffer-alist
+          `(;; no window
+            ("\\`\\*Async Shell Command\\*\\'"
+             (display-buffer-no-window))
+            ("\\`\\*\\(Warnings\\|Compile-Log\\|Org Links\\)\\*\\'"
+             (display-buffer-no-window)
+             (allow-no-window . t))
+            ;; bottom side window
+            ("\\*\\(Org \\(Select\\|Note\\)\\|Agenda Commands\\)\\*" ; the `org-capture' key selection and `org-add-log-note'
+             (display-buffer-in-side-window)
+             (dedicated . t)
+             (side . bottom)
+             (slot . 0)
+             (window-parameters . ((mode-line-format . none))))
+            ;; bottom buffer (NOT side window)
+            ((or . ((derived-mode . flymake-diagnostics-buffer-mode)
+                    (derived-mode . flymake-project-diagnostics-mode)
+                    (derived-mode . messages-buffer-mode)
+                    (derived-mode . backtrace-mode)))
+             (display-buffer-reuse-mode-window display-buffer-at-bottom)
+             (mode . ( flymake-diagnostics-buffer-mode flymake-project-diagnostics-mode
+                       messages-buffer-mode backtrace-mode))
+             (window-height . 0.3)
+             (dedicated . t)
+             (preserve-size . (t . t))
+             (body-function . select-window))
+            ("\\*Embark Actions\\*"
+             (display-buffer-below-selected)
+             (window-height . fit-window-to-buffer)
+             (window-parameters . ((no-other-window . t)
+                                   (mode-line-format . none))))
+            ("\\*\\(Output\\|Register Preview\\).*"
+             (display-buffer-reuse-mode-window display-buffer-at-bottom))
+            ;; below current window
+            ("\\(\\*Capture\\*\\|CAPTURE-.*\\)"
+             (display-buffer-reuse-mode-window display-buffer-below-selected))
+            ((derived-mode . reb-mode) ; M-x re-builder
+             (display-buffer-reuse-mode-window display-buffer-below-selected)
+             (window-height . 4) ; note this is literal lines, not relative
+             (dedicated . t)
+             (preserve-size . (t . t)))
+            ((or . ((derived-mode . occur-mode)
+                    (derived-mode . grep-mode)
+                    (derived-mode . Buffer-menu-mode)
+                    (derived-mode . log-view-mode)
+                    (derived-mode . help-mode) ; See the hooks for `visual-line-mode'
+                    "\\*\\(|Buffer List\\|Occur\\|vc-change-log\\|eldoc.*\\).*"
+                    "\\*\\vc-\\(incoming\\|outgoing\\|git : \\).*"))
+             (prot-window-display-buffer-below-or-pop)
+             (body-function . prot-window-select-fit-size))
+            (prot-window-shell-or-term-p
+             (display-buffer-reuse-mode-window display-buffer-at-bottom)
+             (mode . (shell-mode eshell-mode comint-mode))
+             (body-function . prot-window-select-fit-size))
+            ("\\*\\(Calendar\\|Bookmark Annotation\\|ert\\).*"
+             (display-buffer-reuse-mode-window display-buffer-below-selected)
+             (mode . (calendar-mode bookmark-edit-annotation-mode ert-results-mode))
+             (dedicated . t)
+             (window-height . fit-window-to-buffer))
+            ;; NOTE 2022-09-10: The following is for `ispell-word', though
+            ;; it only works because I override `ispell-display-buffer'
+            ;; with `prot-spell-ispell-display-buffer' and change the
+            ;; value of `ispell-choices-buffer'.
+            ("\\*ispell-top-choices\\*.*"
+             (display-buffer-below-selected)
+             (window-height . fit-window-to-buffer))
+            ;; same window
+
+            ;; NOTE 2023-02-17: `man' does not fully obey the
+            ;; `display-buffer-alist'.  It works for new frames and for
+            ;; `display-buffer-below-selected', but otherwise is
+            ;; unpredictable.  See `Man-notify-method'.
+            ((or . ((derived-mode . Man-mode)
+                    (derived-mode . woman-mode)
+                    "\\*\\(Man\\|woman\\).*"))
+             (display-buffer-same-window)))))
+
+(use-package prot-window
+  :ensure nil
+  :demand t
+  :config
+  (setq split-window-preferred-direction 'horizontal) ; Emacs 31
+  (setq window-combination-resize t)
+  (setq even-window-sizes 'height-only)
+  (setq window-sides-vertical nil)
+  (setq switch-to-buffer-in-dedicated-window 'pop)
+  (setq split-height-threshold 85)
+  (setq split-width-threshold 125)
+  (setq window-min-height 3)
+  (setq window-min-width 30))
+
+(use-package prot-window
+  :ensure nil
+  :demand t
+  :hook
+  ((epa-info-mode help-mode custom-mode) . visual-line-mode))
+
+(use-package prot-window
+  :ensure nil
+  :demand t
+  :hook
+  ((world-clock-mode calendar-mode) . prot-common-truncate-lines-silently))
+
+(use-package prot-window
+  :ensure nil
+  :demand t
+  :bind
+  ( :map global-map
+    ;; NOTE 2022-09-17: Also see `prot-simple-swap-window-buffers'.
+    ("C-x <down>" . next-buffer)
+    ("C-x <up>" . previous-buffer)
+    ("C-x C-n" . next-buffer)     ; override `set-goal-column'
+    ("C-x C-p" . previous-buffer) ; override `mark-page'
+    ("C-x !" . delete-other-windows-vertically)
+    ("C-x _" . balance-windows)      ; underscore
+    ("C-x -" . fit-window-to-buffer) ; hyphen
+    ("C-x +" . balance-windows-area)
+    ("C-x }" . enlarge-window)
+    ("C-x {" . shrink-window)
+    ("C-x >" . enlarge-window-horizontally) ; override `scroll-right'
+    ("C-x <" . shrink-window-horizontally) ; override `scroll-left'
+    :map resize-window-repeat-map
+    (">" . enlarge-window-horizontally)
+    ("<" . shrink-window-horizontally)))
+
+;;; Frame history (undelete-frame-mode)
+(use-package frame
+  :ensure nil
+  :bind ("C-x u" . undelete-frame) ; I use only C-/ for `undo'
+  :hook (after-init . undelete-frame-mode))
+
+;;; Window history (winner-mode)
+(use-package winner
+  :ensure nil
+  :hook (after-init . winner-mode)
+  :bind
+  (("C-x <right>" . winner-redo)
+   ("C-x <left>" . winner-undo)))
+
+;;; Directional window motions (windmove)
+(use-package windmove
+  :ensure nil
+  :bind
+  ;; Those override some commands that are already available with
+  ;; C-M-u, C-M-f, C-M-b.
+  (("C-M-<up>" . windmove-up)
+   ("C-M-<right>" . windmove-right)
+   ("C-M-<down>" . windmove-down)
+   ("C-M-<left>" . windmove-left)
+   ("C-M-S-<up>" . windmove-swap-states-up)
+   ("C-M-S-<right>" . windmove-swap-states-right) ; conflicts with `org-increase-number-at-point'
+   ("C-M-S-<down>" . windmove-swap-states-down)
+   ("C-M-S-<left>" . windmove-swap-states-left))
+  :config
+  (setq windmove-create-window nil)) ; Emacs 27.1
+
+;;; Show the name of the current definition or heading for context (which-function-mode)
+(use-package which-func
+  :ensure nil
+  :hook (after-init . which-function-mode)
+  :config
+  (setq which-func-modes '(prog-mode org-mode))
+  (setq which-func-display 'mode) ; Emacs 30
+  (setq which-func-unknown "")
+  (setq which-func-format
+        '((:propertize which-func-current
+		               face italic
+		               mouse-face mode-line-highlight))))
+
+(provide 'detvdl-emacs-window)
