@@ -21,6 +21,6 @@ eshell/
 /eclipse.jdt.ls/*
 flycheck_*.el
 /var/**
-savehist
+/savehist
 !/var/elfeed.org
 !/var/elfeed.score

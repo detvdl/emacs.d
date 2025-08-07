@@ -7184,7 +7184,7 @@ of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554
   (electric-quote-mode -1)
   (electric-indent-mode -1))
 #+end_src
-*** arst
+*** The =detvdl-emacs-langs.el= settings for symbol highlighting
 =symbol-overlay= provides a visualization of all instances of the symbol under point
 
 =highlight-indent-guides= provides a visual indentation indicator for indent-heavy programming languages such as Python
@@ -7202,6 +7202,35 @@ of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554
   (setq highlight-indent-guides-method 'character)
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
   (setq highlight-indent-guides-auto-enabled nil))
+#+end_src
+*** The =detvdl-emacs-langs.el= settings for ~treesitter~ grammars
+
+Treesitter does not install grammar packages by default.
+If possible, we should download the ones we want to use, and later in
+the configuration, enable the relevant *-ts modes for these languages
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(when (and (treesit-available-p) detvdl-emacs-treesitter-extras)
+  (setq treesit-language-source-alist
+        '(
+          (bash "https://github.com/tree-sitter/tree-sitter-bash" :commit
+                "487734f87fd87118028a65a4599352fa99c9cde8")
+          (python "https://github.com/tree-sitter/tree-sitter-python" :commit
+                  "bffb65a8cfe4e46290331dfef0dbf0ef3679de11")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+                      :commit "108b2d4d17a04356a340aea809e4dd5b801eb40d")
+          (jsdoc "https://github.com/tree-sitter/tree-sitter-jsdoc" :commit
+                 "b253abf68a73217b7a52c0ec254f4b6a7bb86665")
+          (json "https://github.com/tree-sitter/tree-sitter-json" :commit
+                "4d770d31f732d50d3ec373865822fbe659e47c75")
+          (yaml "https://github.com/tree-sitter-grammars/tree-sitter-yaml"
+                :commit "b733d3f5f5005890f324333dd57e1f0badec5c87")
+          (toml "https://github.com/tree-sitter-grammars/tree-sitter-toml"
+                :commit "64b56832c2cffe41758f28e05c756a3a98d16f41")
+          )
+        )
+  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+  )
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings ~show-paren-mode~
@@ -7431,8 +7460,61 @@ basic text editing.
 (use-package markdown-mode
   :ensure t
   :defer t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
   :config
-  (setq markdown-fontify-code-blocks-natively t))
+  (setq markdown-command "pandoc")
+  (setq markdown-fontify-code-blocks-natively t)
+  '(mapc
+    (lambda (face)
+      (set-face-attribute
+       face nil
+       :inherit
+       (my-adjoin-to-list-or-symbol
+        'fixed-pitch
+        (face-attribute face :inherit))))
+    (list 'markdown-pre-face 'markdown-inline-code-face)))
+#+end_src
+
+Additionally, we may use edit-indirect to edit Markdown code-blocks in
+the same way as we would edit org-src blocks.
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(use-package edit-indirect
+  :after markdown-mode
+  :ensure t)
+#+end_src
+
+*** The =detvdl-emacs-langs.el= settings for ~yaml-mode~
+
+As of recent versions of Emacs, Treesitter-specific text modes are
+available as natively compiled packages.
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(use-package yaml-ts-mode
+  :ensure nil
+  :mode "\\.y[a]?ml\\'")
+#+end_src
+
+*** The =detvdl-emacs-langs.el= settings for ~json-mode~
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(use-package json-ts-mode
+  :ensure nil
+  :mode "\\.json\\'")
+
+(defun json-to-single-line (beg end)
+  "Collapse prettified json in region between BEG and END to a single line"
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (while (re-search-forward "\\s-+\\|\n" nil t)
+        (replace-match " ")))))
+
+(crux-with-region-or-buffer json-to-single-line)
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings for ~csv-mode~

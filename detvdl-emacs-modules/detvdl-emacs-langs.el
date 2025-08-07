@@ -34,6 +34,28 @@
   (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
   (setq highlight-indent-guides-auto-enabled nil))
 
+(when (and (treesit-available-p) detvdl-emacs-treesitter-extras)
+  (setq treesit-language-source-alist
+        '(
+          (bash "https://github.com/tree-sitter/tree-sitter-bash" :commit
+                "487734f87fd87118028a65a4599352fa99c9cde8")
+          (python "https://github.com/tree-sitter/tree-sitter-python" :commit
+                  "bffb65a8cfe4e46290331dfef0dbf0ef3679de11")
+          (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
+                      :commit "108b2d4d17a04356a340aea809e4dd5b801eb40d")
+          (jsdoc "https://github.com/tree-sitter/tree-sitter-jsdoc" :commit
+                 "b253abf68a73217b7a52c0ec254f4b6a7bb86665")
+          (json "https://github.com/tree-sitter/tree-sitter-json" :commit
+                "4d770d31f732d50d3ec373865822fbe659e47c75")
+          (yaml "https://github.com/tree-sitter-grammars/tree-sitter-yaml"
+                :commit "b733d3f5f5005890f324333dd57e1f0badec5c87")
+          (toml "https://github.com/tree-sitter-grammars/tree-sitter-toml"
+                :commit "64b56832c2cffe41758f28e05c756a3a98d16f41")
+          )
+        )
+  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+  )
+
 ;;;; Parentheses (show-paren-mode)
 (use-package paren
   :ensure nil
@@ -93,8 +115,45 @@
 (use-package markdown-mode
   :ensure t
   :defer t
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
   :config
-  (setq markdown-fontify-code-blocks-natively t))
+  (setq markdown-command "pandoc")
+  (setq markdown-fontify-code-blocks-natively t)
+  '(mapc
+    (lambda (face)
+      (set-face-attribute
+       face nil
+       :inherit
+       (my-adjoin-to-list-or-symbol
+        'fixed-pitch
+        (face-attribute face :inherit))))
+    (list 'markdown-pre-face 'markdown-inline-code-face)))
+
+(use-package edit-indirect
+  :after markdown-mode
+  :ensure t)
+
+(use-package yaml-ts-mode
+  :ensure nil
+  :mode "\\.y[a]?ml\\'")
+
+(use-package json-ts-mode
+  :ensure nil
+  :mode "\\.json\\'")
+
+(defun json-to-single-line (beg end)
+  "Collapse prettified json in region between BEG and END to a single line"
+  (interactive "r")
+  (save-excursion
+    (save-restriction
+      (narrow-to-region beg end)
+      (goto-char (point-min))
+      (while (re-search-forward "\\s-+\\|\n" nil t)
+        (replace-match " ")))))
+
+(crux-with-region-or-buffer json-to-single-line)
 
 ;;; csv-mode
 (use-package csv-mode
