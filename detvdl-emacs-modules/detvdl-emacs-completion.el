@@ -317,18 +317,29 @@ Development continues on GitHub with GitLab as a mirror."))
     :hook (after-init . global-corfu-mode)
     ;; I also have (setq tab-always-indent 'complete) for TAB to complete
     ;; when it does not need to perform an indentation change.
-    :bind (:map corfu-map ("<tab>" . corfu-complete))
+    ;; :bind (:map corfu-map ("<tab>" . corfu-complete))
+    :custom
+    (corfu-auto t)
+    (corfu-cycle t)                     ; Enable cycling for `corfu-next/previous'
+    (corfu-preselect 'prompt)
+    (corfu-quit-at-boundary 'separator) ; Never quit at completion boundary
+    (corfu-quit-no-match t)             ; Never quit, even if there is no match
+    (corfu-preview-current nil)         ; Disable current candidate preview
+    (corfu-preselect-first nil)         ; Disable candidate preselection
+    (corfu-on-exact-match 'insert)      ; Configure handling of exact matches
+    (corfu-echo-documentation nil)      ; Disable documentation in the echo area
+    (corfu-scroll-margin 5)             ; Use scroll margin
+    (corfu-auto-prefix 2)
+    (corfu-min-width 20)
+    (corfu-popupinfo-delay '(1.25 . 0.5))
     :config
-    (setq corfu-preview-current nil)
-    (setq corfu-min-width 20)
-
-    (setq corfu-popupinfo-delay '(1.25 . 0.5))
     (corfu-popupinfo-mode 1) ; shows documentation after `corfu-popupinfo-delay'
-
     ;; Sort by input history (no need to modify `corfu-sort-function').
     (with-eval-after-load 'savehist
       (corfu-history-mode 1)
-      (add-to-list 'savehist-additional-variables 'corfu-history))))
+      (add-to-list 'savehist-additional-variables 'corfu-history))
+    (with-eval-after-load 'eldoc
+      (eldoc-add-command #'corfu-insert))))
 
 ;;; Enhanced minibuffer commands (consult.el)
 (when detvdl-emacs-completion-extras
