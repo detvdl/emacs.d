@@ -62,7 +62,7 @@ before all other modules of my setup."
   :group 'detvdl-emacs
   :type 'boolean)
 
-(defcustom detvdl-emacs-load-icons nil
+(defcustom detvdl-emacs-load-icons t
   "When non-nil, enable iconography in various contexts.
 This installs and uses the `nerd-icons' package and its variants.
 NOTE that you still need to invoke `nerd-icons-install-fonts'

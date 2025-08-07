@@ -6,10 +6,7 @@
 (when detvdl-emacs-load-theme-family
   (require
    (pcase detvdl-emacs-load-theme-family
-     ('doric 'detvdl-emacs-doric-themes)
-     ('ef 'detvdl-emacs-ef-themes)
-     ('modus 'detvdl-emacs-modus-themes)
-     ('standard 'detvdl-emacs-standard-themes))))
+     ('modus 'detvdl-emacs-modus-themes))))
 
 ;;;; Lin
 ;; Read the lin manual: <https://protesilaos.com/emacs/lin>.
@@ -112,10 +109,10 @@
            :default-height 80)
           (regular) ; like this it uses all the fallback values and is named `regular'
           (medium
-           :default-family "iA Writer"
+           :default-family "Aporetic Serif Mono"
            :default-height 115
-           :fixed-pitch-family "iA Writer Mono V"
-           :variable-pitch-family "iA Writer Quattro V")
+           :fixed-pitch-family "Aporetic Serif Mono"
+           :variable-pitch-family "Aporetic Sans")
           (large
            :default-height 150)
           (presentation
@@ -127,13 +124,13 @@
            ;; I keep all properties for didactic purposes, but most can be
            ;; omitted.  See the fontaine manual for the technicalities:
            ;; <https://protesilaos.com/emacs/fontaine>.
-           :default-family "iA Writer Mono V"
+           :default-family "Aporetic Sans Mono"
            :default-weight regular
            :default-slant normal
            :default-width normal
            :default-height 100
 
-           :fixed-pitch-family "iA Writer Mono V"
+           :fixed-pitch-family "Aporetic Sans Mono"
            :fixed-pitch-weight light
            :fixed-pitch-slant nil
            :fixed-pitch-width nil
@@ -145,7 +142,7 @@
            :fixed-pitch-serif-width nil
            :fixed-pitch-serif-height 1.0
 
-           :variable-pitch-family "iA Writer Quattro V"
+           :variable-pitch-family "Aporetic Serif"
            :variable-pitch-weight regular
            :variable-pitch-slant nil
            :variable-pitch-width nil

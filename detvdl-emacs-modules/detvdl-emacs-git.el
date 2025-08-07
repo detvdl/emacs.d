@@ -200,11 +200,11 @@
   :init
   (setq magit-repository-directories
         '(("~/Git" . 1)
-          ("~/Code" . 1))))
+          ("~/Code" . 1)
+          ("~/.emacs.d" . 1))))
 
 (use-package diff-hl
   :ensure t
-  :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
   (set-face-attribute 'diff-hl-delete nil :height font-height)

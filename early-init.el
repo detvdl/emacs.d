@@ -89,3 +89,8 @@ New frames are instructed to call `prot--re-enable-frame-theme'."
 (emacs-avoid-initial-flash-of-light)
 
 (add-hook 'after-init-hook (lambda () (set-frame-name "home")))
+
+;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
+;; (the string here should be copied from the PATH in Emacs.app/Contents/Info.plist)
+(setenv "PATH" "/Users/detlevvandaele/.codeium/windsurf/bin:/Users/detlevvandaele/.opam/default/bin:/Users/detlevvandaele/.asdf/shims:/Users/detlevvandaele/.asdf/bin:/Users/detlevvandaele/.local/bin:/opt/homebrew/opt/bison/bin:/opt/homebrew/opt/make/libexec/gnubin:/opt/homebrew/opt/libtool/libexec/gnubin:/opt/homebrew/opt/gsed/libexec/gnubin:/opt/homebrew/opt/grep/libexec/gnubin:/opt/homebrew/opt/gnu-tar/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/gnu-indent/libexec/gnubin:/opt/homebrew/opt/gawk/libexec/gnubin:/opt/homebrew/opt/findutils/libexec/gnubin:/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/detlevvandaele/Applications/iTerm.app/Contents/Resources/utilities:/Users/detlevvandaele/Library/Application Support/JetBrains/Toolbox/scripts:/opt/homebrew/opt/fzf/bin")
+(setq exec-path (split-string (getenv "PATH") path-separator))

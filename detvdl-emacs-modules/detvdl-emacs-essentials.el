@@ -65,6 +65,27 @@
     ("r" . rename-uniquely)
     ("l" . visual-line-mode)))
 
+(use-package crux
+  :ensure t
+  :bind (([(shift return)] . crux-smart-open-line)
+         ([(control shift return)] . crux-smart-open-line-above)
+         ("C-a" . crux-move-beginning-of-line)
+         ("C-k" . crux-kill-whole-line)
+         ("C-<backspace>" . crux-kill-line-backwards))
+  :config
+  (crux-reopen-as-root-mode)
+  (crux-with-region-or-buffer indent-region)
+  (crux-with-region-or-buffer untabify)
+  (crux-with-region-or-line comment-or-uncomment-region)
+  (crux-with-region-or-sexp-or-line kill-region)
+  )
+
+(use-package direnv
+  :ensure t
+  :demand t
+  :config
+  (direnv-mode +1))
+
 (use-package prot-common
   :ensure nil
   :functions (prot-common-truncate-lines-silently)
@@ -171,23 +192,6 @@
   (("C-'" . prot-pair-insert)
    ("M-'" . prot-pair-insert-directly)
    ("M-\\" . prot-pair-delete)))
-
-;;;; Comments (prot-comment.el)
-(use-package prot-comment
-  :ensure nil
-  :init
-  (setq comment-empty-lines t)
-  (setq comment-fill-column nil)
-  (setq comment-multi-line t)
-  (setq comment-style 'multi-line)
-  (setq-default comment-column 0)
-
-  (setq prot-comment-comment-keywords '("TODO" "NOTE" "XXX" "REVIEW" "FIXME"))
-  (setq prot-comment-timestamp-format-concise "%F")
-  (setq prot-comment-timestamp-format-verbose "%F %T %z")
-  :bind
-  (("C-;" . prot-comment)
-   ("C-x C-;" . prot-comment-timestamp-keyword)))
 
 ;;;; Prefix keymap (prot-prefix.el)
 (use-package prot-prefix

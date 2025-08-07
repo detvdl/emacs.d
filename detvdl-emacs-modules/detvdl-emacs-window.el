@@ -207,21 +207,14 @@
    ("C-x <left>" . winner-undo)))
 
 ;;; Directional window motions (windmove)
-(use-package windmove
-  :ensure nil
-  :bind
-  ;; Those override some commands that are already available with
-  ;; C-M-u, C-M-f, C-M-b.
-  (("C-M-<up>" . windmove-up)
-   ("C-M-<right>" . windmove-right)
-   ("C-M-<down>" . windmove-down)
-   ("C-M-<left>" . windmove-left)
-   ("C-M-S-<up>" . windmove-swap-states-up)
-   ("C-M-S-<right>" . windmove-swap-states-right) ; conflicts with `org-increase-number-at-point'
-   ("C-M-S-<down>" . windmove-swap-states-down)
-   ("C-M-S-<left>" . windmove-swap-states-left))
+(use-package ace-window
+  :ensure t
+  :bind ("M-o" . ace-window)
   :config
-  (setq windmove-create-window nil)) ; Emacs 27.1
+  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
+        aw-scope 'global
+        aw-ignore-current t
+        aw-dispatch-always nil))
 
 ;;; Show the name of the current definition or heading for context (which-function-mode)
 (use-package which-func

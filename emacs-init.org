@@ -9,8 +9,7 @@
 
 TODO: install crux or similar for regular ctrl-k behaviour
 TODO: add smartparens or similar, aggressive-indent, and programming-language specific setups (LSP)
-TODO: add icons for marginalia
-TODO: fix consult search
+TODO: fix consult search (is it really needed?)
 
 *Last revised and exported on {{{latest-export-date}}} with a word
 count of {{{word-count}}}.*
@@ -277,6 +276,19 @@ can tell). For minimalist window managers on Linux, something like the
 (add-hook 'after-init-hook (lambda () (set-frame-name "home")))
 #+end_src
 
+** The =early-init.el= sets the PATH and exec-path
+
+Explicitly sets the PATH environment variable inside Emacs when started from the GUI.
+Sets Emacs' exec-path to match this value.
+These values are copied from ~$(brew --cellar emacs-plus@31)/31.0.50/Emacs.app/Contents/Info.plist~
+
+#+begin_src emacs-lisp :tangle "early-init.el"
+;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
+;; (the string here should be copied from the PATH in Emacs.app/Contents/Info.plist)
+(setenv "PATH" "/Users/detlevvandaele/.codeium/windsurf/bin:/Users/detlevvandaele/.opam/default/bin:/Users/detlevvandaele/.asdf/shims:/Users/detlevvandaele/.asdf/bin:/Users/detlevvandaele/.local/bin:/opt/homebrew/opt/bison/bin:/opt/homebrew/opt/make/libexec/gnubin:/opt/homebrew/opt/libtool/libexec/gnubin:/opt/homebrew/opt/gsed/libexec/gnubin:/opt/homebrew/opt/grep/libexec/gnubin:/opt/homebrew/opt/gnu-tar/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/gnu-indent/libexec/gnubin:/opt/homebrew/opt/gawk/libexec/gnubin:/opt/homebrew/opt/findutils/libexec/gnubin:/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/detlevvandaele/Applications/iTerm.app/Contents/Resources/utilities:/Users/detlevvandaele/Library/Application Support/JetBrains/Toolbox/scripts:/opt/homebrew/opt/fzf/bin")
+(setq exec-path (split-string (getenv "PATH") path-separator))
+#+end_src
+
 * The main initialisation of Emacs (=init.el=)
 :PROPERTIES:
 :CUSTOM_ID: h:dae63bd9-93a8-41c4-af1b-d0f39ba50974
@@ -465,7 +477,7 @@ Remember to read how these options come into effect ([[#h:5a41861f-4c38-45ac-8da
 Also check [[#h:4efde779-3ef0-40b7-82e4-70f71b321428][the =detvdl-emacs-icons.el= module]].
 
 #+begin_src emacs-lisp :tangle "init.el"
-(defcustom detvdl-emacs-load-icons nil
+(defcustom detvdl-emacs-load-icons t
   "When non-nil, enable iconography in various contexts.
 This installs and uses the `nerd-icons' package and its variants.
 NOTE that you still need to invoke `nerd-icons-install-fonts'
@@ -923,10 +935,7 @@ only place where they are used.
 (when detvdl-emacs-load-theme-family
   (require
    (pcase detvdl-emacs-load-theme-family
-     ('doric 'detvdl-emacs-doric-themes)
-     ('ef 'detvdl-emacs-ef-themes)
-     ('modus 'detvdl-emacs-modus-themes)
-     ('standard 'detvdl-emacs-standard-themes))))
+     ('modus 'detvdl-emacs-modus-themes))))
 #+end_src
 
 **** The =detvdl-emacs-modus-themes.el= module
@@ -995,188 +1004,6 @@ advanced customisations.
   (modus-themes-load-theme (car modus-themes-to-toggle)))
 
 (provide 'detvdl-emacs-modus-themes)
-#+end_src
-
-**** The =detvdl-emacs-ef-themes.el= module
-:PROPERTIES:
-:CUSTOM_ID: h:2b2a27a1-6d2e-4b59-bf60-94682e173f2f
-:END:
-
-This is one of the components of the =detvdl-emacs-theme.el= module
-([[#h:3f1a33e4-762e-4cf3-a0ae-4c2954d9cbb8][The =detvdl-emacs-theme.el= section to load a theme (~detvdl-emacs-load-theme-family~)]]).
-It defines some theme settings and also includes code I use when I
-need to test things.
-
-The ~ef-themes~ are a collection of light and dark themes for GNU
-Emacs that provide colourful ("pretty") yet legible options for users
-who want something with a bit more flair than the ~modus-themes~ (also
-designed by me).
-
-+ Package name (GNU ELPA): ~ef-themes~
-+ Official manual: <https://protesilaos.com/emacs/ef-themes>
-+ Change log: <https://protesilaos.com/emacs/ef-themes-changelog>
-+ Sample pictures: <https://protesilaos.com/emacs/ef-themes-pictures>
-+ Git repositories:
-  - GitHub: <https://github.com/protesilaos/ef-themes>
-  - GitLab: <https://gitlab.com/protesilaos/ef-themes>
-+ Backronym: Eclectic Fashion in Themes Hides Exaggerated Markings,
-  Embellishments, and Sparkles.
-
-Note that the ~detvdl-emacs-comment~ is there for my testing purposes
-([[#h:3b14faa6-83fd-4d5f-b3bc-85f72fd572d4][The =init.el= macro to do nothing with Elisp code (~detvdl-emacs-comment~)]]).
-
-#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-ef-themes.el"
-;;; The Ef (εὖ) themes
-
-;; The themes are customisable.  Read the manual:
-;; <https://protesilaos.com/emacs/ef-themes>.
-(use-package ef-themes
-  :ensure t
-  :demand t
-  :bind
-  (("<f5>" . ef-themes-rotate)
-   ("C-<f5>" . ef-themes-select))
-  :config
-  (setq ef-themes-variable-pitch-ui t
-        ef-themes-mixed-fonts t
-        ef-themes-to-rotate ef-themes-items
-        ef-themes-headings ; read the manual's entry of the doc string
-        '((0 . (variable-pitch light 1.9))
-          (1 . (variable-pitch light 1.8))
-          (2 . (variable-pitch regular 1.7))
-          (3 . (variable-pitch regular 1.6))
-          (4 . (variable-pitch regular 1.5))
-          (5 . (variable-pitch 1.4)) ; absence of weight means `bold'
-          (6 . (variable-pitch 1.3))
-          (7 . (variable-pitch 1.2))
-          (agenda-date . (semilight 1.5))
-          (agenda-structure . (variable-pitch light 1.9))
-          (t . (variable-pitch 1.1))))
-
-  ;; The `ef-themes' provide lots of themes.  I want to pick one at
-  ;; random when I start Emacs: the `ef-themes-load-random' does just
-  ;; that (it can be called interactively as well).  I just check with
-  ;; my desktop environment to determine if the choice should be about
-  ;; a light or a dark theme.  Those functions are in my init.el.
-  (if (detvdl-emacs-theme-environment-dark-p)
-      (ef-themes-load-random 'dark)
-    (ef-themes-load-random 'light)))
-
-(provide 'detvdl-emacs-ef-themes)
-#+end_src
-
-**** The =detvdl-emacs-doric-themes.el= module
-:PROPERTIES:
-:CUSTOM_ID: h:334ecb7f-91e0-40db-bd47-418ea0e580e9
-:END:
-
-This is one of the components of the =detvdl-emacs-theme.el= module
-([[#h:3f1a33e4-762e-4cf3-a0ae-4c2954d9cbb8][The =detvdl-emacs-theme.el= section to load a theme (~detvdl-emacs-load-theme-family~)]]).
-It sets up one of the theme-related packages available for my setup.
-
-The ~doric-themes~ are my most minimalist themes. They use few colours
-and will appear mostly monochromatic in many contexts. Styles involve
-the careful use of typography, such as italics and bold italics.
-
-If you want maximalist themes in terms of colour, check my ~ef-themes~
-package ([[#h:2b2a27a1-6d2e-4b59-bf60-94682e173f2f][The =detvdl-emacs-ef-themes.el= module]]). For something
-in-between, which I would consider the best "default theme" for a text
-editor, opt for my ~modus-themes~ ([[#h:36af519a-67e1-42b6-a38a-2052638108f9][The =detvdl-emacs-modus-themes.el= module]]).
-
-+ Package name (GNU ELPA): ~doric-themes~
-+ Sample pictures: <https://protesilaos.com/emacs/doric-themes-pictures>
-+ Git repository: <https://github.com/protesilaos/doric-themes>
-+ Backronym: Doric Only Really Intensifies Conservatively ... themes.
-
-
-#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-doric-themes.el"
-;;; The Doric themes
-
-(use-package doric-themes
-  :ensure t
-  :demand t
-  :config
-  ;; These are the default values.
-  (setq doric-themes-to-toggle '(doric-light doric-dark))
-  (setq doric-themes-to-rotate doric-themes-collection)
-  (doric-themes-load-random
-   (if (detvdl-emacs-theme-environment-dark-p)
-       'dark
-     'light))
-  :bind
-  (("<f5>" . doric-themes-toggle)
-   ("C-<f5>" . doric-themes-select)
-   ("M-<f5>" . doric-themes-rotate)))
-
-(provide 'detvdl-emacs-doric-themes)
-#+end_src
-
-**** The =detvdl-emacs-standard-themes.el= module
-:PROPERTIES:
-:CUSTOM_ID: h:0c7a240c-211f-4571-a5ba-433e510f487f
-:END:
-
-This is one of the components of the =detvdl-emacs-theme.el= module
-([[#h:3f1a33e4-762e-4cf3-a0ae-4c2954d9cbb8][The =detvdl-emacs-theme.el= section to load a theme (~detvdl-emacs-load-theme-family~)]]).
-It defines some theme settings and also includes code I use when I
-need to test things.
-
-The ~standard-themes~ are a collection of light and dark themes for
-GNU Emacs. The ~standard-light~ and ~standard-dark~ emulate the
-out-of-the-box looks of Emacs (which technically do NOT constitute a
-theme) while bringing to them thematic consistency, customizability,
-and extensibility. Other themes are stylistic variations of those.
-
-In practice, the Standard themes take the default style of the
-font-lock and Org faces, complement it with a wider and harmonious
-colour palette, address many inconsistencies, and apply established
-semantic patterns across all interfaces by supporting a large number
-of packages.
-
-Note that the ~detvdl-emacs-comment~ is there for my testing purposes
-([[#h:3b14faa6-83fd-4d5f-b3bc-85f72fd572d4][The =init.el= macro to do nothing with Elisp code (~detvdl-emacs-comment~)]]).
-
-#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-standard-themes.el"
-;;; The Standard themes
-
-;; The themes are customisable.  Read the manual:
-;; <https://protesilaos.com/emacs/standard-themes>.
-
-(use-package standard-themes
-  :ensure t
-  :demand t
-  :bind (("<f5>" . standard-themes-toggle)
-         ("M-<f5>" . standard-themes-rotate))
-  :config
-  (setq standard-themes-bold-constructs t
-        standard-themes-italic-constructs t
-        standard-themes-mixed-fonts t
-        standard-themes-variable-pitch-ui t
-
-        ;; more complex alist to set weight, height, and optional
-        ;; `variable-pitch' per heading level (t is for any level not
-        ;; specified)
-        standard-themes-headings
-        '((0 . (variable-pitch light 1.9))
-          (1 . (variable-pitch light 1.8))
-          (2 . (variable-pitch light 1.7))
-          (3 . (variable-pitch semilight 1.6))
-          (4 . (variable-pitch semilight 1.5))
-          (5 . (variable-pitch 1.4))
-          (6 . (variable-pitch 1.3))
-          (7 . (variable-pitch 1.2))
-          (agenda-date . (1.3))
-          (agenda-structure . (variable-pitch light 1.8))
-          (t . (variable-pitch 1.1))))
-
-  ;; Load a theme that is consistent with my session's theme.  Those
-  ;; functions are defined in my init.el.
-  (standard-themes-load-theme
-   (if (detvdl-emacs-theme-environment-dark-p)
-       'standard-dark
-     'standard-light)))
-
-(provide 'detvdl-emacs-standard-themes)
 #+end_src
 
 *** The =detvdl-emacs-theme.el= section for ~lin~
@@ -1385,10 +1212,10 @@ Also check my ~show-font~ package ([[#h:60a005be-77bd-49f1-a865-78d7cf75bd2a][Th
            :default-height 80)
           (regular) ; like this it uses all the fallback values and is named `regular'
           (medium
-           :default-family "iA Writer"
+           :default-family "Aporetic Serif Mono"
            :default-height 115
-           :fixed-pitch-family "iA Writer Mono V"
-           :variable-pitch-family "iA Writer Quattro V")
+           :fixed-pitch-family "Aporetic Serif Mono"
+           :variable-pitch-family "Aporetic Sans")
           (large
            :default-height 150)
           (presentation
@@ -1400,13 +1227,13 @@ Also check my ~show-font~ package ([[#h:60a005be-77bd-49f1-a865-78d7cf75bd2a][Th
            ;; I keep all properties for didactic purposes, but most can be
            ;; omitted.  See the fontaine manual for the technicalities:
            ;; <https://protesilaos.com/emacs/fontaine>.
-           :default-family "iA Writer Mono V"
+           :default-family "Aporetic Sans Mono"
            :default-weight regular
            :default-slant normal
            :default-width normal
            :default-height 100
 
-           :fixed-pitch-family "iA Writer Mono V"
+           :fixed-pitch-family "Aporetic Sans Mono"
            :fixed-pitch-weight light
            :fixed-pitch-slant nil
            :fixed-pitch-width nil
@@ -1418,7 +1245,7 @@ Also check my ~show-font~ package ([[#h:60a005be-77bd-49f1-a865-78d7cf75bd2a][Th
            :fixed-pitch-serif-width nil
            :fixed-pitch-serif-height 1.0
 
-           :variable-pitch-family "iA Writer Quattro V"
+           :variable-pitch-family "Aporetic Serif"
            :variable-pitch-weight regular
            :variable-pitch-slant nil
            :variable-pitch-width nil
@@ -1672,6 +1499,41 @@ key bindings.
     ("l" . visual-line-mode)))
 #+end_src
 
+*** The =detvdl-emacs-essentials.el= block with sane defaults (crux)
+Crux is a set of "sane" default behaviours for common functionality,
+such as killing lines, moving to the beginning of a line, etc...
+
+It also provides advices that act in a more "do-what-I-mean (dwim)"
+fashion when wrapped around regular functions
+
+Source: https://github.com/bbatsov/crux
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-essentials.el"
+(use-package crux
+  :ensure t
+  :bind (([(shift return)] . crux-smart-open-line)
+         ([(control shift return)] . crux-smart-open-line-above)
+         ("C-a" . crux-move-beginning-of-line)
+         ("C-k" . crux-kill-whole-line)
+         ("C-<backspace>" . crux-kill-line-backwards))
+  :config
+  (crux-reopen-as-root-mode)
+  (crux-with-region-or-buffer indent-region)
+  (crux-with-region-or-buffer untabify)
+  (crux-with-region-or-line comment-or-uncomment-region)
+  (crux-with-region-or-sexp-or-line kill-region)
+  )
+#+end_src
+
+*** The =detvdl-emacs-essentials.el= block for ~direnv~
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-essentials.el"
+(use-package direnv
+  :ensure t
+  :demand t
+  :config
+  (direnv-mode +1))
+#+end_src
+
 *** The =detvdl-emacs-essentials.el= section about =prot-common.el= (custom basic functions)
 :PROPERTIES:
 :CUSTOM_ID: h:116854fa-2e31-4d23-ae6f-72f57ed571bc
@@ -1850,7 +1712,7 @@ quotation marks specific to natural languages I have set up.
    ("M-\\" . prot-pair-delete)))
 #+end_src
 
-*** The =detvdl-emacs-essentials.el= section for comments
+*** COMMENT The =detvdl-emacs-essentials.el= section for comments
 :PROPERTIES:
 :CUSTOM_ID: h:85755648-bf1f-408b-bc65-4db357fbf1dd
 :END:
@@ -1885,8 +1747,8 @@ the module to set my desired configurations.
   (setq prot-comment-timestamp-format-concise "%F")
   (setq prot-comment-timestamp-format-verbose "%F %T %z")
   :bind
-  (("C-;" . prot-comment)
-   ("C-x C-;" . prot-comment-timestamp-keyword)))
+  (("C-x C-;" . prot-comment)
+   ("C-c C-;" . prot-comment-timestamp-keyword)))
 #+end_src
 
 *** The =detvdl-emacs-essentials.el= section about =prot-prefix.el= (prefix nested keymaps)
@@ -3553,7 +3415,7 @@ Also check: [[#h:e0f9c30e-3a98-4479-b709-7008277749e4][The =detvdl-emacs-search.
       ("M-g M-g" . consult-goto-line)
       ("M-s M-b" . consult-buffer)
       ("M-s M-f" . consult-find)
-      ("M-s M-g" . consult-grep)
+      ("M-s M-g" . consult-ripgrep)
       ("M-s M-h" . consult-history)
       ("M-s M-i" . consult-imenu)
       ("M-s M-l" . consult-line)
@@ -4278,47 +4140,49 @@ Note the use of the ~let~ to decide whether I use the ~grep~ or ~rg~
 (~ripgrep~) program: this covers Xref as well.
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-search.el"
-;;; deadgrep and xref
-(use-package deadgrep
-  :ensure t
-  :commands (deadgrep)
-  :bind (("C-c k" . deadgrep)
-         :map deadgrep-mode-map
-         ("e" . deadgrep-edit-mode)
-         :map deadgrep-edit-mode-map
-         ("C-c C-c" . deadgrep-mode))
-  :config
-  (add-to-list 'deadgrep-extra-arguments "--no-ignore-vcs"))
+  (defvar prot/ripgrep (or (executable-find "rg") (executable-find "ripgrep"))
+    "Store path to ripgrep executable, else nil.")
+  ;;; deadgrep and xref
+  (use-package deadgrep
+    :ensure t
+    :commands (deadgrep)
+    :bind (("C-c k" . deadgrep)
+           :map deadgrep-mode-map
+           ("e" . deadgrep-edit-mode)
+           :map deadgrep-edit-mode-map
+           ("C-c C-c" . deadgrep-mode))
+    :config
+    (add-to-list 'deadgrep-extra-arguments "--no-ignore-vcs"))
 
-(use-package re-builder
-  :ensure nil
-  :commands (re-builder regexp-builder)
-  :config
-  (setq reb-re-syntax 'read))
+  (use-package re-builder
+    :ensure nil
+    :commands (re-builder regexp-builder)
+    :config
+    (setq reb-re-syntax 'read))
 
-(use-package xref
-  :ensure nil
-  :commands (xref-find-definitions xref-go-back)
-  :config
-  ;; All those have been changed for Emacs 28
-  (setq xref-show-definitions-function #'xref-show-definitions-completing-read) ; for M-.
-  (setq xref-show-xrefs-function #'xref-show-definitions-buffer) ; for grep and the like
-  (setq xref-file-name-display 'project-relative)
-  (setq xref-search-program (if prot/ripgrep 'ripgrep 'grep)))
+  (use-package xref
+    :ensure nil
+    :commands (xref-find-definitions xref-go-back)
+    :config
+    ;; All those have been changed for Emacs 28
+    (setq xref-show-definitions-function #'xref-show-definitions-completing-read) ; for M-.
+    (setq xref-show-xrefs-function #'xref-show-definitions-buffer) ; for grep and the like
+    (setq xref-file-name-display 'project-relative)
+    (setq xref-search-program (if prot/ripgrep 'ripgrep 'grep)))
 
-(use-package grep
-  :ensure nil
-  :commands (grep lgrep rgrep)
-  :hook (grep-mode . prot-common-truncate-lines-silently)
-  :config
-  (setq grep-save-buffers nil)
-  (setq grep-use-headings t) ; Emacs 30
+  (use-package grep
+    :ensure nil
+    :commands (grep lgrep rgrep)
+    :hook (grep-mode . prot-common-truncate-lines-silently)
+    :config
+    (setq grep-save-buffers nil)
+    (setq grep-use-headings t) ; Emacs 30
 
-  (setq grep-program (or prot/ripgrep (executable-find "grep")))
-  (setq grep-template
-        (if prot/ripgrep
-            "/usr/bin/rg -nH --null -e <R> <F>"
-          "/usr/bin/grep <X> <C> -nH --null -e <R> <F>")))
+    (setq grep-program (or prot/ripgrep (executable-find "grep")))
+    (setq grep-template
+          (if prot/ripgrep
+              "/usr/bin/rg -nH --null -e <R> <F>"
+            "/usr/bin/grep <X> <C> -nH --null -e <R> <F>")))
 #+end_src
 
 *** The =detvdl-emacs-search.el= setup for editable grep buffers (~grep-edit-mode~ or ~wgrep~)
@@ -5400,7 +5264,7 @@ frame.
    ("C-x <left>" . winner-undo)))
 #+end_src
 
-*** The =detvdl-emacs-window.el= keys for window motions (~windmove~)
+*** The =detvdl-emacs-window.el= keys for window motions (~ace-window~)
 :PROPERTIES:
 :CUSTOM_ID: h:84a0d366-d4d7-42f4-a8b7-2ec1af08cee4
 :END:
@@ -5409,27 +5273,22 @@ I usually cycle between windows with =C-x o= (=M-x other-window=).
 This is because I use two or three windows at most. It is easier to
 use the same key, especially with the addition of ~repeat-mode~
 ([[#h:fbe6f9da-25ee-46a3-bb03-8fa7c1d48dab][The =detvdl-emacs-essentials.el= settings for ~repeat-mode~]]).
-Nevertheless, the built-in ~windmove~ package provides a set of useful
+Nevertheless, the built-in ~ace-window~ package provides a set of useful
 commands to move focus directionally between windows but also to shift
 the placement of a window in the given direction.
 
+Source: https://github.com/abo-abo/ace-window
+
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-window.el"
 ;;; Directional window motions (windmove)
-(use-package windmove
-  :ensure nil
-  :bind
-  ;; Those override some commands that are already available with
-  ;; C-M-u, C-M-f, C-M-b.
-  (("C-M-<up>" . windmove-up)
-   ("C-M-<right>" . windmove-right)
-   ("C-M-<down>" . windmove-down)
-   ("C-M-<left>" . windmove-left)
-   ("C-M-S-<up>" . windmove-swap-states-up)
-   ("C-M-S-<right>" . windmove-swap-states-right) ; conflicts with `org-increase-number-at-point'
-   ("C-M-S-<down>" . windmove-swap-states-down)
-   ("C-M-S-<left>" . windmove-swap-states-left))
+(use-package ace-window
+  :ensure t
+  :bind ("M-o" . ace-window)
   :config
-  (setq windmove-create-window nil)) ; Emacs 27.1
+  (setq aw-keys '(?a ?r ?s ?d ?h ?n ?e ?i ?o)
+        aw-scope 'global
+        aw-ignore-current t
+        aw-dispatch-always nil))
 #+end_src
 
 *** COMMENT The =detvdl-emacs-window.el= use of contextual header line (~breadcrumb~)
@@ -6008,7 +5867,8 @@ cases, a combination of =vc= and the command-line will suffice
   :init
   (setq magit-repository-directories
         '(("~/Git" . 1)
-          ("~/Code" . 1))))
+          ("~/Code" . 1)
+          ("~/.emacs.d" . 1))))
 #+end_src
 
 *** The =detvdl-emacs-git.el= setup for ~diff-hl~
@@ -6017,7 +5877,6 @@ See https://github.com/dgutov/diff-hl
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-git.el"
 (use-package diff-hl
   :ensure t
-  :commands (diff-hl-update)
   :config
   (set-face-attribute 'diff-hl-change nil :height font-height)
   (set-face-attribute 'diff-hl-delete nil :height font-height)
@@ -6185,92 +6044,76 @@ any configuration. The following sections contain further commentary
 on how I use Org.
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
-;;; Org-mode (personal information manager)
-(use-package org
-  :ensure nil
-  :init
-  (setq org-directory (expand-file-name "~/Documents/org/"))
-  (setq org-imenu-depth 7)
+  ;;; Org-mode (personal information manager)
+  (use-package org
+    :ensure nil
+    :init
+    (setq org-directory (expand-file-name "~/Documents/org/"))
+    (setq org-imenu-depth 7)
 
-  (add-to-list 'safe-local-variable-values '(org-hide-leading-stars . t))
-  (add-to-list 'safe-local-variable-values '(org-hide-macro-markers . t))
-  :bind
-  ( :map global-map
-    ("C-c l" . org-store-link)
-    ("C-c o" . org-open-at-point-global)
-    :map org-mode-map
-    ;; I don't like that Org binds one zillion keys, so if I want one
-    ;; for something more important, I disable it from here.
-    ("C-a" . nil)
-    ("C-d" . nil)
-    ("C-S-d" . nil)
-    ("C-'" . nil)
-    ("C-," . nil)
-    ("M-;" . nil)
-    ("<C-return>" . nil)
-    ("<C-S-return>" . nil)
-    ("C-M-S-<right>" . nil)
-    ("C-M-S-<left>" . nil)
-    ("C-c ;" . nil)
-    ("C-c M-l" . org-insert-last-stored-link)
-    ("C-c C-M-l" . org-toggle-link-display)
-    ("M-." . org-edit-special) ; alias for C-c ' (mnenomic is global M-. that goes to source)
-    :map org-src-mode-map
-    ("M-," . org-edit-src-exit) ; see M-. above
-    :map narrow-map
-    ("b" . org-narrow-to-block)
-    ("e" . org-narrow-to-element)
-    ("s" . org-narrow-to-subtree)
-    :map ctl-x-x-map
-    ("i" . prot-org-id-headlines)
-    ("r" . prot-org-id-headlines-readable)
-    ("h" . prot-org-ox-html))
-  :config
-  ;; My custom extras, which I use for the agenda and a few other Org features.
-  (require 'prot-org)
-
-;;;; general settings
-  (setq org-ellipsis "…")
-  (setq org-special-ctrl-a/e nil)
-  (setq org-special-ctrl-k nil)
-  (setq org-M-RET-may-split-line '((default . nil)))
-  (setq org-hide-emphasis-markers nil)
-  (setq org-hide-leading-stars t)
-  (setq org-hide-macro-markers nil)
-  (setq org-cycle-separator-lines 0)
-  (setq org-structure-template-alist
-        '(("s" . "src")
-          ("e" . "src emacs-lisp")
-          ("E" . "src emacs-lisp :results value code :lexical t")
-          ("t" . "src emacs-lisp :tangle FILENAME")
-          ("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
-          ("x" . "example")
-          ("X" . "export")
-          ("q" . "quote")))
-  (setq org-fold-catch-invisible-edits 'show)
-  (setq org-return-follows-link nil)
-  (setq org-loop-over-headlines-in-active-region 'start-level)
-  (setq org-modules '(ol-info ol-eww))
-  (setq org-use-sub-superscripts '{})
-  (setq org-insert-heading-respect-content t)
-  (setq org-read-date-prefer-future 'time)
-  (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
-  (setq org-fontify-quote-and-verse-blocks t)
-  (setq org-fontify-whole-block-delimiter-line t)
-  (setq org-track-ordered-property-with-tag t)
-  (setq org-highest-priority ?A)
-  (setq org-lowest-priority ?C)
-  (setq org-default-priority ?A)
-  (setq org-priority-faces nil))
-#+end_src
-*** The =detvdl-emacs-org.el= Org Tempo settings
-
-Org-tempo is an org-mode internal library that allows expansion of
-structure templates by simply inserting ~<~ followed by a template
-into the buffer, and pressing =<TAB>=
-
-#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
-(require 'org-tempo)
+    (add-to-list 'safe-local-variable-values '(org-hide-leading-stars . t))
+    (add-to-list 'safe-local-variable-values '(org-hide-macro-markers . t))
+    :bind
+    ( :map global-map
+      ("C-c l" . org-store-link)
+      ("C-c o" . org-open-at-point-global)
+      :map org-mode-map
+      ;; I don't like that Org binds one zillion keys, so if I want one
+      ;; for something more important, I disable it from here.
+      ("C-a" . nil)
+      ("C-d" . nil)
+      ("C-S-d" . nil)
+      ("C-'" . nil)
+      ("C-," . nil)
+      ("M-;" . nil)
+      ("<C-return>" . nil)
+      ("<C-S-return>" . nil)
+      ("C-M-S-<right>" . nil)
+      ("C-M-S-<left>" . nil)
+      ("C-c ;" . nil)
+      ("C-c M-l" . org-insert-last-stored-link)
+      ("C-c C-M-l" . org-toggle-link-display)
+      ("M-." . org-edit-special) ; alias for C-c ' (mnenomic is global M-. that goes to source)
+      :map org-src-mode-map
+      ("M-," . org-edit-src-exit) ; see M-. above
+      :map narrow-map
+      ("b" . org-narrow-to-block)
+      ("e" . org-narrow-to-element)
+      ("s" . org-narrow-to-subtree))
+    :config
+    ;;;; general settings
+    (setq org-ellipsis "…")
+    (setq org-special-ctrl-a/e nil)
+    (setq org-special-ctrl-k nil)
+    (setq org-M-RET-may-split-line '((default . nil)))
+    (setq org-hide-emphasis-markers nil)
+    (setq org-hide-leading-stars t)
+    (setq org-hide-macro-markers nil)
+    (setq org-cycle-separator-lines 0)
+    (setopt org-modules '(ol-info org-tempo))
+    (setq org-structure-template-alist
+  	'(("s" . "src")
+            ("e" . "src emacs-lisp")
+            ("E" . "src emacs-lisp :results value code :lexical t")
+            ("t" . "src emacs-lisp :tangle FILENAME")
+            ("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
+            ("x" . "example")
+            ("X" . "export")
+            ("q" . "quote")))
+    (setq org-fold-catch-invisible-edits 'show)
+    (setq org-return-follows-link nil)
+    (setq org-loop-over-headlines-in-active-region 'start-level)
+    (setq org-use-sub-superscripts '{})
+    (setq org-insert-heading-respect-content t)
+    (setq org-read-date-prefer-future 'time)
+    (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
+    (setq org-fontify-quote-and-verse-blocks t)
+    (setq org-fontify-whole-block-delimiter-line t)
+    (setq org-track-ordered-property-with-tag t)
+    (setq org-highest-priority ?A)
+    (setq org-lowest-priority ?C)
+    (setq org-default-priority ?A)
+    (setq org-priority-faces nil))
 #+end_src
 
 *** The =detvdl-emacs-org.el= Org indent mode settings
@@ -6423,28 +6266,6 @@ the capture phase ([[#h:f8f06938-0dfe-45c3-b4cf-996d36cba82d][The =detvdl-emacs-
   (setq org-todo-keyword-faces
         '(("MAYBE" . prot/org-todo-alternative)
           ("CANCELLED" . prot/org-done-alternative)))
-
-  (defface prot/org-tag-coaching
-    '((default :inherit unspecified :weight regular :slant normal)
-      (((class color) (min-colors 88) (background light))
-       :foreground "#004476")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "#c0d0ef")
-      (t :foreground "cyan"))
-    "Face for coaching Org tag.")
-
-  (defface prot/org-tag-protasks
-    '((default :inherit unspecified :weight regular :slant normal)
-      (((class color) (min-colors 88) (background light))
-       :foreground "#603f00")
-      (((class color) (min-colors 88) (background dark))
-       :foreground "#deba66")
-      (t :foreground "yellow"))
-    "Face for protasks Org tag.")
-
-  (setq org-tag-faces
-        '(("coaching" . prot/org-tag-coaching)
-          ("protasks" . prot/org-tag-protasks)))
 
   (setq org-use-fast-todo-selection 'expert)
 
@@ -7189,7 +7010,7 @@ from it and thus keeps me focused.
 
 *** The =detvdl-emacs-org.el= Org Roam settings
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
-(defvar user-roam-dir "/Users/vandaeld/Library/Mobile Documents/com~apple~CloudDocs/Documents/roam")
+(defvar user-roam-dir "~/Library/Mobile Documents/com~apple~CloudDocs/Documents/roam")
 (defvar user-roam-dailies-dir (file-name-as-directory (expand-file-name "daily" user-roam-dir)))
 
 (use-package org-roam
@@ -7234,7 +7055,6 @@ from it and thus keeps me focused.
 (use-package org-modern
   :ensure t
   :after org
-  :hook (org-mode . org-modern-mode)
   :custom-face
   (org-modern-block-keyword ((t (:inherit default))))
   :custom
@@ -7250,13 +7070,22 @@ from it and thus keeps me focused.
   (org-modern-table t)
   (org-modern-table-vertical 2)
   (org-modern-table-horizontal 1)
+  (org-modern-fold-stars
+   '(("▶" . "▼")
+     ("▷" . "▽")
+     ("▷" . "▽")
+     ("▹" . "▿")
+     ("▸" . "▾"))
+   )
   (org-modern-list '((?+ . "•")
                      (?- . "–")
                      (?* . "◦")))
   (org-modern-block t)
   )
 
+(with-eval-after-load 'org (global-org-modern-mode))
 #+end_src
+
 *** The =detvdl-emacs-org.el= call to ~provide~
 :PROPERTIES:
 :CUSTOM_ID: h:62eb7ca3-2f79-45a6-a018-38238b486e98
@@ -9802,676 +9631,6 @@ Specific to the current window's mode line.")
 
 (provide 'prot-orderless)
 ;;; prot-orderless.el ends here
-#+end_src
-
-** The =prot-org.el= library
-:PROPERTIES:
-:CUSTOM_ID: h:9974eac8-2167-45c4-90e0-12dd877403da
-:END:
-
-#+begin_src emacs-lisp :tangle "detvdl-lisp/prot-org.el" :mkdirp yes
-;;; prot-org.el --- Tweaks for my org-mode configurations -*- lexical-binding: t -*-
-
-;; Copyright (C) 2021-2025  Protesilaos Stavrou
-
-;; Author: Protesilaos Stavrou <info@protesilaos.com>
-;; URL: https://protesilaos.com/emacs/dotemacs
-;; Version: 0.1.0
-;; Package-Requires: ((emacs "30.1"))
-
-;; This file is NOT part of GNU Emacs.
-
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
-;;
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
-;;
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-;;; Commentary:
-;;
-;; This covers my tweaks for Org that are meant for use in my
-;; Emacs setup: https://protesilaos.com/emacs/dotemacs.
-;;
-;; Remember that every piece of Elisp that I write is for my own
-;; educational and recreational purposes.  I am not a programmer and I
-;; do not recommend that you copy any of this if you are not certain of
-;; what it does.
-
-;;; Code:
-
-(require 'prot-common)
-(require 'org)
-
-(defgroup prot-org ()
-  "Extensions for org.el."
-  :group 'org)
-
-;;;; org-capture
-
-(defvar prot-org--capture-coach-person-history nil)
-
-(declare-function message-fetch-field "message" (header &optional first))
-(declare-function notmuch-show-get-header "notmuch-show")
-
-(defun prot-org--capture-coach-person-message-from ()
-  "Return default value for `prot-org--capture-coach-person-prompt'."
-  (when-let* ((from (cond
-                     ((derived-mode-p 'message-mode)
-                      (message-fetch-field "To"))
-                     ((derived-mode-p 'notmuch-show-mode)
-                      (notmuch-show-get-header :From)))))
-    (string-clean-whitespace (car (split-string from "<")))))
-
-(defun prot-org--capture-coach-person-message-from-and-subject ()
-  "Return default value for `prot-org--capture-coach-person-prompt'."
-  (cond
-   ((derived-mode-p 'message-mode)
-    (message-fetch-field "Subject"))
-   ((derived-mode-p 'notmuch-show-mode)
-    (notmuch-show-get-header :Subject))))
-
-(defun prot-org--capture-coach-person-prompt ()
-  "Prompt for person for use in `prot-org-capture-coach'."
-  (completing-read "Person to coach: "
-                   prot-org--capture-coach-person-history
-                   nil nil nil
-                   'prot-org--capture-coach-person-history
-                   (prot-org--capture-coach-person-message-from)))
-
-(defvar prot-org--capture-coach-description-history nil)
-
-(defun prot-org--capture-coach-description-prompt ()
-  "Prompt for description in `prot-org-capture-coach'."
-  (read-string "Description: "
-               nil
-               'prot-org--capture-coach-description-history
-               (prot-org--capture-coach-person-message-from-and-subject)))
-
-(defun prot-org--capture-coach-date-prompt-range ()
-  "Prompt for Org date and return it as a +1h range.
-For use in `prot-org-capture-coach'."
-  (let ((date (org-read-date :with-time)))
-    ;; We cannot use this here, unfortunately, as the Org agenda
-    ;; interprets it both as a deadline and an event with the date
-    ;; range.
-    ;;
-    ;; (format "DEADLINE: <%s>--<%s>\n" date
-    (format "<%s>--<%s>\n" date
-            (org-read-date
-             :with-time nil "++1h" nil
-             (org-encode-time (org-parse-time-string date))))))
-
-(defun prot-org-capture-coach ()
-  "Contents of an Org capture template for my coaching lessons."
-  (let ((identifier (format-time-string "%Y%m%dT%H%M%S")))
-    (format "* TODO %s %s :coaching:
-DEADLINE: %%^T
-:PROPERTIES:
-:CAPTURED: %%U
-:CUSTOM_ID: h:%s
-:APPT_WARNTIME: 20
-:END:
-
-%%a%%?"
-            (prot-org--capture-coach-person-prompt)
-            (prot-org--capture-coach-description-prompt)
-            identifier
-            identifier)))
-
-(defun prot-org-capture-coach-clock ()
-  "Contents of an Org capture for my clocked coaching services."
-  (format "* TODO %s %s :service:
-:PROPERTIES:
-:CAPTURED: %%U
-:CUSTOM_ID: h:%s
-:END:
-
-%%a%%?"
-          (prot-org--capture-coach-person-prompt)
-          (prot-org--capture-coach-description-prompt)
-          (format-time-string "%Y%m%dT%H%M%S")))
-
-(declare-function cl-letf "cl-lib")
-
-;; Adapted from source: <https://stackoverflow.com/a/54251825>.
-;;
-;; Thanks to Juanjo Presa (@uningan on GitHub) for discovering that the
-;; original version was causing an error in `org-roam'.  I then figure
-;; we were missing the `&rest':
-;; <https://github.com/org-roam/org-roam/issues/2142#issuecomment-1100718373>.
-(defun prot-org--capture-no-delete-windows (&rest args)
-  "Apply ARGS while ignoring `delete-other-windows'."
-  (cl-letf (((symbol-function 'delete-other-windows) 'ignore))
-    (apply args)))
-
-;; Same source as above
-(advice-add 'org-capture-place-template :around 'prot-org--capture-no-delete-windows)
-(advice-add 'org-add-log-note :around 'prot-org--capture-no-delete-windows)
-
-;;;;; Custom function to select a project to add to
-
-(defun prot-org--get-outline (&optional file)
-  "Return `outline-regexp' headings and line numbers of current file or FILE."
-  (with-current-buffer (find-file-noselect file)
-    (let ((outline-regexp (format "^\\(?:%s\\)" (or (bound-and-true-p outline-regexp) "[*\^L]+")))
-          candidates)
-      (save-excursion
-        (goto-char (point-min))
-        (while (if (bound-and-true-p outline-search-function)
-                   (funcall outline-search-function)
-                 (re-search-forward outline-regexp nil t))
-          (push
-           ;; NOTE 2024-11-24: The -5 (minimum width) is a sufficiently high number to keep the
-           ;; alignment consistent in most cases.  Larger files will simply shift the heading text
-           ;; in minibuffer, but this is not an issue anymore.
-           (format "%-5s\t%s"
-                   (line-number-at-pos (point))
-                   (buffer-substring-no-properties (line-beginning-position) (line-end-position)))
-           candidates)
-          (goto-char (1+ (line-end-position)))))
-      (if candidates
-          (nreverse candidates)
-        (user-error "No outline")))))
-
-(defvar prot-org-outline-history nil
-  "Minibuffer history for `prot-org-outline-prompt'.")
-
-(defun prot-org-outline-prompt (&optional file)
-  "Prompt for outline among headings retrieved by `prot-org--get-outline'.
-With optional FILE use the outline of it, otherwise use that of
-the current file."
-  (let ((current-file (or file buffer-file-name))
-        (default (car prot-org-outline-history)))
-    (completing-read
-     (format-prompt
-      (format "Select heading inside `%s': "
-              (propertize (file-name-nondirectory current-file) 'face 'error))
-      default)
-     (prot-common-completion-table-no-sort 'imenu (prot-org--get-outline current-file))
-     nil :require-match nil 'prot-org-outline-history default)))
-
-(defvar prot-org-file-history nil
-  "Minibuffer history of `prot-org-file-prompt'.")
-
-(defun prot-org--not-useful-p (file)
-  "Return non-nil if FILE is not a useful Org file for `org-capture'."
-  (or (string-match-p "\\.org_archive\\'" file)
-      (backup-file-name-p file)
-      (not (string-match-p "\\.org\\'" file))))
-
-(defun prot-org-file-prompt ()
-  "Select a file in the `org-directory'."
-  (if-let* ((dir org-directory)
-            (files (directory-files-recursively org-directory ".*" nil))
-            (files (seq-remove #'prot-org--not-useful-p files)))
-      (let ((default (car prot-org-file-history)))
-        (completing-read
-         (format-prompt "Select file" default)
-         (prot-common-completion-table 'file files)
-         nil :require-match nil 'prot-org-file-history default))
-    (user-error "There are no files in the `org-directory'")))
-
-;;;###autoload
-(defun prot-org-select-heading-in-file ()
-  "Move to heading in Org file stored in `org-directory'.
-Prompt for file, then for heading inside of that file.
-
-This function can also be used as part of an `org-capture' template to
-navigate to a file+heading and then capture something which is inserted
-there."
-  (declare (interactive-only t))
-  (interactive)
-  (pcase-let* ((file (prot-org-file-prompt))
-               (line-with-heading (prot-org-outline-prompt file))
-               (`(,line ,text) (split-string line-with-heading "\t"))
-               (line (string-to-number line)))
-    ;; NOTE 2024-11-24: `with-current-buffer' does not work with `org-capture'.
-    (find-file file)
-    (goto-char (point-min))
-    (forward-line (1- line))))
-
-(defalias 'prot-org-goto-heading-in-file 'prot-org-select-heading-in-file
- "Alias for `prot-org-select-heading-in-file'.")
-
-;;;; Org clock report
-
-(defvar prot-org-clock--template-with-effort
-  "#+BEGIN: clocktable :formula % :properties (\"Effort\") :timestamp t :sort (1 . ?a) :link t :scope nil :hidefiles t :maxlevel 8 :stepskip0 t
-,#+END:"
-  "Clock table with effort estimate column to use for custom clock reports.")
-
-(defvar prot-org-clock--template-no-effort
-  "#+BEGIN: clocktable :formula % :timestamp t :sort (1 . ?a) :link nil :scope nil :hidefiles t :maxlevel 8 :stepskip0 t
-,#+END:"
-  "Clock table to use for custom clock reports.")
-
-(defvar prot-org-clock--ranges
-  '( today yesterday thisweek lastweek thismonth
-     lastmonth thisyear lastyear untilnow)
-  "Time ranges of my interest for clock reports.")
-
-(defvar prot-org-clock--report-range-history nil
-  "Minibuffer history for `prot-org-clock--report-range-prompt'.")
-
-(defun prot-org-clock--report-range-prompt ()
-  "Prompt for a clock table range among `prot-org-clock--ranges'."
-  (let ((default (car prot-org-clock--report-range-history)))
-    (completing-read
-     (format-prompt "Select a time range for the clock" default)
-     prot-org-clock--ranges nil :require-match nil 'prot-org-clock--report-range-history
-     default)))
-
-(defun prot-org-clock--get-report (scope)
-  "Produce clock report with current file SCOPE and return its buffer.
-SCOPE is a symbol of either `file' or `subtree'.  If the former, then
-use the entire file's contents.  Else use those of the current subtree."
-  (let ((buffer (get-buffer-create "*prot-org-custom-clock-report*")))
-    (save-restriction
-      (unwind-protect
-          (progn
-            (pcase scope
-              ('file nil)
-              ('subtree (org-narrow-to-subtree))
-              (_ (error "The scope `%s' is unknown" scope)))
-            (let ((contents (buffer-substring (point-min) (point-max))))
-              (with-current-buffer buffer
-                (erase-buffer)
-                (org-mode)
-                (save-excursion
-                  (insert (format "%s\n\n" prot-org-clock--template-with-effort))
-                  (insert contents))
-                (save-excursion
-                  (let ((range (prot-org-clock--report-range-prompt)))
-                    (goto-char (line-end-position))
-                    (insert (concat " :block " range))))
-                (org-dblock-update))))
-        (widen)))
-    buffer))
-
-;;;###autoload
-(defun prot-org-clock-report-current-subtree-or-file (&optional whole-buffer)
-  "Produce a clock report in a new buffer for the subtree at point.
-With optional WHOLE-BUFFER as a non-nil value, operate on the entire file.
-When called interactively WHOLE-BUFFER is a prefix argument."
-  (interactive "P")
-  (when-let* ((buffer (prot-org-clock--get-report (if whole-buffer 'file 'subtree))))
-    (pop-to-buffer buffer)))
-
-;;;###autoload
-(defun prot-org-clock-select-heading-and-clock-report ()
-  "Select a heading in a file and do a clock report for it in a new buffer."
-  (interactive)
-  (call-interactively 'prot-org-select-heading-in-file)
-  (call-interactively 'prot-org-clock-report-current-subtree-or-file))
-
-;;;;; Coaching-related Org custom clocking
-
-;; TODO 2024-12-15: This sort of thing must exist in Org, but I did
-;; not find it.
-(defun prot-org--timestamp-to-time (string)
-  "Return time object of STRING timestamp."
-  (org-timestamp-to-time (org-timestamp-from-string string)))
-
-(defun prot-org-coach--get-entries (todo-keyword string since)
-  "Get Org entries matching TODO-KEYWORD followed by STRING in the heading.
-Limit entries to those whole deadline/scheduled is equal or greater to
-SINCE date.
-
-Each entry is a plist of :heading, :contents, :started, :closed."
-  (or (delq nil
-            (org-map-entries
-             (lambda ()
-               (when-let* ((case-fold-search t)
-                           (started (prot-org--timestamp-to-time (or (org-entry-get nil "DEADLINE") (org-entry-get nil "SCHEDULED"))))
-                           (closed (prot-org--timestamp-to-time (org-entry-get nil "CLOSED")))
-                           ((re-search-forward (format "\\<%s\\>.*\\<%s\\>" todo-keyword string) (line-end-position) t 1))
-                           ((org-time-less-p since started)))
-                 (list
-                  :heading (org-get-heading :no-tags :no-todo :no-priority :no-comment)
-                  :contents (org-get-entry)
-                  :started started
-                  :closed closed)))))
-      (user-error "No entries with heading matching `\\<%s\\>.*\\<%s\\>'" todo-keyword string)))
-
-(defvar prot-org-coach--name-history nil
-  "Minibuffer history of `prot-org-coach--name-prompt'.")
-
-(defun prot-org-coach--name-prompt ()
-  "Prompt for name of person."
-  (let ((default (car prot-org-coach--name-history)))
-    (read-string
-     (format-prompt "Name of person" default)
-     nil 'prot-org-coach--name-history default)))
-
-;;;###autoload
-(defun prot-org-coach-report (name since)
-  "Produce clock report for coaching with person of NAME.
-SINCE is the date (of time 00:00) to count from until now."
-  (interactive
-   (list
-    (prot-org-coach--name-prompt)
-    (format "[%s]" (org-read-date))))
-  (if-let* ((since-object (prot-org--timestamp-to-time since))
-            (entries (prot-org-coach--get-entries "done" name since-object))
-            (buffer (get-buffer-create "*prot-org-coach-entries*")))
-      (with-current-buffer (pop-to-buffer buffer)
-        (erase-buffer)
-        (org-mode)
-        (dolist (entry entries)
-          (insert (format "* %s\n%s\n\n" (plist-get entry :heading) (plist-get entry :contents)))
-          (org-clock-in nil (plist-get entry :started))
-          (org-clock-out nil t (plist-get entry :closed)))
-        (goto-char (point-min))
-        (save-excursion
-          (insert (format "%s\n\n" prot-org-clock--template-no-effort)))
-        (save-excursion
-          (goto-char (line-end-position))
-          (insert (format " :tstart %S" since)))
-        (org-dblock-update))
-    (user-error "No entries for name `%s'" name)))
-
-;;;; org-agenda
-
-(declare-function calendar-day-name "calendar")
-(declare-function calendar-day-of-week "calendar")
-(declare-function calendar-month-name "calendar")
-(declare-function org-days-to-iso-week "org")
-(declare-function calendar-absolute-from-gregorian "calendar")
-
-(defvar org-agenda-format-date)
-
-;;;###autoload
-(defun prot-org-agenda-format-date-aligned (date)
-  "Format a DATE string for display in the daily/weekly agenda.
-This function makes sure that dates are aligned for easy reading.
-
-Slightly tweaked version of `org-agenda-format-date-aligned' that
-produces dates with a fixed length."
-  (require 'cal-iso)
-  (let* ((dayname (calendar-day-name date t))
-         (day (cadr date))
-         (day-of-week (calendar-day-of-week date))
-         (month (car date))
-         (monthname (calendar-month-name month t))
-         (year (nth 2 date))
-         (iso-week (org-days-to-iso-week
-                    (calendar-absolute-from-gregorian date)))
-         ;; (weekyear (cond ((and (= month 1) (>= iso-week 52))
-         ;;                  (1- year))
-         ;;                 ((and (= month 12) (<= iso-week 1))
-         ;;                  (1+ year))
-         ;;                 (t year)))
-         (weekstring (if (= day-of-week 1)
-                         (format " (W%02d)" iso-week)
-                       "")))
-    (format "%s %2d %s %4d%s"
-            dayname day monthname year weekstring)))
-
-(defvar org-priority-highest)
-
-(defun prot-org-agenda-include-priority-no-timestamp ()
-  "Return nil if heading has a priority but no timestamp.
-Otherwise, return the buffer position from where the search should
-continue, per `org-agenda-skip-function'."
-  (let ((point (point)))
-    (if (and (eq (nth 3 (org-heading-components)) ?A)
-             (not (org-get-deadline-time point))
-             (not (org-get-scheduled-time point)))
-        nil
-      (line-beginning-position 2))))
-
-(defvar prot-org-custom-daily-agenda
-  ;; NOTE 2021-12-08: Specifying a match like the following does not
-  ;; work.
-  ;;
-  ;; tags-todo "+PRIORITY=\"A\""
-  ;;
-  ;; So we match everything and then skip entries with
-  ;; `org-agenda-skip-function'.
-  `((tags-todo "*"
-               ((org-agenda-overriding-header "Important tasks without a date\n")
-                ;; NOTE 2024-10-31: Those used to work, but now the
-                ;; query for the timestamp is ignored.  I thus wrote
-                ;; `prot-org-agenda-include-priority-no-timestamp'.
-                ;;
-                ;; (org-agenda-skip-function '(org-agenda-skip-subtree-if nil '(timestamp)))
-                ;; (org-agenda-skip-function
-                ;;  `(org-agenda-skip-entry-if
-                ;;    'notregexp ,(format "\\[#%s\\]" (char-to-string org-priority-highest))))
-                (org-agenda-skip-function #'prot-org-agenda-include-priority-no-timestamp)
-                (org-agenda-block-separator nil)))
-    (agenda "" ((org-agenda-overriding-header "\nPending scheduled tasks")
-                (org-agenda-time-grid nil)
-                (org-agenda-start-on-weekday nil)
-                (org-agenda-span 1)
-                (org-agenda-show-all-dates nil)
-                (org-scheduled-past-days 365)
-                ;; Excludes today's scheduled items
-                (org-scheduled-delay-days 1)
-                (org-agenda-block-separator nil)
-                (org-agenda-entry-types '(:scheduled))
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'regexp "ROUTINE"))
-                (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-                (org-agenda-format-date "")))
-    (agenda "" ((org-agenda-overriding-header "\nToday's agenda\n")
-                (org-agenda-span 1)
-                (org-deadline-warning-days 0)
-                (org-agenda-block-separator nil)
-                (org-scheduled-past-days 0)
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'regexp "ROUTINE"))
-                ;; We don't need the `org-agenda-date-today'
-                ;; highlight because that only has a practical
-                ;; utility in multi-day views.
-                (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-                (org-agenda-format-date "%A %-e %B %Y")))
-    ;; (agenda "" ((org-agenda-overriding-header "\nRoutine")
-    ;;             (org-agenda-time-grid nil)
-    ;;             (org-agenda-start-on-weekday nil)
-    ;;             (org-agenda-span 1)
-    ;;             (org-agenda-show-all-dates nil)
-    ;;             (org-scheduled-past-days 365)
-    ;;             ;; Excludes today's scheduled items
-    ;;             (org-scheduled-delay-days 1)
-    ;;             (org-agenda-block-separator nil)
-    ;;             (org-agenda-entry-types '(:scheduled))
-    ;;             (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp "ROUTINE"))
-    ;;             (org-agenda-day-face-function (lambda (date) 'org-agenda-date))
-    ;;             (org-agenda-format-date "")))
-    (agenda "" ((org-agenda-overriding-header "\nNext three days\n")
-                (org-agenda-start-on-weekday nil)
-                (org-agenda-start-day nil)
-                (org-agenda-start-day "+1d")
-                (org-agenda-span 3)
-                (org-deadline-warning-days 0)
-                (org-agenda-block-separator nil)
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done))))
-    (agenda "" ((org-agenda-overriding-header "\nUpcoming deadlines (+14d)\n")
-                (org-agenda-time-grid nil)
-                (org-agenda-start-on-weekday nil)
-                ;; We don't want to replicate the previous section's
-                ;; three days, so we start counting from the day after.
-                (org-agenda-start-day "+4d")
-                (org-agenda-span 14)
-                (org-agenda-show-all-dates nil)
-                (org-deadline-warning-days 0)
-                (org-agenda-block-separator nil)
-                (org-agenda-entry-types '(:deadline))
-                (org-agenda-skip-function '(org-agenda-skip-entry-if 'todo 'done)))))
-  "Custom agenda for use in `org-agenda-custom-commands'.")
-
-(defun prot-org-custom-agenda-prot-asks-get-date ()
-  "Return the timestamp of the current heading or nil.
-For use in `prot-org-custom-prot-asks-agenda'."
-  (when-let* ((timestamp (or (org-entry-get nil "DEADLINE") (org-entry-get nil "SCHEDULED")))
-              (time (prot-org--timestamp-to-time timestamp)))
-    (format-time-string "%A	%e %10B %6R" time)))
-
-(defvar prot-org-custom-prot-asks-agenda
-  '((tags-todo "protasks"
-               ((org-agenda-overriding-header "Prot Asks\n")
-                (org-agenda-prefix-format '((tags . "%(prot-org-custom-agenda-prot-asks-get-date)	")))
-                (org-agenda-sorting-strategy '(deadline-up))
-                (org-agenda-remove-tags t)
-                (org-agenda-block-separator nil))))
-  "Custom agenda for use in `org-agenda-custom-commands'.")
-
-(defun prot-org-agenda-set-outline ()
-  "Set `outline-regexp' for my Org agenda buffers."
-  (when (derived-mode-p 'org-agenda-mode)
-    (setq-local outline-regexp "^\\([\s\t]+\\)\\([A-Z]+ \\|[0-9]+:[0-9]+ \\)\\(Deadline\\|Scheduled\\)")))
-
-(add-hook 'org-agenda-mode-hook #'prot-org-agenda-set-outline)
-
-;;;;; agenda appointments
-
-(defvar prot-org-agenda-after-edit-hook nil
-  "Hook that runs after select Org commands.
-To be used with `advice-add'.")
-
-(defun prot-org--agenda-after-edit (&rest _)
-  "Run `prot-org-agenda-after-edit-hook'."
-  (run-hooks 'prot-org-agenda-after-edit-hook))
-
-(defvar prot-org-after-deadline-or-schedule-hook nil
-  "Hook that runs after `org--deadline-or-schedule'.
-To be used with `advice-add'.")
-
-(defvar prot-org--appt-agenda-commands
-  '( org-agenda-archive org-agenda-deadline org-agenda-schedule
-     org-agenda-todo org-archive-subtree)
-  "List of commands that run `prot-org-agenda-after-edit-hook'.")
-
-(dolist (fn prot-org--appt-agenda-commands)
-  (advice-add fn :after #'prot-org--agenda-after-edit))
-
-(defun prot-org--after-deadline-or-schedule (&rest _)
-  "Run `prot-org-after-deadline-or-schedule-hook'."
-  (run-hooks 'prot-org-after-deadline-or-schedule-hook))
-
-(defun prot-org-org-agenda-to-appt ()
-  "Make `org-agenda-to-appt' always refresh appointment list."
-  (org-agenda-to-appt :refresh))
-
-(dolist (hook '(org-capture-after-finalize-hook
-                org-after-todo-state-change-hook
-                org-agenda-after-show-hook
-                prot-org-agenda-after-edit-hook))
-  (add-hook hook #'prot-org-org-agenda-to-appt))
-
-(declare-function org--deadline-or-schedule "org" (arg type time))
-
-(advice-add #'org--deadline-or-schedule :after #'prot-org--after-deadline-or-schedule)
-
-(add-hook 'prot-org-after-deadline-or-schedule-hook #'prot-org-org-agenda-to-appt)
-
-;;;; org-export
-
-(declare-function org-html-export-as-html "org")
-(declare-function org-texinfo-export-to-info "org")
-
-;;;###autoload
-(defun prot-org-ox-html ()
-  "Streamline HTML export."
-  (interactive)
-  (org-html-export-as-html nil nil nil t nil))
-
-;;;###autoload
-(defun prot-org-ox-texinfo ()
-  "Streamline Info export."
-  (interactive)
-  (org-texinfo-export-to-info))
-
-;;;; org-id
-
-(declare-function org-id-add-location "org")
-(declare-function org-with-point-at "org")
-(declare-function org-entry-get "org")
-(declare-function org-id-new "org")
-(declare-function org-entry-put "org")
-
-;; Original idea:
-;; <https://writequit.org/articles/emacs-org-mode-generate-ids.html>.
-(defun prot-org--id-get ()
-  "Get the CUSTOM_ID of the current entry.
-If the entry already has a CUSTOM_ID, return it as-is, else
-create a new one."
-  (let* ((pos (point))
-         (id (org-entry-get pos "CUSTOM_ID")))
-    (or (and id (stringp id) (string-match-p "\\S-" id))
-        (and (setq id (org-id-new "h")) (org-entry-put pos "CUSTOM_ID" id)))
-    id))
-
-(defun prot-org--heading-to-id ()
-  "Convert current heading text to an ID for CUSTOM_ID purposes."
-  (thread-last
-    (org-get-heading :no-tags :no-todo :no-priority :no-comment)
-    (replace-regexp-in-string "[][{}!@#$%^&*()+'\"?,.\|;:~`‘’“”/=]*" "")
-    (replace-regexp-in-string "\s" "-")
-    (string-trim)
-    (downcase)
-    (concat "h:")))
-
-(defun prot-org--id-get-readable (&optional force)
-  "Like `prot-org--id-get' but use the heading wording to create and ID.
-With optional FORCE, update the value even if one exists."
-  (let* ((pos (point))
-         (id (unless force (org-entry-get pos "CUSTOM_ID"))))
-    (or (and id (stringp id) (string-match-p "\\S-" id))
-        (and (setq id (prot-org--heading-to-id))
-             (org-entry-put pos "CUSTOM_ID" id)))
-    id))
-
-(declare-function org-map-entries "org")
-
-;;;###autoload
-(defun prot-org-id-headlines ()
-  "Add missing CUSTOM_ID to all headlines in current file."
-  (interactive)
-  (org-map-entries (lambda () (prot-org--id-get))))
-
-;;;###autoload
-(defun prot-org-id-headlines-readable (&optional force)
-  "Like `prot-org-id-headlines' but with readable IDs.
-A readable identifier is one derived from the text of the heading.  In
-theory, this may not be unique.
-
-With optional FORCE, update the value even if one exists."
-  (interactive "P")
-  (org-map-entries (lambda () (prot-org--id-get-readable force))))
-
-;;;###autoload
-(defun prot-org-id-headline (&optional readable)
-  "Add missing CUSTOM_ID to headline at point.
-With optional prefix argument READABLE get a readable identifier derived
-from the heading text instead of a UUID."
-  (interactive "P")
-  (funcall (if readable 'prot-org--id-get-readable 'prot-org--id-get)))
-
-;;;###autoload
-(defun prot-org-get-dotemacs-link ()
-  "Get URL to current heading in my dotemacs file."
-  (declare (interactive-only t))
-  (interactive)
-  (if (and (derived-mode-p 'org-mode)
-           (string-match-p "prot-\\.org\\'" buffer-file-name))
-      (if-let* ((id (org-entry-get (point) "CUSTOM_ID"))
-                (url (concat "https://protesilaos.com/emacs/dotemacs#" id)))
-          (progn
-            (kill-new url)
-            (message "Copied %s" (propertize url 'face 'success)))
-        (error "No CUSTOM_ID for the current entry"))
-    (user-error "You are not in the right file")))
-
-(provide 'prot-org)
-;;; prot-org.el ends here
 #+end_src
 
 ** The =prot-pair.el= library

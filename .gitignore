@@ -20,7 +20,7 @@ eshell/
 /.cask
 /eclipse.jdt.ls/*
 flycheck_*.el
-/straight/**
 /var/**
+savehist
 !/var/elfeed.org
 !/var/elfeed.score
