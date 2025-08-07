@@ -53,7 +53,11 @@
                 :commit "64b56832c2cffe41758f28e05c756a3a98d16f41")
           )
         )
-  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+  ;; Only install language grammars which aren't available yet
+  (mapc (lambda (lang)
+          (when (not (treesit-language-available-p lang))
+            (#'treesit-install-language-grammar)))
+        (mapcar #'car treesit-language-source-alist))
   )
 
 ;;;; Parentheses (show-paren-mode)
@@ -153,7 +157,8 @@
       (while (re-search-forward "\\s-+\\|\n" nil t)
         (replace-match " ")))))
 
-(crux-with-region-or-buffer json-to-single-line)
+(with-eval-after-load 'crux
+  (crux-with-region-or-buffer json-to-single-line))
 
 ;;; csv-mode
 (use-package csv-mode

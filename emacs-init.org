@@ -121,8 +121,8 @@ minibuffer, hence the function ~emacs-no-minibuffer-scroll-bar~.
 
 #+begin_src emacs-lisp :tangle "early-init.el"
 (dolist (variable '(initial-frame-alist default-frame-alist))
-  (set variable `((width . 135)
-                  (height . 60)
+  (set variable `((width . 160)
+                  (height . 100)
                   (horizontal-scroll-bars . nil)
                   (menu-bar-lines . 1) ; alternative to disabling `menu-bar-mode'
                   (internal-border-width . 5)
@@ -7240,7 +7240,11 @@ the configuration, enable the relevant *-ts modes for these languages
                 :commit "64b56832c2cffe41758f28e05c756a3a98d16f41")
           )
         )
-  (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+  ;; Only install language grammars which aren't available yet
+  (mapc (lambda (lang)
+          (when (not (treesit-language-available-p lang))
+            (#'treesit-install-language-grammar)))
+        (mapcar #'car treesit-language-source-alist))
   )
 #+end_src
 
@@ -7525,7 +7529,8 @@ available as natively compiled packages.
       (while (re-search-forward "\\s-+\\|\n" nil t)
         (replace-match " ")))))
 
-(crux-with-region-or-buffer json-to-single-line)
+(with-eval-after-load 'crux
+  (crux-with-region-or-buffer json-to-single-line))
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings for ~csv-mode~
