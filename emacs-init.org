@@ -226,41 +226,6 @@ not retain the generic background set by the function
     (enable-theme theme)))
 #+end_src
 
-** The =early-init.el= takes care to avoid the initial flash of light
-:PROPERTIES:
-:CUSTOM_ID: h:a18a059d-4e62-4fd7-8c0b-1135a771a7aa
-:END:
-
-Since I put in the effort to define the above theme-related functions,
-I can now benefit by having Emacs set an appropriate set of basic
-colour values at startup to eliminate the flash of light it normally
-displays ([[#h:7d3a283e-1595-4692-8124-e0d683cb15b2][The early-init.el defines general theme-related functions]]).
-By default, Emacs loads a light theme, but this is terrible if I am in
-a fairly dark environment. Whereas my arrangement here makes sure that
-Emacs uses a black background if the environment is dark.
-
-Note that in the snippet below I hardcode the black colour (=#000000=)
-to avoid any extra calculations at this early stage. Otherwise, I
-would have to check which theme will be loaded and then set its
-background here. That would be too slow for what we need in the early
-initialisation file, thus defeating the purpose of not having a flash
-of light at startup.
-
-#+begin_src emacs-lisp :tangle "early-init.el"
-;; NOTE 2023-02-05: The reason the following works is because (i) the
-;; `mode-line-format' is specified again and (ii) the
-(defun emacs-avoid-initial-flash-of-light ()
-  "Avoid flash of light when starting Emacs, if needed.
-New frames are instructed to call `prot--re-enable-frame-theme'."
-  (progn
-    (setq mode-line-format nil)
-    (set-face-attribute 'default nil :background "#000000" :foreground "#ffffff")
-    (set-face-attribute 'mode-line nil :background "#000000" :foreground "#ffffff" :box 'unspecified)
-    (add-hook 'after-make-frame-functions #'emacs-re-enable-frame-theme)))
-
-(emacs-avoid-initial-flash-of-light)
-#+end_src
-
 ** The =early-init.el= gives a name to the default frame
 :PROPERTIES:
 :CUSTOM_ID: h:ad227f7e-b0a7-43f8-91d6-b50db82da9ad
@@ -979,29 +944,36 @@ advanced customisations.
   :bind (("<f5>" . modus-themes-toggle)
          ("C-<f5>" . modus-themes-select)
          ("M-<f5>" . modus-themes-rotate))
+  :custom
+  (modus-themes-custom-auto-reload nil)
+  (modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi))
+  ;; (modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted))
+  ;; (modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia))
+  ;; (modus-themes-to-toggle '(modus-operandi-tritanopia modus-vivendi-tritanopia))
+  (modus-themes-to-rotate modus-themes-items)
+  (modus-themes-mixed-fonts t)
+  (modus-themes-variable-pitch-ui t)
+  (modus-themes-italic-constructs t)
+  (modus-themes-bold-constructs t)
+  (modus-themes-completions '((t . (bold))))
+  ;; (modus-themes-prompts '(bold))
+  (modus-themes-headings
+   '((agenda-structure . (variable-pitch light 2.2))
+     (agenda-date . (variable-pitch regular 1.3))
+     (t . (regular 1.15))))
   :config
-  (setq modus-themes-custom-auto-reload nil
-        modus-themes-to-toggle '(modus-operandi modus-vivendi)
-        ;; modus-themes-to-toggle '(modus-operandi-tinted modus-vivendi-tinted)
-        ;; modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia)
-        ;; modus-themes-to-toggle '(modus-operandi-tritanopia modus-vivendi-tritanopia)
-        modus-themes-to-rotate modus-themes-items
-        modus-themes-mixed-fonts t
-        modus-themes-variable-pitch-ui t
-        modus-themes-italic-constructs t
-        modus-themes-bold-constructs t
-        modus-themes-completions '((t . (bold)))
-        modus-themes-prompts '(bold)
-        modus-themes-headings
-        '((agenda-structure . (variable-pitch light 2.2))
-          (agenda-date . (variable-pitch regular 1.3))
-          (t . (regular 1.15))))
-
+  (defun detvdl-modus-themes-update-faces (&rest _)
+    (modus-themes-with-colors
+      (custom-set-faces
+       `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim)))))    
+    )
+  (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
   (setq modus-themes-common-palette-overrides
         '((bg-prose-block-contents bg-yellow-nuanced)
           (bg-prose-block-delimiter bg-ochre)
           (fg-prose-block-delimiter fg-main)))
-  (modus-themes-load-theme (car modus-themes-to-toggle)))
+  (modus-themes-load-theme (car modus-themes-to-toggle))
+)
 
 (provide 'detvdl-emacs-modus-themes)
 #+end_src

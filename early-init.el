@@ -75,19 +75,6 @@ not retain the generic background set by the function
   (when-let* ((theme (car custom-enabled-themes)))
     (enable-theme theme)))
 
-;; NOTE 2023-02-05: The reason the following works is because (i) the
-;; `mode-line-format' is specified again and (ii) the
-(defun emacs-avoid-initial-flash-of-light ()
-  "Avoid flash of light when starting Emacs, if needed.
-New frames are instructed to call `prot--re-enable-frame-theme'."
-  (progn
-    (setq mode-line-format nil)
-    (set-face-attribute 'default nil :background "#000000" :foreground "#ffffff")
-    (set-face-attribute 'mode-line nil :background "#000000" :foreground "#ffffff" :box 'unspecified)
-    (add-hook 'after-make-frame-functions #'emacs-re-enable-frame-theme)))
-
-(emacs-avoid-initial-flash-of-light)
-
 (add-hook 'after-init-hook (lambda () (set-frame-name "home")))
 
 ;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
