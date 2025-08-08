@@ -56,7 +56,7 @@
   ;; Only install language grammars which aren't available yet
   (mapc (lambda (lang)
           (when (not (treesit-language-available-p lang))
-            (#'treesit-install-language-grammar)))
+            (treesit-install-language-grammar lang)))
         (mapcar #'car treesit-language-source-alist))
   )
 
