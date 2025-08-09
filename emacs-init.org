@@ -791,7 +791,7 @@ making an abbreviation to a function."
      (error "%s is not an abbrev table" ,table)))
 #+end_src
 
-** The =init.el= addition of highlighting for my macros
+n** The =init.el= addition of highlighting for my macros
 :PROPERTIES:
 :CUSTOM_ID: h:d168edaa-426f-4bd0-8275-3ec3d66bf126
 :END:
@@ -9382,30 +9382,30 @@ Also see `prot-modeline-string-abbreviate'."
 ;;;; Keyboard macro indicator
 
 (defvar-local prot-modeline-kbd-macro
-    '(:eval
-      (when (and (mode-line-window-selected-p) defining-kbd-macro)
-        (propertize " KMacro " 'face 'prot-modeline-indicator-blue-bg)))
+  '(:eval
+    (when (and (mode-line-window-selected-p) defining-kbd-macro)
+      (propertize " KMacro " 'face 'prot-modeline-indicator-blue-bg)))
   "Mode line construct displaying `mode-line-defining-kbd-macro'.
 Specific to the current window's mode line.")
 
 ;;;; Narrow indicator
 
 (defvar-local prot-modeline-narrow
-    '(:eval
-      (when (and (mode-line-window-selected-p)
-                 (buffer-narrowed-p)
-                 (not (derived-mode-p 'Info-mode 'help-mode 'special-mode 'message-mode)))
-        (propertize " Narrow " 'face 'prot-modeline-indicator-cyan-bg)))
+  '(:eval
+    (when (and (mode-line-window-selected-p)
+               (buffer-narrowed-p)
+               (not (derived-mode-p 'Info-mode 'help-mode 'special-mode 'message-mode)))
+      (propertize " Narrow " 'face 'prot-modeline-indicator-cyan-bg)))
   "Mode line construct to report the narrowed state of the current buffer.")
 
 ;;;; Input method
 
 (defvar-local prot-modeline-input-method
-    '(:eval
-      (when current-input-method-title
-        (propertize (format " %s " current-input-method-title)
-                    'face 'prot-modeline-indicator-green-bg
-                    'mouse-face 'mode-line-highlight)))
+  '(:eval
+    (when current-input-method-title
+      (propertize (format " %s " current-input-method-title)
+                  'face 'prot-modeline-indicator-green-bg
+                  'mouse-face 'mode-line-highlight)))
   "Mode line construct to report the multilingual environment.")
 
 ;;;; Buffer status
@@ -9428,11 +9428,11 @@ Specific to the current window's mode line.")
 ;;;; Dedicated window
 
 (defvar-local prot-modeline-window-dedicated-status
-    '(:eval
-      (when (window-dedicated-p)
-        (propertize " = "
-                    'face 'prot-modeline-indicator-gray-bg
-                    'mouse-face 'mode-line-highlight)))
+  '(:eval
+    (when (window-dedicated-p)
+      (propertize " = "
+                  'face 'prot-modeline-indicator-gray-bg
+                  'mouse-face 'mode-line-highlight)))
   "Mode line construct for dedicated window indicator.")
 
 ;;;; Buffer name and modified status
@@ -9474,11 +9474,11 @@ See `prot-modeline-string-cut-middle'."
     'face 'font-lock-doc-face)))
 
 (defvar-local prot-modeline-buffer-identification
-    '(:eval
-      (propertize (prot-modeline-buffer-name)
-                  'face (prot-modeline-buffer-identification-face)
-                  'mouse-face 'mode-line-highlight
-                  'help-echo (prot-modeline-buffer-name-help-echo)))
+  '(:eval
+    (propertize (prot-modeline-buffer-name)
+                'face (prot-modeline-buffer-identification-face)
+                'mouse-face 'mode-line-highlight
+                'help-echo (prot-modeline-buffer-name-help-echo)))
   "Mode line construct for identifying the buffer being displayed.
 Propertize the current buffer with the `mode-line-buffer-id'
 face.  Let other buffers have no face.")
@@ -9505,23 +9505,23 @@ face.  Let other buffers have no face.")
     (format "Symbol: `%s'." major-mode)))
 
 (defvar-local prot-modeline-major-mode
-    (list
-     (propertize "%[" 'face 'prot-modeline-indicator-red)
-     '(:eval
-       (concat
-        (prot-modeline-major-mode-indicator)
-        " "
-        (propertize
-         (prot-modeline-string-abbreviate-but-last
-          (prot-modeline-major-mode-name)
-          2)
-         'mouse-face 'mode-line-highlight
-         'help-echo (prot-modeline-major-mode-help-echo))))
-     (propertize "%]" 'face 'prot-modeline-indicator-red))
+  (list
+   (propertize "%[" 'face 'prot-modeline-indicator-red)
+   '(:eval
+     (concat
+      (prot-modeline-major-mode-indicator)
+      " "
+      (propertize
+       (prot-modeline-string-abbreviate-but-last
+        (prot-modeline-major-mode-name)
+        2)
+       'mouse-face 'mode-line-highlight
+       'help-echo (prot-modeline-major-mode-help-echo))))
+   (propertize "%]" 'face 'prot-modeline-indicator-red))
   "Mode line construct for displaying major modes.")
 
 (defvar-local prot-modeline-process
-    (list '("" mode-line-process))
+  (list '("" mode-line-process))
   "Mode line construct for the running process indicator.")
 
 ;;;; Git branch and diffstat
@@ -9548,23 +9548,27 @@ static char * data[] = {
   "Return an appropriate color string for the given Git STATE."
   (let ((state-color-plist
          '(edited       "green"
-           added        "blue"
-           removed      "red"
-           conflict     "red"
-           unregistered "red"
-           needs-update "purple"
-           needs-merge  "purple"
-           up-to-date   "yellow"
-           staged       "yellow"
-           ignored      "gray50"
-           unknown      "gray50")))
+                        added        "blue"
+                        removed      "red"
+                        conflict     "red"
+                        unregistered "red"
+                        needs-update "purple"
+                        needs-merge  "purple"
+                        up-to-date   "yellow"
+                        staged       "yellow"
+                        ignored      "gray50"
+                        unknown      "gray50")))
     (or (plist-get state-color-plist state)
         "gray50")))
 
-(defun vc--state-dot (state)
+(defun vc--state-dot ()
   "Return the appropriate bitmap dot for the given Git STATE."
-  (let* ((color (vc--state-color state))
-         (bg (face-attribute 'mode-line :background)))
+  (when-let* ((bg (face-attribute 'mode-line :background))
+              (file (or buffer-file-name default-directory))
+              (backend (or (vc-backend file) 'Git))
+              (state (vc-state file backend))
+              (color (vc--state-color state))
+              )
     (propertize " "
                 'help-echo (format "VC state: %s" state)
                 'display
@@ -9572,19 +9576,13 @@ static char * data[] = {
                         :data ,(format vc--state-large-dot bg color)
                         :ascent center
                         :scale 1
-                        :face mode-line
-                        )
+                        :face mode-line)
                 )))
 
 (defvar-local prot-modeline-vc-state-dot
-    '(:eval
-      (when-let* (((mode-line-window-selected-p))
-                  (file (or buffer-file-name default-directory))
-                  (backend (or (vc-backend file) 'Git))
-                  (state (if (and backend file)
-                                       (vc-state file backend)
-                                     'unknown)))
-        (vc--state-dot state)))
+  '(:eval
+    (when (mode-line-window-selected-p)
+      (vc--state-dot)))
   "Mode line construct to visualize VC status with a colourized circle.")
 
 (declare-function vc-git--symbolic-ref "vc-git" (file))
@@ -9672,14 +9670,14 @@ than `split-width-threshold'."
     (prot-modeline--vc-get-face key)))
 
 (defvar-local prot-modeline-vc-branch
-    '(:eval
-      (when-let* (((mode-line-window-selected-p))
-                  (file (or buffer-file-name default-directory))
-                  (backend (or (vc-backend file) 'Git))
-                  ;; ((vc-git-registered file))
-                  (branch (prot-modeline--vc-branch-name file backend))
-                  (face (prot-modeline--vc-face file backend)))
-        (prot-modeline--vc-details file branch face)))
+  '(:eval
+    (when-let* (((mode-line-window-selected-p))
+                (file (or buffer-file-name default-directory))
+                (backend (or (vc-backend file) 'Git))
+                ;; ((vc-git-registered file))
+                (branch (prot-modeline--vc-branch-name file backend))
+                (face (prot-modeline--vc-face file backend)))
+      (prot-modeline--vc-details file branch face)))
   "Mode line construct to return propertized VC branch.")
 
 ;;;; Flymake errors, warnings, notes
@@ -9727,31 +9725,31 @@ TYPE is usually keyword `:error', `:warning' or `:note'."
 (prot-modeline-flymake-type note "·" success)
 
 (defvar-local prot-modeline-flymake
-    `(:eval
-      (when (and (bound-and-true-p flymake-mode)
-                 (mode-line-window-selected-p))
-        (list
-         ;; See the calls to the macro `prot-modeline-flymake-type'
-         '(:eval (prot-modeline-flymake-error))
-         '(:eval (prot-modeline-flymake-warning))
-         '(:eval (prot-modeline-flymake-note)))))
+  `(:eval
+    (when (and (bound-and-true-p flymake-mode)
+               (mode-line-window-selected-p))
+      (list
+       ;; See the calls to the macro `prot-modeline-flymake-type'
+       '(:eval (prot-modeline-flymake-error))
+       '(:eval (prot-modeline-flymake-warning))
+       '(:eval (prot-modeline-flymake-note)))))
   "Mode line construct displaying `flymake-mode-line-format'.
 Specific to the current window's mode line.")
 
 ;;;; Miscellaneous
 
 (defvar-local prot-modeline-notmuch-indicator
-    '(notmuch-indicator-mode
-      (" "
-       (:eval (when (mode-line-window-selected-p)
-                notmuch-indicator--counters))))
+  '(notmuch-indicator-mode
+    (" "
+     (:eval (when (mode-line-window-selected-p)
+              notmuch-indicator--counters))))
   "The equivalent of `notmuch-indicator-mode-line-construct'.
 Display the indicator only on the focused window's mode line.")
 
 (defvar-local prot-modeline-misc-info
-    '(:eval
-      (when (mode-line-window-selected-p)
-        mode-line-misc-info))
+  '(:eval
+    (when (mode-line-window-selected-p)
+      mode-line-misc-info))
   "Mode line construct displaying `mode-line-misc-info'.
 Specific to the current window's mode line.")
 
