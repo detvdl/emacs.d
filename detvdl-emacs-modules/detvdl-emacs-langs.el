@@ -98,8 +98,12 @@
 (use-package eldoc
   :ensure nil
   :hook (prog-mode . eldoc-mode)
+  :bind (:map prog-mode-map
+              ("M-d" . eldoc-doc-buffer))
   :config
-  (setq eldoc-message-function #'message)) ; don't use mode line for M-x eval-expression, etc.
+  (setq eldoc-message-function #'message ; don't use mode line for M-x eval-expression, etc.
+        eldoc-echo-area-use-multiline-p nil) ; don't expand echo area for eldoc
+)
 
 ;;;; Eglot (built-in client for the language server protocol)
 ;; (use-package eglot
@@ -113,6 +117,7 @@
 (use-package cape
   :ensure t)
 
+;;;; TODO: test out org-src blocks with lsp-mode: https://github.com/emacs-lsp/lsp-mode/issues/2842#issuecomment-870807018
 (use-package lsp-mode
   :ensure t
   :commands (lsp lsp-deferred)
@@ -120,17 +125,17 @@
   (lsp-completion-provider :none)
   (lsp-hover-text-function #'lsp--text-document-signature-help)
   (lsp-eldoc-enable-hover t)
-  (lsp-eldoc-render-all nil)
+  (lsp-eldoc-render-all t)
   (lsp-signature-auto-activate t)
   (lsp-signature-render-documentation nil)
-  (lsp-prefer-flymake nil)
+  (lsp-prefer-flymake t)
   :init
-  (defun my/lsp-mode-setup-completion ()
+  (defun detvdl/lsp-mode-setup-completion ()
     (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
           '(orderless)) ;; Configure orderless
     (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
   :hook ((lsp-mode . lsp-enable-which-key-integration)
-         (lsp-completion-mode . my/lsp-mode-setup-completion)))
+         (lsp-completion-mode . detvdl/lsp-mode-setup-completion)))
 
 ;; Source: https://emacs-lsp.github.io/lsp-ui/
 (use-package lsp-ui
@@ -140,17 +145,17 @@
   :bind (:map lsp-ui-mode-map
               ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
               ([remap xref-find-references] . lsp-ui-peek-find-references)
-              ("M-p" . lsp-signature-activate)
-              ("M-d" . lsp-ui-doc-glance))
-  :config
-  (setq lsp-ui-flycheck-enable t
-        lsp-ui-doc-enable nil
-        lsp-ui-doc-include-signature t
-        lsp-ui-doc-use-childframe t
-        lsp-ui-doc-position 'at-point
-        lsp-ui-sideline-update-mode 'line
-        lsp-lens-enable t
-        lsp-modeline-diagnostics-enable t))
+              ("M-p" . lsp-signature-activate))
+  :custom
+  (lsp-ui-flycheck-enable t)
+  (lsp-ui-doc-enable nil)
+  (lsp-ui-doc-include-signature t)
+  (lsp-ui-doc-use-childframe t)
+  (lsp-ui-doc-position 'at-point)
+  (lsp-ui-sideline-update-mode 'line)
+  (lsp-lens-enable t)
+  (lsp-modeline-diagnostics-enable t)
+  )
 
 ;;;; Handle performance for very long lines (so-long.el)
 (use-package so-long

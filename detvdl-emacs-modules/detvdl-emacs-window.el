@@ -98,6 +98,11 @@
              (window-height . fit-window-to-buffer)
              (window-parameters . ((no-other-window . t)
                                    (mode-line-format . none))))
+            ("\\*eldoc\\*"
+             (display-buffer-reuse-mode-window display-buffer-at-bottom)
+             (body-function . prot-window-select-fit-size)
+             (window-parameters . ((no-other-window . t)
+                                   (mode-line-format . none))))
             ("\\*\\(Output\\|Register Preview\\).*"
              (display-buffer-reuse-mode-window display-buffer-at-bottom))
             ;; below current window
