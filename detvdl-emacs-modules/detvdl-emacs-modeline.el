@@ -17,14 +17,15 @@
                   prot-modeline-major-mode
                   prot-modeline-process
                   "  "
+                  prot-modeline-vc-state-dot
+                  "  "
                   prot-modeline-vc-branch
                   "  "
-                  prot-modeline-eglot
+                  prot-modeline-position-info
                   "  "
                   prot-modeline-flymake
                   "  "
                   mode-line-format-right-align ; Emacs 30
-                  prot-modeline-notmuch-indicator
                   "  "
                   prot-modeline-misc-info))
 

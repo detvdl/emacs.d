@@ -293,11 +293,16 @@ Specific to the current window's mode line.")
 ;; TODO 2023-07-05: What else is there beside remote files?  If
 ;; nothing, this must be renamed accordingly.
 (defvar-local prot-modeline-buffer-status
-    '(:eval
-      (when (file-remote-p default-directory)
-        (propertize " @ "
-                    'face 'prot-modeline-indicator-red-bg
-                    'mouse-face 'mode-line-highlight)))
+  (list
+   '(:eval
+     (when (file-remote-p default-directory)
+       (propertize " @ "
+                   'face 'prot-modeline-indicator-red-bg
+                   'mouse-face 'mode-line-highlight)))
+   '(:propertize
+     ("" mode-line-mule-info mode-line-client mode-line-modified
+      mode-line-remote mode-line-window-dedicated)
+     display (min-width (6.0))))
   "Mode line construct for showing remote file name.")
 
 ;;;; Dedicated window
@@ -400,6 +405,61 @@ face.  Let other buffers have no face.")
   "Mode line construct for the running process indicator.")
 
 ;;;; Git branch and diffstat
+(defconst vc--state-large-dot
+  "/* XPM */
+static char * data[] = {
+\"11 11 3 1\",
+\"  c %s\",
+\"+ c #000000\",
+\". c %s\",
+\"   +++++   \",
+\"  +.....+  \",
+\" +.......+ \",
+\"+.........+\",
+\"+.........+\",
+\"+.........+\",
+\"+.........+\",
+\"+.........+\",
+\" +.......+ \",
+\"  +.....+  \",
+\"   +++++   \"};")
+
+(defun vc--state-color (state)
+  "Return an appropriate color string for the given Git STATE."
+  (cond ((eq state 'edited) "green")
+        ((eq state 'added) "blue")
+        ((memq state '(removed conflict unregistered)) "red")
+        ((memq state '(needs-update needs-merge)) "purple")
+        ((eq state 'up-to-date) "yellow")
+        ((eq state 'staged) "yellow")
+        ((memq state '(ignored unknown)) "gray50")
+        (t "gray50")))
+
+(defun vc--state-dot (state)
+  "Return the appropriate bitmap dot for the given Git STATE."
+  (let* ((color (vc--state-color state))
+         (bg (face-attribute 'mode-line :background)))
+    (propertize " "
+                'help-echo (format "VC state: %s" state)
+                'display
+                `(image :type xpm
+                        :data ,(format vc--state-large-dot bg color)
+                        :ascent center
+                        :scale 1
+                        :face mode-line
+                        )
+                )))
+
+(defvar-local prot-modeline-vc-state-dot
+    '(:eval
+      (when-let* (((mode-line-window-selected-p))
+                  (file (or buffer-file-name default-directory))
+                  (backend (or (vc-backend file) 'Git))
+                  (state (if (and backend file)
+                                       (vc-state file backend)
+                                     'unknown)))
+        (vc--state-dot state)))
+  "Mode line construct to return propertized VC branch.")
 
 (declare-function vc-git--symbolic-ref "vc-git" (file))
 
@@ -552,19 +612,6 @@ TYPE is usually keyword `:error', `:warning' or `:note'."
   "Mode line construct displaying `flymake-mode-line-format'.
 Specific to the current window's mode line.")
 
-;;;; Eglot
-
-(with-eval-after-load 'eglot
-  (setq mode-line-misc-info
-        (delete '(eglot--managed-mode (" [" eglot--mode-line-format "] ")) mode-line-misc-info)))
-
-(defvar-local prot-modeline-eglot
-    `(:eval
-      (when (and (featurep 'eglot) (mode-line-window-selected-p))
-        '(eglot--managed-mode eglot--mode-line-format)))
-  "Mode line construct displaying Eglot information.
-Specific to the current window's mode line.")
-
 ;;;; Miscellaneous
 
 (defvar-local prot-modeline-notmuch-indicator
@@ -582,6 +629,10 @@ Display the indicator only on the focused window's mode line.")
   "Mode line construct displaying `mode-line-misc-info'.
 Specific to the current window's mode line.")
 
+(defvar-local prot-modeline-position-info
+  '(:eval
+    (format-mode-line "[%l:%c]")))
+
 ;;;; Risky local variables
 
 ;; NOTE 2023-04-28: The `risky-local-variable' is critical, as those
@@ -595,10 +646,11 @@ Specific to the current window's mode line.")
                      prot-modeline-major-mode
                      prot-modeline-process
                      prot-modeline-vc-branch
+                     prot-modeline-vc-state-dot
                      prot-modeline-flymake
                      prot-modeline-eglot
                      ;; prot-modeline-align-right
-                     prot-modeline-notmuch-indicator
+                     prot-modeline-position-info
                      prot-modeline-misc-info))
   (put construct 'risky-local-variable t))
 
