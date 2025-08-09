@@ -102,13 +102,55 @@
   (setq eldoc-message-function #'message)) ; don't use mode line for M-x eval-expression, etc.
 
 ;;;; Eglot (built-in client for the language server protocol)
-(use-package eglot
-  :ensure nil
-  :functions (eglot-ensure)
-  :commands (eglot)
+;; (use-package eglot
+;;   :ensure nil
+;;   :functions (eglot-ensure)
+;;   :commands (eglot)
+;;   :config
+;;   (setq eglot-sync-connect nil)
+;;   (setq eglot-autoshutdown t))
+
+(use-package cape
+  :ensure t)
+
+(use-package lsp-mode
+  :ensure t
+  :commands (lsp lsp-deferred)
+  :custom
+  (lsp-completion-provider :none)
+  (lsp-hover-text-function #'lsp--text-document-signature-help)
+  (lsp-eldoc-enable-hover t)
+  (lsp-eldoc-render-all nil)
+  (lsp-signature-auto-activate t)
+  (lsp-signature-render-documentation nil)
+  (lsp-prefer-flymake nil)
+  :init
+  (defun my/lsp-mode-setup-completion ()
+    (setf (alist-get 'styles (alist-get 'lsp-capf completion-category-defaults))
+          '(orderless)) ;; Configure orderless
+    (setq-local completion-at-point-functions (list (cape-capf-buster #'lsp-completion-at-point))))
+  :hook ((lsp-mode . lsp-enable-which-key-integration)
+         (lsp-completion-mode . my/lsp-mode-setup-completion)))
+
+;; Source: https://emacs-lsp.github.io/lsp-ui/
+(use-package lsp-ui
+  :ensure t
+  :after lsp-mode
+  :commands lsp-ui-mode
+  :bind (:map lsp-ui-mode-map
+              ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+              ([remap xref-find-references] . lsp-ui-peek-find-references)
+              ("M-p" . lsp-signature-activate)
+              ("M-d" . lsp-ui-doc-glance))
   :config
-  (setq eglot-sync-connect nil)
-  (setq eglot-autoshutdown t))
+  (setq lsp-ui-flycheck-enable t
+        lsp-ui-doc-enable nil
+        lsp-ui-doc-include-signature t
+        lsp-ui-doc-use-childframe t
+        lsp-ui-doc-position 'at-point
+        lsp-ui-sideline-update-mode 'line
+        lsp-lens-enable t
+        lsp-modeline-diagnostics-enable t))
 
 ;;;; Handle performance for very long lines (so-long.el)
 (use-package so-long
@@ -159,6 +201,21 @@
 
 (with-eval-after-load 'crux
   (crux-with-region-or-buffer json-to-single-line))
+
+(use-package pet
+  :ensure t)
+
+(use-package lsp-pyright
+  :ensure t
+  :custom (lsp-pyright-langserver-command "pyright")
+  :hook (python-mode . (lambda ()
+                         (pet-mode)
+                         (require 'lsp-pyright)
+                         (lsp-deferred))))
+
+(use-package flymake-ruff
+  :ensure t
+  :hook (python-mode . flymake-ruff-load))
 
 ;;; csv-mode
 (use-package csv-mode
