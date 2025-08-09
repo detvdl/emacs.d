@@ -22,5 +22,6 @@ eshell/
 flycheck_*.el
 /var/**
 /savehist
+/tree-sitter/**
 !/var/elfeed.org
 !/var/elfeed.score
