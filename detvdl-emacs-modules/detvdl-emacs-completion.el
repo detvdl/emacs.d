@@ -382,19 +382,13 @@ Development continues on GitHub with GitLab as a mirror."))
 
 ;;; Extended minibuffer actions and more (embark.el)
 (when detvdl-emacs-completion-extras
-  ;; (use-package embark
-  ;;   :ensure t
-  ;;   :hook (embark-collect-mode . prot-common-truncate-lines-silently)
-  ;;   :bind
-  ;;   ( :map minibuffer-local-map
-  ;;     ("C-c C-c" . embark-collect)
-  ;;     ("C-c C-e" . embark-export)))
   (use-package embark
     :ensure t
+    :hook (embark-collect-mode . prot-common-truncate-lines-silently)
     :custom
     (embark-prompter 'embark-keymap-prompter)
     (prefix-help-command #'embark-prefix-help-command)
-    (embark-quit-after-action t)
+    (embark-quit-after-action nil)
     ;; (embark-cycle-key (kbd "C-."))
     (embark-confirm-act-all nil)
     (embark-indicators '(embark-mixed-indicator
@@ -404,13 +398,15 @@ Development continues on GitHub with GitLab as a mirror."))
            ("a" . align-regexp)
            ("i" . iedit)
            ("I" . iedit-dwim)
+           ("o" . occur)
            :map embark-collect-mode-map
            ("C-," . embark-act)
            :map minibuffer-local-map
            ("M-." . embark-dwim)
            ("C-," . embark-act)
-           ("M-e" . embark-export)
-           ("M-c" . embark-collect))
+           ("C-c C-c" . embark-collect)
+           ("C-c C-e" . embark-export)
+           ("C-c C-l" . embark-live))
     :config
     (defun embark-which-key-indicator ()
       "An embark indicator that displays keymaps using which-key.
@@ -454,7 +450,10 @@ targets."
   ;; commands.
   (use-package embark-consult
     :ensure t
-    :after (embark consult)))
+    :after (embark consult)
+    ;; Not currently using this functionality
+    ;; :hook (embark-collect-mode . consult-preview-at-point-mode)
+    ))
 
 ;;; Detailed completion annotations (marginalia.el)
 (use-package marginalia
