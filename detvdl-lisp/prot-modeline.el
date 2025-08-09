@@ -424,16 +424,22 @@ static char * data[] = {
 \"  +.....+  \",
 \"   +++++   \"};")
 
-(defun vc--state-color (state)
+(defun vc--state-color (&optional state)
   "Return an appropriate color string for the given Git STATE."
-  (cond ((eq state 'edited) "green")
-        ((eq state 'added) "blue")
-        ((memq state '(removed conflict unregistered)) "red")
-        ((memq state '(needs-update needs-merge)) "purple")
-        ((eq state 'up-to-date) "yellow")
-        ((eq state 'staged) "yellow")
-        ((memq state '(ignored unknown)) "gray50")
-        (t "gray50")))
+  (let ((state-color-plist
+         '(edited       "green"
+           added        "blue"
+           removed      "red"
+           conflict     "red"
+           unregistered "red"
+           needs-update "purple"
+           needs-merge  "purple"
+           up-to-date   "yellow"
+           staged       "yellow"
+           ignored      "gray50"
+           unknown      "gray50")))
+    (or (plist-get state-color-plist state)
+        "gray50")))
 
 (defun vc--state-dot (state)
   "Return the appropriate bitmap dot for the given Git STATE."
@@ -459,7 +465,7 @@ static char * data[] = {
                                        (vc-state file backend)
                                      'unknown)))
         (vc--state-dot state)))
-  "Mode line construct to return propertized VC branch.")
+  "Mode line construct to visualize VC status with a colourized circle.")
 
 (declare-function vc-git--symbolic-ref "vc-git" (file))
 
