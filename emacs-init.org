@@ -241,19 +241,6 @@ can tell). For minimalist window managers on Linux, something like the
 (add-hook 'after-init-hook (lambda () (set-frame-name "home")))
 #+end_src
 
-** The =early-init.el= sets the PATH and exec-path
-
-Explicitly sets the PATH environment variable inside Emacs when started from the GUI.
-Sets Emacs' exec-path to match this value.
-These values are copied from ~$(brew --cellar emacs-plus@31)/31.0.50/Emacs.app/Contents/Info.plist~
-
-#+begin_src emacs-lisp :tangle "early-init.el"
-;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
-;; (the string here should be copied from the PATH in Emacs.app/Contents/Info.plist)
-(setenv "PATH" "/Users/detlevvandaele/.codeium/windsurf/bin:/Users/detlevvandaele/.opam/default/bin:/Users/detlevvandaele/.asdf/shims:/Users/detlevvandaele/.asdf/bin:/Users/detlevvandaele/.local/bin:/opt/homebrew/opt/bison/bin:/opt/homebrew/opt/make/libexec/gnubin:/opt/homebrew/opt/libtool/libexec/gnubin:/opt/homebrew/opt/gsed/libexec/gnubin:/opt/homebrew/opt/grep/libexec/gnubin:/opt/homebrew/opt/gnu-tar/libexec/gnubin:/opt/homebrew/opt/gnu-sed/libexec/gnubin:/opt/homebrew/opt/gnu-indent/libexec/gnubin:/opt/homebrew/opt/gawk/libexec/gnubin:/opt/homebrew/opt/findutils/libexec/gnubin:/opt/homebrew/opt/coreutils/libexec/gnubin:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/TeX/texbin:/Users/detlevvandaele/Applications/iTerm.app/Contents/Resources/utilities:/Users/detlevvandaele/Library/Application Support/JetBrains/Toolbox/scripts:/opt/homebrew/opt/fzf/bin")
-(setq exec-path (split-string (getenv "PATH") path-separator))
-#+end_src
-
 * The main initialisation of Emacs (=init.el=)
 :PROPERTIES:
 :CUSTOM_ID: h:dae63bd9-93a8-41c4-af1b-d0f39ba50974
@@ -653,6 +640,33 @@ packages will rely on ~package-archive-priorities~.
              (cons package "gnu-elpa-devel"))
            detvdl-emacs-my-packages)))
 #+end_src
+** The =init.el= sets the PATH and exec-path
+
+Explicitly sets the PATH environment variable inside Emacs when
+started from the GUI.
+This is needed due to: https://github.com/d12frosted/homebrew-emacs-plus/issues/720
+
+Source: https://github.com/purcell/exec-path-from-shell
+
+#+begin_src emacs-lisp :tangle "init.el"
+;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
+;; Source environment variables from init shell on non-shell based init systems
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x))
+  :demand t
+  :custom
+  (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
+                                    "PAGER" "TERM"
+                                    "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
+  (exec-path-from-shell-arguments '("--login"))
+  :config
+  (exec-path-from-shell-initialize))
+#+end_src
+
+
+
 
 ** The =init.el= setting to send ~custom-file~ to oblivion
 :PROPERTIES:

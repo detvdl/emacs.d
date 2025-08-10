@@ -143,6 +143,21 @@ before all other modules of my setup."
              (cons package "gnu-elpa-devel"))
            detvdl-emacs-my-packages)))
 
+;; Temp: Explicitly set PATH environment variable and update exec-path to match it.
+;; Source environment variables from init shell on non-shell based init systems
+(use-package exec-path-from-shell
+  :ensure t
+  :if (memq window-system '(mac ns x))
+  :demand t
+  :custom
+  (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
+                                    "PAGER" "TERM"
+                                    "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
+  (exec-path-from-shell-arguments '("--login"))
+  :config
+  (exec-path-from-shell-initialize))
+
 ;; Disable the damn thing by making it disposable.
 (use-package no-littering
   :ensure t
