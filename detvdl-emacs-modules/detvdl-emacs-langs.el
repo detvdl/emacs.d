@@ -26,13 +26,21 @@
   :config
   (set-face-attribute 'symbol-overlay-default-face nil :background "DarkOrchid" :foreground "white"))
 
-(use-package highlight-indent-guides
-  :ensure t
-  :hook (prog-mode . highlight-indent-guides-mode)
-  :config
-  (setq highlight-indent-guides-method 'character)
-  (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
-  (setq highlight-indent-guides-auto-enabled nil))
+;; (use-package highlight-indent-guides
+;;   :ensure t
+;;   :hook (prog-mode . highlight-indent-guides-mode)
+;;   :config
+;;   (setq highlight-indent-guides-method 'bitmap)
+;;   (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line)
+;;   ;; (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
+;;   (setq highlight-indent-guides-auto-enabled t))
+
+;; (defun detvdl-modus-themes-update-faces (&rest _)
+;;   (modus-themes-with-colors
+;;     (custom-set-faces
+;;      `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim)))))    
+;;   )
+;; (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
 
 (when (and (treesit-available-p) detvdl-emacs-treesitter-extras)
   (setq treesit-language-source-alist

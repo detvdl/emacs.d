@@ -26,12 +26,6 @@
      (agenda-date . (variable-pitch regular 1.3))
      (t . (regular 1.15))))
   :config
-  (defun detvdl-modus-themes-update-faces (&rest _)
-    (modus-themes-with-colors
-      (custom-set-faces
-       `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim)))))    
-    )
-  (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
   (setq modus-themes-common-palette-overrides
         '((bg-prose-block-contents bg-yellow-nuanced)
           (bg-prose-block-delimiter bg-ochre)

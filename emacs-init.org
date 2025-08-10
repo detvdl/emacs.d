@@ -962,12 +962,6 @@ advanced customisations.
      (agenda-date . (variable-pitch regular 1.3))
      (t . (regular 1.15))))
   :config
-  (defun detvdl-modus-themes-update-faces (&rest _)
-    (modus-themes-with-colors
-      (custom-set-faces
-       `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim)))))    
-    )
-  (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
   (setq modus-themes-common-palette-overrides
         '((bg-prose-block-contents bg-yellow-nuanced)
           (bg-prose-block-delimiter bg-ochre)
@@ -2377,11 +2371,7 @@ all times. As such, the ~eshell~ command is on the list of disabled
 commands ([[#h:4ed6593f-6f55-4258-a1c2-ddb50e9e2465][The =init.el= settings to enable certain commands and disable others]]).
 
 My ~prot-shell-mode~ defines a few extra key bindings (per the
-~prot-shell-mode-map~) and also implements a bookmark handler for
-shell buffers ([[#h:581aa0ff-b136-4099-a321-3b86edbfbccb][The =detvdl-emacs-essentials.el= settings for bookmarks]]).
-
-[ Emacs 31 supports this bookmarking natively now, so I am disabling my
-  relevant code for it. ]
+~prot-shell-mode-map~)
 
 The bookmarking functionality is a wonderful extra, as it leverages
 Emacs' TRAMP infrastructure to re-establish the connection to the
@@ -3602,8 +3592,8 @@ targets."
   (use-package embark-consult
     :ensure t
     :after (embark consult)
-    :hook
-    (embark-collect-mode . consult-preview-at-point-mode)
+    ;; Not currently using this functionality
+    ;; :hook (embark-collect-mode . consult-preview-at-point-mode)
     ))
 #+end_src
 
@@ -4210,11 +4200,12 @@ edit mode, which ~grep-edit-mode~ also uses.
   :ensure t
   :after multiple-cursors
   :commands (phi-search phi-search-backward)
-  :bind (("C-S-s" . phi-search)
-         ("C-S-r" . phi-search-backward)
-         :map mc/keymap
-         ("C-s" . phi-search)
-         ("C-r" . phi-search-backward)))
+  :bind ( :map global-map
+          ("C-S-s" . phi-search)
+          ("C-S-r" . phi-search-backward)
+          :map mc/keymap
+          ("C-s" . phi-search)
+          ("C-r" . phi-search-backward)))
 #+end_src
 
 *** The =detvdl-emacs-search.el= call to ~provide~
@@ -7176,21 +7167,38 @@ of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554
 *** The =detvdl-emacs-langs.el= settings for symbol highlighting
 =symbol-overlay= provides a visualization of all instances of the symbol under point
 
-=highlight-indent-guides= provides a visual indentation indicator for indent-heavy programming languages such as Python
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
 (use-package symbol-overlay
   :ensure t
   :hook (prog-mode . symbol-overlay-mode)
   :config
   (set-face-attribute 'symbol-overlay-default-face nil :background "DarkOrchid" :foreground "white"))
+#+end_src
 
-(use-package highlight-indent-guides
-  :ensure t
-  :hook (prog-mode . highlight-indent-guides-mode)
-  :config
-  (setq highlight-indent-guides-method 'character)
-  (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
-  (setq highlight-indent-guides-auto-enabled nil))
+=highlight-indent-guides= provides a visual indentation indicator for
+indent-heavy programming languages such as Python
+NOTE: currently HIG is no longer used, due to visual bugs with the
+'character fill mode e.g. https://github.com/DarthFennec/highlight-indent-guides/issues/29
+- The 'column fill mode works but is not the prettiest
+- The 'bitmap fill mode also works, but has problems with the dark
+  modus themes and background interpolation
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+;; (use-package highlight-indent-guides
+;;   :ensure t
+;;   :hook (prog-mode . highlight-indent-guides-mode)
+;;   :config
+;;   (setq highlight-indent-guides-method 'bitmap)
+;;   (setq highlight-indent-guides-bitmap-function 'highlight-indent-guides--bitmap-line)
+;;   ;; (setq highlight-indent-guides-character ?\|) ; left-align vertical bar
+;;   (setq highlight-indent-guides-auto-enabled t))
+
+;; (defun detvdl-modus-themes-update-faces (&rest _)
+;;   (modus-themes-with-colors
+;;     (custom-set-faces
+;;      `(highlight-indent-guides-character-face ((,c :inherit default :foreground ,bg-dim)))))    
+;;   )
+;; (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
 #+end_src
 *** The =detvdl-emacs-langs.el= settings for ~treesitter~ grammars
 
@@ -11316,127 +11324,6 @@ Push `shell-last-dir' to `prot-shell-cd-directories'."
   (if-let* ((root (prot-shell--get-vc-root-dir)))
       (prot-shell--insert-and-send "cd" root)
     (user-error "Cannot find the VC root of `%s'" default-directory)))
-
-;; NOTE 2025-06-23: Emacs 31 supports shell bookmarks, so I no longer
-;; need this.  I am keeping it here for reference.
-
-;; ;;;; Bookmark support
-;;
-;; ;; NOTE 2023-08-18: I sent this to the Emacs maintainers as a patch
-;; ;; (bug#65039).  I received approval to proceed with the change, but I
-;; ;; did not do it because a user reported an issue with SSH (TRAMP).  I
-;; ;; do not have access to SSH and am not familiar with such workflows.
-;; ;; If/when that changes, I will try again.  In the meantime, this is
-;; ;; good code and it works for me.
-;;
-;; ;; Adapted from esh-mode.el
-;; (declare-function bookmark-prop-get "bookmark" (bookmark prop))
-;;
-;; (defun prot-shell-bookmark-name ()
-;;   "Return name of bookmark based on currect directory."
-;;   (format "prot-shell-%s"
-;;           (file-name-nondirectory
-;;            (directory-file-name
-;;             (file-name-directory default-directory)))))
-;;
-;; (defvar sh-shell-file)
-;;
-;; (defun prot-shell-bookmark-make-record ()
-;;   "Create a bookmark for the current Shell buffer."
-;;   `(,(prot-shell-bookmark-name)
-;;     (location . ,default-directory)
-;;     (shell-file-name . ,sh-shell-file)
-;;     (handler . prot-shell-bookmark-jump)))
-;;
-;; ;;;###autoload
-;; (defun prot-shell-bookmark-jump (bookmark)
-;;   "Default BOOKMARK handler for Shell buffers."
-;;   (let ((default-directory (bookmark-prop-get bookmark 'location))
-;;         (explicit-shell-file-name (bookmark-prop-get bookmark 'shell-file-name)))
-;;     (shell (get-buffer-create (car bookmark)))))
-;;
-;; (put 'prot-shell-bookmark-jump 'bookmark-handler-type "Shell")
-
-;; ;;;; Convert YouTube links to Invidious
-;;
-;; (defvar prot-shell-invidious-domains
-;;   '("invidious.io.lol"
-;;     "invidious.lunar.icu"
-;;     "iv.nboeck.de"
-;;     "vid.priv.au"
-;;     "invidious.tiekoetter.com"
-;;     "inv.in.projectsegfau.lt"
-;;     "onion.tube"
-;;     "yt.artemislena.eu"
-;;     "invidious.no-logs.com"
-;;     "yewtu.be"
-;;     "invidious.projectsegfau.lt"
-;;     "yt.oelrichsgarcia.de"
-;;     "invidious.0011.lt"
-;;     "inv.zzls.xyz"
-;;     "inv.bp.projectsegfau.lt"
-;;     "invidious.flokinet.to"
-;;     "iv.ggtyler.dev"
-;;     "invidious.slipfox.xyz"
-;;     "vid.puffyan.us"
-;;     "inv.pistasjis.net"
-;;     "inv.citw.lgbt"
-;;     "invidious.protokolla.fi"
-;;     "inv.makerlab.tech"
-;;     "inv.tux.pizza"
-;;     "invidious.privacydev.net")
-;;   "List of Invidious domains.")
-;;
-;; (defvar prot-shell-youtube-domains
-;;   '("www.youtube.com"
-;;     "youtu.be")
-;;   "List of YouTube domains.")
-;;
-;; (defvar prot-shell-yt-invidious-domains
-;;   (append prot-shell-youtube-domains
-;;           prot-shell-invidious-domains)
-;;   "List of YouTube and Invidious domains.")
-;;
-;; (defun prot-shell--get-random-invidious-instance ()
-;;   "Return `random' index from `prot-shell-invidious-domains'."
-;;   (nth
-;;    (random (length prot-shell-invidious-domains))
-;;    prot-shell-invidious-domains))
-;;
-;; ;;;###autoload
-;; (defun prot-shell-invidious ()
-;;   "Convert `prot-shell-yt-invidious-domains' into a random Invidious instance."
-;;   (interactive)
-;;   (save-excursion
-;;     (goto-char (line-beginning-position))
-;;     (while (re-search-forward (regexp-opt prot-shell-yt-invidious-domains) (line-end-position) :no-error)
-;;       (replace-match (prot-shell--get-random-invidious-instance)))))
-
-;;;; Built-in Emacs commands
-
-;; ;; `comint-input-filter-functions'
-;; (defun prot-shell--intercept-input (input)
-;;   (when (string-match-p "man " input)
-;;     (comint-interrupt-subjob)
-;;     ;; TODO 2023-08-18: The idea is to interrupt the input, and split
-;;     ;; it such that, say, "man echo" becomes (man "echo")
-;;     ;;
-;;     ;; (let ((proc (get-buffer-process (current-buffer)))
-;; 	;;       (inhibit-read-only t)
-;; 	;;       replacement)
-;;     ;;   (save-excursion
-;;     ;;     (let ((pmark (progn (goto-char (process-mark proc))
-;; 	;; 		                (forward-line 0)
-;; 	;; 		                (point-marker))))
-;; 	;;       (delete-region comint-last-input-end pmark)
-;; 	;;       (goto-char (process-mark proc))
-;; 	;;       (setq replacement (concat "*** Called command externally ***\n"
-;; 	;; 			                    (buffer-substring pmark (point))))
-;; 	;;       (delete-region pmark (point))))
-;;     ;;   (comint-output-filter proc replacement))
-;;     ))
-;;
-;; (add-hook 'comint-input-filter-functions #'prot-shell--intercept-input)
 
 ;;;; General commands
 

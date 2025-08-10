@@ -154,10 +154,11 @@
   :ensure t
   :after multiple-cursors
   :commands (phi-search phi-search-backward)
-  :bind (("C-S-s" . phi-search)
-         ("C-S-r" . phi-search-backward)
-         :map mc/keymap
-         ("C-s" . phi-search)
-         ("C-r" . phi-search-backward)))
+  :bind ( :map global-map
+          ("C-S-s" . phi-search)
+          ("C-S-r" . phi-search-backward)
+          :map mc/keymap
+          ("C-s" . phi-search)
+          ("C-r" . phi-search-backward)))
 
 (provide 'detvdl-emacs-search)
