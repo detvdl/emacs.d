@@ -376,7 +376,9 @@ word.  Fall back to regular `expreg-expand'."
   :ensure t
   :commands (iedit-mode)
   :bind (("C-;" . iedit-mode)
-         ("C-:" . iedit-dwim))
+         ("C-:" . iedit-dwim)
+         :map iedit-mode-keymap
+         ("C-g" . iedit--quit))
   :config
   (defun iedit-dwim (begin end)
     "Starts iedit but uses \\[narrow-to-defun] to limit its scope."

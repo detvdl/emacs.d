@@ -359,6 +359,8 @@ Development continues on GitHub with GitLab as a mirror."))
       ("M-s M-m" . consult-mark)
       ("M-s M-y" . consult-yank-pop)
       ("M-s M-s" . consult-outline)
+      :map isearch-mode-map
+      ("M-l" . consult-line)
       :map consult-narrow-map
       ("?" . consult-narrow-help))
     :config
@@ -402,7 +404,7 @@ Development continues on GitHub with GitLab as a mirror."))
            :map embark-collect-mode-map
            ("C-," . embark-act)
            :map minibuffer-local-map
-           ("M-." . embark-dwim)
+           ("C->" . embark-become)
            ("C-," . embark-act)
            ("C-c C-c" . embark-collect)
            ("C-c C-e" . embark-export)

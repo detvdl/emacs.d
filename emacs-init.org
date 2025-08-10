@@ -2132,7 +2132,9 @@ word.  Fall back to regular `expreg-expand'."
   :ensure t
   :commands (iedit-mode)
   :bind (("C-;" . iedit-mode)
-         ("C-:" . iedit-dwim))
+         ("C-:" . iedit-dwim)
+         :map iedit-mode-keymap
+         ("C-g" . iedit--quit))
   :config
   (defun iedit-dwim (begin end)
     "Starts iedit but uses \\[narrow-to-defun] to limit its scope."
@@ -3407,6 +3409,8 @@ Also check: [[#h:e0f9c30e-3a98-4479-b709-7008277749e4][The =detvdl-emacs-search.
       ("M-s M-m" . consult-mark)
       ("M-s M-y" . consult-yank-pop)
       ("M-s M-s" . consult-outline)
+      :map isearch-mode-map
+      ("M-l" . consult-line)
       :map consult-narrow-map
       ("?" . consult-narrow-help))
     :config
@@ -3553,7 +3557,7 @@ Embark the way it is intended, so I decided to only focus on
            :map embark-collect-mode-map
            ("C-," . embark-act)
            :map minibuffer-local-map
-           ("M-." . embark-dwim)
+           ("C->" . embark-become)
            ("C-," . embark-act)
            ("C-c C-c" . embark-collect)
            ("C-c C-e" . embark-export)
