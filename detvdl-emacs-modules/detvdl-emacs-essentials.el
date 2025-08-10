@@ -80,11 +80,10 @@
   (crux-with-region-or-sexp-or-line kill-region)
   )
 
-(use-package direnv
+(use-package mise
   :ensure t
-  :demand t
-  :config
-  (direnv-mode +1))
+  :ensure-system-package (mise . "brew install mise")
+  :hook (after-init . global-mise-mode))
 
 (use-package prot-common
   :ensure nil
