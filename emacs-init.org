@@ -7012,6 +7012,20 @@ from it and thus keeps me focused.
   :init
   (setq org-roam-v2-ack t)
   (setq org-roam-database-connector 'sqlite-builtin)
+  (defvar-keymap detvdl-prefix-org-roam-map
+    :doc "Prefix keymap for Org Roam commands."
+    :name "Org Roam"
+    :prefix 'detvdl-prefix-org-roam
+    "c" #'org-roam-capture
+    "a" #'org-roam-alias-add
+    "t" #'org-roam-tag-add
+    "n" #'org-id-get-create ;; creates new Node ID for a given headline/fil
+    "w" #'org-roam-refile
+    "f" #'org-roam-node-find
+    "b" #'org-roam-buffer-toggle
+    "j" #'org-roam-dailies-capture-today
+    "u" #'org-roam-dailies-goto-today
+    "i" #'org-roam-node-insert)
   :custom
   (org-roam-directory user-roam-dir)
   (org-roam-link-title-format "[[%s]]")
@@ -7024,17 +7038,7 @@ from it and thus keeps me focused.
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   (org-roam-link-current ((t (:inherit org-roam-link :slant italic))))
-  :bind (("C-c n c" . org-roam-capture)
-         ("C-c n a" . org-roam-alias-add)
-         ("C-c n t" . org-roam-tag-add)
-         ("C-c n n" . org-id-get-create) ;; creates new Node ID for a given headline/file
-         ("C-c n w" . org-roam-refile)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n b" . org-roam-buffer-toggle)
-         ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n u" . org-roam-dailies-goto-today)
-         :map org-mode-map
-         ("C-c n i" . org-roam-node-insert))
+  :bind-keymap (("C-c n" . detvdl-prefix-org-roam))
   :config
   (org-roam-db-autosync-mode +1)
   (setq org-capture-templates `(("b" "bookmark" item
@@ -7043,8 +7047,63 @@ from it and thus keeps me focused.
                                  :unnarrowed t
                                  :empty-lines-before 0)))
   )
+
 #+end_src
+
+*** The =detvdl-emacs-org.el= Org-board settings
+*Motivation
+
+ org-board is a bookmarking and web archival system for Emacs Org
+ mode, building on ideas from Pinboard <https://pinboard.in>.  It
+ archives your bookmarks so that you can access them even when
+ you're not online, or when the site hosting them goes down.
+ `wget' is used as a backend for archival, so any of its options
+ can be used directly from org-board.  This means you can download
+ whole sites for archival with a couple of keystrokes, while
+ keeping track of your archives from a simple Org file.
+
+*Summary
+
+ In org-board, a bookmark is represented by an Org heading of any
+ level, with a `URL' property containing one or more URLs.  Once
+ such a heading is created, a call to `org-board-archive' creates a
+ unique ID and directory for the entry via `org-attach', archives
+ the contents and requisites of the page(s) listed in the `URL'
+ property using `wget', and saves them inside the entry's
+ directory.  A link to the (timestamped) root archive folder is
+ created in the property `ARCHIVED_AT'.  Multiple archives can be
+ made for each entry.  Additional options to pass to `wget' can be
+ specified via the property `WGET_OPTIONS'.  The variable
+ `org-board-after-archive-functions' (defaulting to nil) holds a
+ list of functions to run after each archival operation.
+
+Source: https://github.com/charlesroelli/org-board
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
+(use-package org-board
+  :ensure t
+  :init
+    (defvar-keymap detvdl-prefix-org-board-map
+    :doc "Prefix keymap for Org Board commands."
+    :name "Org Board"
+    :prefix 'detvdl-prefix-org-board
+    "n" #'org-board-new
+    "a" #'org-board-archive
+    "o" #'org-board-open
+    "d" #'org-board-delete-all)
+  :bind-keymap (("C-c b" . detvdl-prefix-org-board)))
+#+end_src
+
 *** The =detvdl-emacs-org.el= Org-modern UI settings
+
+This package implements a modern style for your Org buffers using font
+locking and text properties. 
+The package styles headlines, keywords, tables and source blocks. 
+The styling is configurable, you can disable or modify the style of 
+each syntax element individually via the org-modern customization group.
+
+Source: https://github.com/minad/org-modern
+
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
 (use-package org-modern
   :ensure t

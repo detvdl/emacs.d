@@ -565,6 +565,20 @@ See `org-capture-templates' for more information."
   :init
   (setq org-roam-v2-ack t)
   (setq org-roam-database-connector 'sqlite-builtin)
+  (defvar-keymap detvdl-prefix-org-roam-map
+    :doc "Prefix keymap for Org Roam commands."
+    :name "Org Roam"
+    :prefix 'detvdl-prefix-org-roam
+    "c" #'org-roam-capture
+    "a" #'org-roam-alias-add
+    "t" #'org-roam-tag-add
+    "n" #'org-id-get-create ;; creates new Node ID for a given headline/fil
+    "w" #'org-roam-refile
+    "f" #'org-roam-node-find
+    "b" #'org-roam-buffer-toggle
+    "j" #'org-roam-dailies-capture-today
+    "u" #'org-roam-dailies-goto-today
+    "i" #'org-roam-node-insert)
   :custom
   (org-roam-directory user-roam-dir)
   (org-roam-link-title-format "[[%s]]")
@@ -577,17 +591,7 @@ See `org-capture-templates' for more information."
   :custom-face
   (org-roam-link ((t (:inherit org-link :foreground "#C991E1"))))
   (org-roam-link-current ((t (:inherit org-roam-link :slant italic))))
-  :bind (("C-c n c" . org-roam-capture)
-         ("C-c n a" . org-roam-alias-add)
-         ("C-c n t" . org-roam-tag-add)
-         ("C-c n n" . org-id-get-create) ;; creates new Node ID for a given headline/file
-         ("C-c n w" . org-roam-refile)
-         ("C-c n f" . org-roam-node-find)
-         ("C-c n b" . org-roam-buffer-toggle)
-         ("C-c n j" . org-roam-dailies-capture-today)
-         ("C-c n u" . org-roam-dailies-goto-today)
-         :map org-mode-map
-         ("C-c n i" . org-roam-node-insert))
+  :bind-keymap (("C-c n" . detvdl-prefix-org-roam))
   :config
   (org-roam-db-autosync-mode +1)
   (setq org-capture-templates `(("b" "bookmark" item
@@ -596,6 +600,19 @@ See `org-capture-templates' for more information."
                                  :unnarrowed t
                                  :empty-lines-before 0)))
   )
+
+(use-package org-board
+  :ensure t
+  :init
+    (defvar-keymap detvdl-prefix-org-board-map
+    :doc "Prefix keymap for Org Board commands."
+    :name "Org Board"
+    :prefix 'detvdl-prefix-org-board
+    "n" #'org-board-new
+    "a" #'org-board-archive
+    "o" #'org-board-open
+    "d" #'org-board-delete-all)
+  :bind-keymap (("C-c b" . detvdl-prefix-org-board)))
 
 (use-package org-modern
   :ensure t
