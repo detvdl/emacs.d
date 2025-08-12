@@ -132,7 +132,7 @@
     ("<escape>" . prot-simple-keyboard-quit-dwim)
     ("C-g" . prot-simple-keyboard-quit-dwim)
     ("C-M-SPC" . prot-simple-mark-sexp)   ; will be overriden by `expreg' if tree-sitter is available
-    ("C-," . prot-simple-mark-sexp)   ; I also have `isearch-forward-symbol-at-point' on C-.
+    ;; ("C-," . prot-simple-mark-sexp)   ; I also have `isearch-forward-symbol-at-point' on C-.
     ;; Commands for lines
     ("C-S-d" . prot-simple-delete-line-backward)
     ("C-S-k" . prot-simple-kill-line-backward)

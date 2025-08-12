@@ -7,9 +7,7 @@
 #+macro: latest-export-date (eval (format-time-string "%F %T %z"))
 #+macro: word-count (eval (count-words (point-min) (point-max)))
 
-TODO: install crux or similar for regular ctrl-k behaviour
 TODO: add smartparens or similar, aggressive-indent, and programming-language specific setups (LSP)
-TODO: fix consult search (is it really needed?)
 
 *Last revised and exported on {{{latest-export-date}}} with a word
 count of {{{word-count}}}.*
@@ -1503,6 +1501,44 @@ Source: https://github.com/bbatsov/crux
 #+end_src
 
 *** The =detvdl-emacs-essentials.el= block for ~mise~ (direnv/asdf)
+
+Mise is a tool version manager for common binaries, but also other
+package-managed tools (via e.g. ~cargo~ or ~go~).
+
+Source: https://mise.jdx.dev
+
+Example configuration:
+
+#+name .config/mise/config.toml
+#+begin_src toml
+[tools]
+minikube = "1.25.2"
+rust = "stable"
+kubectl = "1.23.5"
+babashka = "0.8.0"
+kubectx = "0.9.4"
+dotnet = "9.0.300"
+python = "3.11.0"
+go = "1.21"
+node = "24.5.0"
+"asdf:clojure" = "1.10.3.1040"
+"aqua:terraform" = "1.12.2"
+java = "17.0.2"
+"asdf:kotlin" = "2.2.0"
+uv = "latest"
+ruff = "latest"
+shellcheck = "latest"
+
+[settings]
+python.uv_venv_auto = true
+python.uv_venv_create_args = ["--seed"]
+# lockfile = true
+experimental = true
+
+#+end_src
+
+Source: https://github.com/eki3z/mise.el
+
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-essentials.el"
 (use-package mise
   :ensure t
@@ -1601,7 +1637,7 @@ this via some hook.
     ("<escape>" . prot-simple-keyboard-quit-dwim)
     ("C-g" . prot-simple-keyboard-quit-dwim)
     ("C-M-SPC" . prot-simple-mark-sexp)   ; will be overriden by `expreg' if tree-sitter is available
-    ("C-," . prot-simple-mark-sexp)   ; I also have `isearch-forward-symbol-at-point' on C-.
+    ;; ("C-," . prot-simple-mark-sexp)   ; I also have `isearch-forward-symbol-at-point' on C-.
     ;; Commands for lines
     ("C-S-d" . prot-simple-delete-line-backward)
     ("C-S-k" . prot-simple-kill-line-backward)
@@ -7051,6 +7087,8 @@ from it and thus keeps me focused.
 #+end_src
 
 *** The =detvdl-emacs-org.el= Org-board settings
+
+#+begin_quote
 *Motivation
 
  org-board is a bookmarking and web archival system for Emacs Org
@@ -7076,6 +7114,7 @@ from it and thus keeps me focused.
  specified via the property `WGET_OPTIONS'.  The variable
  `org-board-after-archive-functions' (defaulting to nil) holds a
  list of functions to run after each archival operation.
+#+end_quote
 
 Source: https://github.com/charlesroelli/org-board
 
