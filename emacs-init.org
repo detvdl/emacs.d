@@ -7543,7 +7543,9 @@ Source: https://github.com/minad/cape
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
 (use-package cape
-  :ensure t)
+  :ensure t
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file))
 #+end_src
 
 # TODO: test out https://github.com/blahgeek/emacs-lsp-booster

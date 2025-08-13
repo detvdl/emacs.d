@@ -123,7 +123,9 @@
 ;;   (setq eglot-autoshutdown t))
 
 (use-package cape
-  :ensure t)
+  :ensure t
+  :init
+  (add-to-list 'completion-at-point-functions #'cape-file))
 
 ;;;; TODO: test out org-src blocks with lsp-mode: https://github.com/emacs-lsp/lsp-mode/issues/2842#issuecomment-870807018
 (use-package lsp-mode
