@@ -603,8 +603,9 @@ See `org-capture-templates' for more information."
 
 (use-package org-board
   :ensure t
+  :ensure-system-package (wget . "brew install wget")
   :init
-    (defvar-keymap detvdl-prefix-org-board-map
+  (defvar-keymap detvdl-prefix-org-board-map
     :doc "Prefix keymap for Org Board commands."
     :name "Org Board"
     :prefix 'detvdl-prefix-org-board
@@ -612,7 +613,9 @@ See `org-capture-templates' for more information."
     "a" #'org-board-archive
     "o" #'org-board-open
     "d" #'org-board-delete-all)
-  :bind-keymap (("C-c b" . detvdl-prefix-org-board)))
+  :bind-keymap (("C-c b" . detvdl-prefix-org-board))
+  :custom
+  (org-board-make-relative t))
 
 (use-package org-modern
   :ensure t
