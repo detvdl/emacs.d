@@ -90,7 +90,13 @@
     (setq org-highest-priority ?A)
     (setq org-lowest-priority ?C)
     (setq org-default-priority ?A)
-    (setq org-priority-faces nil))
+    (setq org-priority-faces nil)
+    (add-hook 'org-mode-hook (lambda ()
+                               (push '("--" . "—") prettify-symbols-alist)
+                               (push '("-->" . "⟶") prettify-symbols-alist)
+                               (push '("<--" . "⟵") prettify-symbols-alist)
+                               (push '("=>" . "⇒") prettify-symbols-alist)
+                               (prettify-symbols-mode))))
 
 ;;;; `org-indent-mode' and related
 (use-package org
@@ -222,7 +228,7 @@
 
 (use-package ox-hugo
   :ensure t
-  :after (ox org)
+  :after (ox org-capture)
   :config
   (defun org-hugo-new-subtree-post-capture-template ()
     "Returns `org-capture' template string for new Hugo post.

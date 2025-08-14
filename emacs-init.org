@@ -5922,6 +5922,7 @@ See https://github.com/dgutov/diff-hl
          (bits (make-vector height ones)))
     (define-fringe-bitmap 'my-diff-hl-bitmap bits height width))
   (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my-diff-hl-bitmap)))
+
 ;; Only load the diff-hl package once we actually visit a file
 ;; This hook gets added by global-diff-hl mode anyway
 (add-hook 'find-file-hook #'diff-hl-update)
@@ -6145,7 +6146,13 @@ on how I use Org.
     (setq org-highest-priority ?A)
     (setq org-lowest-priority ?C)
     (setq org-default-priority ?A)
-    (setq org-priority-faces nil))
+    (setq org-priority-faces nil)
+    (add-hook 'org-mode-hook (lambda ()
+                               (push '("--" . "—") prettify-symbols-alist)
+                               (push '("-->" . "⟶") prettify-symbols-alist)
+                               (push '("<--" . "⟵") prettify-symbols-alist)
+                               (push '("=>" . "⇒") prettify-symbols-alist)
+                               (prettify-symbols-mode))))
 #+end_src
 
 *** The =detvdl-emacs-org.el= Org indent mode settings
@@ -6578,7 +6585,7 @@ I showed for Org Babel ([[#h:1f5a0d46-5202-48dd-8048-b48ce17f3df8][The =detvdl-e
 
 (use-package ox-hugo
   :ensure t
-  :after (ox org)
+  :after (ox org-capture)
   :config
   (defun org-hugo-new-subtree-post-capture-template ()
     "Returns `org-capture' template string for new Hugo post.
