@@ -196,7 +196,7 @@
            :italic-width nil
            :italic-height 1.0
 
-           :line-spacing nil))))
+           :line-spacing .15))))
 
 ;;;; Show Font (preview fonts)
 ;; Read the manual: <https://protesilaos.com/emacs/show-font>
