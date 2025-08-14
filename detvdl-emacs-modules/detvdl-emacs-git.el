@@ -205,10 +205,12 @@
 
 (use-package diff-hl
   :ensure t
+  :functions (diff-hl-update)
   :config
-  (set-face-attribute 'diff-hl-change nil :height font-height)
-  (set-face-attribute 'diff-hl-delete nil :height font-height)
-  (set-face-attribute 'diff-hl-insert nil :height font-height)
+  (let ((font-height (face-attribute 'default :height)))
+    (set-face-attribute 'diff-hl-change nil :height font-height)
+    (set-face-attribute 'diff-hl-delete nil :height font-height)
+    (set-face-attribute 'diff-hl-insert nil :height font-height))
   (global-diff-hl-mode +1)
   (diff-hl-flydiff-mode +1)
   (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
@@ -218,6 +220,7 @@
          (bits (make-vector height ones)))
     (define-fringe-bitmap 'my-diff-hl-bitmap bits height width))
   (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my-diff-hl-bitmap)))
+
 ;; Only load the diff-hl package once we actually visit a file
 ;; This hook gets added by global-diff-hl mode anyway
 (add-hook 'find-file-hook #'diff-hl-update)
