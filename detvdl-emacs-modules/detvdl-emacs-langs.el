@@ -43,29 +43,27 @@
 ;; (add-hook 'enable-theme-functions 'detvdl-modus-themes-update-faces)
 
 (when (and (treesit-available-p) detvdl-emacs-treesitter-extras)
-  (setq treesit-language-source-alist
-        '(
-          (bash "https://github.com/tree-sitter/tree-sitter-bash" :commit
-                "487734f87fd87118028a65a4599352fa99c9cde8")
-          (python "https://github.com/tree-sitter/tree-sitter-python" :commit
-                  "bffb65a8cfe4e46290331dfef0dbf0ef3679de11")
-          (javascript "https://github.com/tree-sitter/tree-sitter-javascript"
-                      :commit "108b2d4d17a04356a340aea809e4dd5b801eb40d")
-          (jsdoc "https://github.com/tree-sitter/tree-sitter-jsdoc" :commit
-                 "b253abf68a73217b7a52c0ec254f4b6a7bb86665")
-          (json "https://github.com/tree-sitter/tree-sitter-json" :commit
-                "4d770d31f732d50d3ec373865822fbe659e47c75")
-          (yaml "https://github.com/tree-sitter-grammars/tree-sitter-yaml"
-                :commit "b733d3f5f5005890f324333dd57e1f0badec5c87")
-          (toml "https://github.com/tree-sitter-grammars/tree-sitter-toml"
-                :commit "64b56832c2cffe41758f28e05c756a3a98d16f41")
-          )
-        )
-  ;; Only install language grammars which aren't available yet
-  (mapc (lambda (lang)
-          (when (not (treesit-language-available-p lang))
-            (treesit-install-language-grammar lang)))
-        (mapcar #'car treesit-language-source-alist))
+  (dolist (grammar
+           '((css . ("https://github.com/tree-sitter/tree-sitter-css" "v0.23.2"))
+             (bash . ("https://github.com/tree-sitter/tree-sitter-bash"
+                      "v0.25.0"))
+             (go . ("https://github.com/tree-sitter/tree-sitter-go" "v0.23.4"))
+             (html . ("https://github.com/tree-sitter/tree-sitter-html" "v0.23.2"))
+             (javascript . ("https://github.com/tree-sitter/tree-sitter-javascript" "v0.23.1" "src"))
+             (json . ("https://github.com/tree-sitter/tree-sitter-json" "v0.24.8"))
+             (markdown . ("https://github.com/ikatyang/tree-sitter-markdown" "v0.7.1"))
+             (python . ("https://github.com/tree-sitter/tree-sitter-python" "v0.23.6"))
+             (rust . ("https://github.com/tree-sitter/tree-sitter-rust" "v0.24.0"))
+             (toml . ("https://github.com/tree-sitter/tree-sitter-toml" "v0.5.1"))
+             (tsx . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
+             (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
+             (yaml . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
+    (add-to-list 'treesit-language-source-alist grammar)
+    ;; Only install `grammar' if we don't already have it
+    ;; installed. However, if you want to *update* a grammar then
+    ;; this obviously prevents that from happening.
+    (unless (treesit-language-available-p (car grammar))
+      (treesit-install-language-grammar (car grammar))))
   )
 
 ;;;; Parentheses (show-paren-mode)

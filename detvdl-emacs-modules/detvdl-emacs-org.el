@@ -177,6 +177,7 @@
   (setq org-edit-src-content-indentation 0)
   (require 'ob-shell)
   (require 'ob-clojure)
+  (add-to-list 'org-src-lang-modes '("json" . json-ts))
   (org-babel-do-load-languages 'org-babel-load-languages
                                '((shell      . t)
                                  (js         . t)
