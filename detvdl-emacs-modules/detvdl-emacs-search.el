@@ -29,7 +29,9 @@
   :demand t
   :config
   (setq isearch-wrap-pause t) ; `no-ding' makes keyboard macros never quit
-  (setq isearch-repeat-on-direction-change t))
+  (setq isearch-repeat-on-direction-change t)
+  (setq isearch-allow-motion t)
+  (setq isearch-motion-changes-direction))
 
 (use-package isearch
   :ensure nil

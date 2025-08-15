@@ -3975,13 +3975,26 @@ exits the keyboard macro, which is exactly what you want if you are
 calling it with a =0= numeric argument (to run from point until the
 end of the buffer).
 
+As of Emacs 28.1, we have the ~isearch-allow-motion~ that activates the
+intuitive =M-<=, =M->=, =C-v= and =M-v= movements during an isearch
+session.
+
+Alongside ~isearch-allow-motion~, the option
+~isearch-motion-change-direction~ was also introduced to work in
+conjunction with it.
+Setting this to a non-nil value inverts the change direction after any
+of the aforementioned movements is executed.
+e.g. after =M-<=, the search direction is then forwards 
+
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-search.el"
 (use-package isearch
   :ensure nil
   :demand t
   :config
   (setq isearch-wrap-pause t) ; `no-ding' makes keyboard macros never quit
-  (setq isearch-repeat-on-direction-change t))
+  (setq isearch-repeat-on-direction-change t)
+  (setq isearch-allow-motion t)
+  (setq isearch-motion-changes-direction))
 #+end_src
 
 *** The =detvdl-emacs-search.el= tweaks for the occur buffer
