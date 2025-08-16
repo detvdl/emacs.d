@@ -11,8 +11,8 @@
       inhibit-startup-buffer-menu t)
 
 (dolist (variable '(initial-frame-alist default-frame-alist))
-  (set variable `((width . 160)
-                  (height . 100)
+  (set variable `((width . 180)
+                  (height . 90)
                   (horizontal-scroll-bars . nil)
                   (menu-bar-lines . 1) ; alternative to disabling `menu-bar-mode'
                   (internal-border-width . 5)
