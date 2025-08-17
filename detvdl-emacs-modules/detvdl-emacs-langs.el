@@ -229,6 +229,10 @@
   :ensure t
   :hook (python-mode . flymake-ruff-load))
 
+(use-package detvdl-opam
+  :ensure nil)
+
+;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 (use-package tuareg
   :ensure t
   :mode (("\\.ocamlinit\\'" . tuareg-mode)))
@@ -258,7 +262,9 @@
 (use-package utop
   :ensure t
   :after tuareg
-  :hook (tuareg-mode . utop-minor-mode))
+  :hook (tuareg-mode . utop-minor-mode)
+  :custom
+  (utop-command "opam exec -- utop -emacs"))
 
 (use-package ocamlformat
   :ensure t
