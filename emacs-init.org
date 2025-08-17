@@ -7740,6 +7740,95 @@ Source: https://github.com/erickgnavar/flymake-ruff
   :hook (python-mode . flymake-ruff-load))
 #+end_src
 
+*** The =detvdl-emacs-langs.el= settings for ~ocaml~
+
+Package configuration for the OCaml programming language environment.
+See [[https://ocaml.org][OCaml]] for more information on the language and its documentation.
+
+All of the packages mentioned below can be installed using the Opam
+package manager for OCaml: [[https://github.com/ocaml/opam][Opam on GitHub]]
+
+Opam can be installed and managed through Mise, using the ~asdf:mise~
+plugin:
+#+BEGIN_EXAMPLE
+mise use -g asdf:opam@latest
+#+END_EXAMPLE
+
+The =tuareg= package provides an OCaml major mode that can run the
+default toplevel (repl) and debugger within Emacs.
+See [[https://github.com/ocaml/tuareg][Tuareg on GitHub]]
+
+The =dune= package provides an interface to the Dune build system for
+OCaml.
+See [[https://github.com/ocaml/dune][Dune on GitHub]]
+
+The =merlin= package provides an IDE-like experience for OCaml from
+within Emacs.
+It also integrates well with LSP when the =ocaml-lsp-server= package
+is installed.
+
+The =merlin-eldoc= package provides eldoc support for OCaml, deferring
+to Merlin internally.
+
+The =flycheck-ocaml= package provides a flycheck-compliant linter for
+OCaml, deferring to Merlin internally.
+
+The =utop= package provides improved toplevel (repl) integration from
+within Emacs. The primary upgrade from the regular toplevel is that it
+provides code completion for functions and variables defined in the OCaml
+Emacs buffer.
+
+The =ocamlformat= package provides a standard formatter with some
+custom configuration and hooks for improved Emacs support.
+
+All of the required system packages should be installed using ~opam~, as
+with the following command:
+
+#+begin_example
+opam install tuareg dune utop ocaml-lsp-server merlin ocamlformat
+#+end_example
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(use-package tuareg
+  :ensure t
+  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+
+(use-package dune
+  :ensure t
+  :after tuareg)
+
+(use-package merlin
+  :ensure t
+  :after tuareg
+  :hook (tuareg-mode . (lambda ()
+                         (merlin-mode)
+                         (lsp-deferred)))
+  :config
+  (setq merlin-error-after-save nil)) ;; we're using flycheck instead
+
+(use-package merlin-eldoc
+  :ensure t
+  :hook (tuareg-mode . merlin-eldoc-setup))
+
+(use-package flycheck-ocaml
+  :ensure t
+  :config
+  (flycheck-ocaml-setup))
+
+(use-package utop
+  :ensure t
+  :after tuareg
+  :hook (tuareg-mode . utop-minor-mode))
+
+(use-package ocamlformat
+  :ensure t
+  :custom
+  (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (tuareg-mode . (lambda ()
+                         (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
+)
+#+end_src
+
 *** The =detvdl-emacs-langs.el= settings for ~csv-mode~
 :PROPERTIES:
 :CUSTOM_ID: h:bae58479-86c1-410f-867e-c548def65b1c

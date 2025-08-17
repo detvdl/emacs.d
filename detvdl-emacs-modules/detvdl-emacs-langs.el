@@ -229,6 +229,45 @@
   :ensure t
   :hook (python-mode . flymake-ruff-load))
 
+(use-package tuareg
+  :ensure t
+  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+
+(use-package dune
+  :ensure t
+  :after tuareg)
+
+(use-package merlin
+  :ensure t
+  :after tuareg
+  :hook (tuareg-mode . (lambda ()
+                         (merlin-mode)
+                         (lsp-deferred)))
+  :config
+  (setq merlin-error-after-save nil)) ;; we're using flycheck instead
+
+(use-package merlin-eldoc
+  :ensure t
+  :hook (tuareg-mode . merlin-eldoc-setup))
+
+(use-package flycheck-ocaml
+  :ensure t
+  :config
+  (flycheck-ocaml-setup))
+
+(use-package utop
+  :ensure t
+  :after tuareg
+  :hook (tuareg-mode . utop-minor-mode))
+
+(use-package ocamlformat
+  :ensure t
+  :custom
+  (ocamlformat-enable 'enable-outside-detected-project)
+  :hook (tuareg-mode . (lambda ()
+                         (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
+)
+
 ;;; csv-mode
 (use-package csv-mode
   :ensure t

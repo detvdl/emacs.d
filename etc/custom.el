@@ -12,12 +12,12 @@
                 logos lsp-pyright lsp-ui magit marginalia mise
                 modus-themes multiple-cursors nerd-icons-completion
                 nerd-icons-corfu nerd-icons-dired nerd-icons-grep
-                nerd-icons-xref no-littering olivetti orderless
-                org-board org-contrib org-modern org-roam ox-gfm
-                ox-gist ox-hugo ox-jira package-lint-flymake pet
-                phi-search poporg rainbow-mode ready-player show-font
-                spacious-padding substitute symbol-overlay trashed
-                vertico wgrep yaml))
+                nerd-icons-xref no-littering ocamlformat olivetti
+                orderless org-board org-contrib org-modern org-roam
+                ox-gfm ox-gist ox-hugo ox-jira package-lint-flymake
+                pet phi-search poporg rainbow-mode ready-player
+                show-font spacious-padding substitute symbol-overlay
+                trashed tuareg vertico wgrep yaml))
  '(safe-local-variable-values
    '((org-confirm-babel-evaluate) (org-hide-macro-markers . t)
      (org-hide-leading-stars . t))))
