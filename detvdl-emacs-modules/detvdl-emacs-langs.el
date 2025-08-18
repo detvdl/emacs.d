@@ -56,7 +56,8 @@
              (toml       . ("https://github.com/tree-sitter/tree-sitter-toml" "v0.5.1"))
              (tsx        . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "tsx/src"))
              (typescript . ("https://github.com/tree-sitter/tree-sitter-typescript" "v0.23.2" "typescript/src"))
-             (yaml       . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))))
+             (yaml       . ("https://github.com/ikatyang/tree-sitter-yaml" "v0.5.0"))
+             (ocaml      . ("https://github.com/tree-sitter/tree-sitter-ocaml" "v0.24.2" "grammars/ocaml/src"))))
     (add-to-list 'treesit-language-source-alist grammar)
     ;; Only install `grammar' if we don't already have it
     ;; installed. However, if you want to *update* a grammar then
@@ -107,7 +108,8 @@
               ("M-d" . eldoc-doc-buffer))
   :config
   (setq eldoc-message-function #'message ; don't use mode line for M-x eval-expression, etc.
-        eldoc-echo-area-use-multiline-p nil) ; don't expand echo area for eldoc
+        eldoc-echo-area-use-multiline-p nil  ; don't expand echo area for eldoc
+  )
 )
 
 ;;;; Eglot (built-in client for the language server protocol)
@@ -230,7 +232,8 @@
   :hook (python-mode . flymake-ruff-load))
 
 (use-package detvdl-opam
-  :ensure nil)
+  :ensure nil
+  :after tuareg)
 
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 (use-package tuareg
@@ -252,7 +255,15 @@
 
 (use-package merlin-eldoc
   :ensure t
-  :hook (tuareg-mode . merlin-eldoc-setup))
+  :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
+                         ;; expand echo area because merlin-eldoc truncates based 
+                         ;; on this regardless of whether doc-buffer or echo-area is displayed
+                         (setq-local eldoc-echo-area-use-multiline-p t)))
+  :custom
+  (merlin-eldoc-max-lines 8)
+  (merlin-eldoc-max-lines-doc 8)
+  (merlin-eldoc-max-lines-type 5)
+  (merlin-eldoc-max-lines-function-arguments 5))
 
 (use-package flycheck-ocaml
   :ensure t
@@ -272,7 +283,11 @@
   (ocamlformat-enable 'enable-outside-detected-project)
   :hook (tuareg-mode . (lambda ()
                          (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
-)
+  )
+
+(use-package ocp-indent
+  :ensure t
+  :hook (tuareg-mode . ocp-setup-indent))
 
 ;;; csv-mode
 (use-package csv-mode
