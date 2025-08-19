@@ -7750,11 +7750,65 @@ See [[https://ocaml.org][OCaml]] for more information on the language and its do
 All of the packages mentioned below can be installed using the Opam
 package manager for OCaml: [[https://github.com/ocaml/opam][Opam on GitHub]]
 
-Opam can be installed and managed through Mise, using the ~asdf:mise~
+OCaml and Opam can be installed and managed through Mise, using the ~asdf:mise~
 plugin:
 #+BEGIN_EXAMPLE
+mise use -g asdf:ocaml @latest
 mise use -g asdf:opam@latest
 #+END_EXAMPLE
+
+Once installed we do need to initialize it first:
+#+begin_example
+opam init
+#+end_example
+
+With our current ~exec-path-from-shell~ setup, we'll need to move the
+opam loading code from our ~.<shell>rc~ to the matching ~.profile~
+file, since we load path variables from the login shell and not the
+interactive one.
+Make sure to add it after the ~mise activate~ call, since opam is only
+loaded in scope of the active =mise= session:
+
+#+NAME: .zprofile
+#+begin_example
+eval "$(mise activate zsh)"
+
+# BEGIN opam configuration
+# This is useful if you're using opam as it adds:
+#   - the correct directories to the PATH
+#   - auto-completion for the opam binary
+# This section can be safely removed at any time if needed.
+[[ ! -r '$HOME/.opam/opam-init/init.zsh' ]] || source '$HOME/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null
+# END opam configuration
+#+end_example
+
+Normally we'd also need to run ~opam user-setup~, but we are managing
+this manually to maintain portability across installations.
+The most important part of this command is the addition of an
+=.ocamlinit= file with the following contents:
+
+#+NAME: .ocamlinit
+#+begin_example
+#require "core.top"
+
+#require "ppx_jane"
+
+#require "base"
+open Base;;
+
+(* ## added by OPAM user-setup for ocamltop / base ## 3ec62baf6f9c219ae06d9814069da862 ## you can edit, but keep this line *)
+#use "topfind"
+(* ## end of OPAM user-setup addition for ocamltop / base ## keep this line *)
+
+#+end_example
+
+The most-used common libraries can also be added to the =.ocamlinit=
+file so that they can be used in any toplevel (such as =utop=):
+
+#+NAME: .ocamlinit
+#+begin_example
+opam install core ppx_jane
+#+end_example
 
 The =tuareg= package provides an OCaml major mode that can run the
 default toplevel (repl) and debugger within Emacs.
