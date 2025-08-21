@@ -618,14 +618,6 @@ Specific to the current window's mode line.")
 
 ;;;; Miscellaneous
 
-(defvar-local prot-modeline-notmuch-indicator
-  '(notmuch-indicator-mode
-    (" "
-     (:eval (when (mode-line-window-selected-p)
-              notmuch-indicator--counters))))
-  "The equivalent of `notmuch-indicator-mode-line-construct'.
-Display the indicator only on the focused window's mode line.")
-
 (defvar-local prot-modeline-misc-info
   '(:eval
     (when (mode-line-window-selected-p)
@@ -652,7 +644,6 @@ Specific to the current window's mode line.")
                      prot-modeline-vc-branch
                      prot-modeline-vc-state-dot
                      prot-modeline-flymake
-                     prot-modeline-eglot
                      ;; prot-modeline-align-right
                      prot-modeline-position-info
                      prot-modeline-misc-info))

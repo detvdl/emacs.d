@@ -74,6 +74,17 @@
             ("\\`\\*\\(Warnings\\|Compile-Log\\|Org Links\\)\\*\\'"
              (display-buffer-no-window)
              (allow-no-window . t))
+            ;; side window
+            ("\\*utop\\*"
+             (display-buffer-in-direction
+              display-buffer-in-side-window)
+             (dedicated . t)
+             (direction . right)
+             (side . right)
+             (slot . 1)
+             (body-function . select-window)
+             ;; (preserve-size . (t . t))
+             (window-width . 0.33))
             ;; bottom side window
             ("\\*\\(Org \\(Select\\|Note\\)\\|Agenda Commands\\)\\*" ; the `org-capture' key selection and `org-add-log-note'
              (display-buffer-in-side-window)

@@ -657,7 +657,8 @@ Source: https://github.com/purcell/exec-path-from-shell
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+                                    "OPAM_SWITCH_PREFIX"))
   (exec-path-from-shell-arguments '("--login"))
   :config
   (exec-path-from-shell-initialize))
@@ -3786,6 +3787,27 @@ The extras I provide for ~vertico~ are in [[#h:3796a4c9-8659-4782-8aaa-3cf4e9509
 (provide 'detvdl-emacs-vertico)
 #+end_src
 
+*** The =detvdl-emacs-completion.el= section to configure AI-assisted coding
+
+Claude Code IDE for Emacs provides native integration with Claude Code
+CLI through the Model Context Protocol (MCP). Unlike simple terminal
+wrappers, this package creates a bidirectional bridge between Claude
+and Emacs, enabling Claude to understand and leverage Emacs’ powerful
+features—from LSP and project management to custom Elisp functions.
+This transforms Claude into a true Emacs-aware AI assistant that works
+within your existing workflow and can interact with your entire Emacs
+ecosystem. 
+
+Source: https://github.com/manzaltu/claude-code-ide.el
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-completion.el"
+(use-package claude-code-ide
+  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+  :bind ("C-c C-'" . claude-code-ide-menu)
+  :config
+  (claude-code-ide-emacs-tools-setup))
+#+end_src
+
 ** The =detvdl-emacs-search.el= module
 :PROPERTIES:
 :CUSTOM_ID: h:e0f9c30e-3a98-4479-b709-7008277749e4
@@ -5090,6 +5112,17 @@ to a certain height.
             ("\\`\\*\\(Warnings\\|Compile-Log\\|Org Links\\)\\*\\'"
              (display-buffer-no-window)
              (allow-no-window . t))
+            ;; side window
+            ("\\*utop\\*"
+             (display-buffer-in-direction
+              display-buffer-in-side-window)
+             (dedicated . t)
+             (direction . right)
+             (side . right)
+             (slot . 1)
+             (body-function . select-window)
+             ;; (preserve-size . (t . t))
+             (window-width . 0.33))
             ;; bottom side window
             ("\\*\\(Org \\(Select\\|Note\\)\\|Agenda Commands\\)\\*" ; the `org-capture' key selection and `org-add-log-note'
              (display-buffer-in-side-window)
@@ -10161,14 +10194,6 @@ Specific to the current window's mode line.")
 
 ;;;; Miscellaneous
 
-(defvar-local prot-modeline-notmuch-indicator
-  '(notmuch-indicator-mode
-    (" "
-     (:eval (when (mode-line-window-selected-p)
-              notmuch-indicator--counters))))
-  "The equivalent of `notmuch-indicator-mode-line-construct'.
-Display the indicator only on the focused window's mode line.")
-
 (defvar-local prot-modeline-misc-info
   '(:eval
     (when (mode-line-window-selected-p)
@@ -10195,7 +10220,6 @@ Specific to the current window's mode line.")
                      prot-modeline-vc-branch
                      prot-modeline-vc-state-dot
                      prot-modeline-flymake
-                     prot-modeline-eglot
                      ;; prot-modeline-align-right
                      prot-modeline-position-info
                      prot-modeline-misc-info))

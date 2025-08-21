@@ -153,7 +153,8 @@ before all other modules of my setup."
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
                                     "PAGER" "TERM"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
-                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"))
+                                    "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
+                                    "OPAM_SWITCH_PREFIX"))
   (exec-path-from-shell-arguments '("--login"))
   :config
   (exec-path-from-shell-initialize))
