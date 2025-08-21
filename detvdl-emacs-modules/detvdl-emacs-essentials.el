@@ -80,10 +80,10 @@
   (crux-with-region-or-sexp-or-line kill-region)
   )
 
-(use-package mise
-  :ensure t
-  :ensure-system-package (mise . "brew install mise")
-  :hook (after-init . global-mise-mode))
+;; (use-package mise
+;;   :ensure t
+;;   :ensure-system-package (mise . "brew install mise")
+;;   :hook (after-init . global-mise-mode))
 
 (use-package prot-common
   :ensure nil
