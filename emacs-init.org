@@ -7290,11 +7290,24 @@ If I need to manually wrap the symbol at point or a region in a pair
 of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554-8a4dcedce75e][The =detvdl-emacs-essentials.el= section about =prot-pair.el= (insert character pairs)]]).
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
-;;;; Disable "electric" behaviour
+;;;; Keep minimal electric behaviour
 (use-package electric
   :ensure nil
   :hook
-  (prog-mode . electric-indent-local-mode)
+  (prog-mode . (lambda () (electric-indent-local-mode)
+                 (when (derived-mode-p 'lisp-data-mode)
+                   (setq-local electric-pair-pairs 
+                               (append electric-pair-pairs '((?( . ?))
+                                                             (?[ . ?])
+                                                             (?{ . ?}))))
+                   (electric-pair-mode))))
+  :custom
+  (electric-pair-pairs '((?" . ?")
+                         (?‘ . ?’)
+                         (?“ . ?”)))
+  (electric-pair-text-pairs '((?" . ?")
+                              (?‘ . ?’)
+                              (?“ . ?”)))
   :config
   ;; I don't like auto indents in Org and related.  They are okay for
   ;; programming.
@@ -7740,6 +7753,16 @@ Source: https://github.com/erickgnavar/flymake-ruff
 (use-package flymake-ruff
   :ensure t
   :hook (python-mode . flymake-ruff-load))
+#+end_src
+
+Settings for electric-mode
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
+(use-package python
+  :ensure nil
+  :hook (python-mode . (lambda ()
+                         (setq-local electric-pair-pairs))))
+
+(append electric-pair-pairs '((?" . ?")))
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings for ~ocaml~
@@ -9419,6 +9442,97 @@ Also see `prot-ediff-store-layout'."
 ;;; prot-ediff.el ends here
 #+end_src
 
+** The =detvdl-electric.el= library
+#+begin_src emacs-lisp :tangle "detvdl-lisp/detvdl-electric.el" :mkdirp yes
+;;; detvdl-electric.el --- Electric extensions for my dotemacs -*- lexical-binding: t -*-
+
+;; Copyright (C) 2025  detvdl
+
+;; Author: detvdl <detvdl@pm.me>
+;; Version: 0.1.0
+;; Package-Requires: ((emacs "30.1"))
+
+;; This file is NOT part of GNU Emacs.
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+;;
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+;;
+;; Extensions for Electric, specifically electric-pair-mode
+
+;;; Code:
+(defgroup detvdl-electric nil
+  "Insert character pair around symbol or region."
+  :group 'editing)
+
+(defcustom detvdl-text-pairs
+  '((?' . ?')
+    (?\" . ?\")
+    (?‘ . ?’)
+    (?“ . ?”)
+    (?` . ?`))
+  :group 'detvdl-electric-group)
+
+(defcustom detvdl-emphasis-pairs
+  '((?= . ?=)
+    (?* . ?*)
+    (?/ . ?/)
+    (?~ . ?~)
+    (?_ . ?_)
+    (?+ . ?+))
+  :group 'detvdl-electric-group)
+
+(defcustom detvdl-bracket-pairs
+  '((?\(. ?\))
+    (?\[ . ?\[)
+    (?\{ . ?\})
+    (?\< . ?\>))
+  :group 'detvdl-electric-group)
+
+(defcustom detvdl-prog-c-pairs
+  '(())
+  :group 'detvdl-electric-group)
+
+(defcustom detvdl-prog-lisp-pairs
+  '(())
+  :group 'detvdl-electric-group)
+
+(defcustom prot-pair-pairs
+  '((?'  :description "Single quotes"           :pair ?')
+    (?\" :description "Double quotes"           :pair ?\")
+    (?‘  :description "Single curly quotes"     :pair (?‘ . ?’))
+    (?“  :description "Double curly quotes"     :pair (?“ . ?”))
+    (?\> :description "Natural language quotes" :pair prot-pair-insert-natural-language-quotes)
+    (?\( :description "Parentheses"             :pair (?\( . ?\)))
+    (?{  :description "Curly brackets"          :pair (?{ . ?}))
+    (?\[ :description "Square brackets"         :pair (?\[ . ?\]))
+    (?\< :description "Angled brackets"         :pair (?\< . ?\>))
+    (?@  :description "At signs"                :pair ?@)
+    (?=  :description "Equals signs"            :pair ?=)
+    (?+  :description "Plus signs"              :pair ?+)
+    (?`  :description "Backticks"               :pair prot-pair-insert-backticks)
+    (?~  :description "Tildes"                  :pair ?~)
+    (?*  :description "Asterisks"               :pair ?*)
+    (?/  :description "Forward slashes"         :pair ?/)
+    (?_  :description "Underscores"             :pair ?_)
+    ))
+
+
+
+(provide 'detvdl-electric)
+;;; detvdl-electric.el ends here
+#+end_src
 ** The =prot-modeline.el= library
 :PROPERTIES:
 :CUSTOM_ID: h:935adc09-abaa-4413-a5ab-a7a562081c20
