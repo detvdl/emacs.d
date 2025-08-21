@@ -13,12 +13,13 @@
 
 (use-package prot-ediff
   :ensure nil
-  :bind
+  ;; :bind
   ;; The C-x v prefix is for all "version control" commands that are
   ;; already built into Emacs.  It makes sense to extend it for this
   ;; use-case.
-  (("C-x v 2" . prot-ediff-visible-buffers-2)
-   ("C-x v 3" . prot-ediff-visible-buffers-3))
+  ;; NOTE: superseded by the transient prefix defined below
+  ;; (("C-x v 2" . prot-ediff-visible-buffers-2)
+   ;; ("C-x v 3" . prot-ediff-visible-buffers-3))
   :hook
   ((ediff-before-setup . prot-ediff-store-layout)
    (ediff-quit . prot-ediff-restore-layout)))
@@ -246,7 +247,11 @@
     ("*" "Show hunk" diff-hl-show-hunk)
     ("s" "Stage hunk" diff-hl-stage-current-hunk :transient t)
     ("u" "Unstage file" diff-hl-unstage-file :transient t)
-    ]])
+    ]
+   ["Ediff"
+    ("2" "Ediff 2 buffers" prot-ediff-visible-buffers-2)
+    ("3" "Ediff 3 buffers" prot-ediff-visible-buffers-3)]]
+  )
 
 (define-key global-map (kbd "C-x v") #'detvdl/vc-transient)
 (define-key diff-hl-mode-map (kbd "C-x v") #'detvdl/vc-transient)
