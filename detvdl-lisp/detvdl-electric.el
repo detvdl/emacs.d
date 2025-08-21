@@ -77,7 +77,7 @@
 
 (defcustom detvdl-org-mode-pairs
   `(,@detvdl-bracket-pairs
-    ,@detvdl-text-pairs
+    ,@(assq-delete-all ?' detvdl-text-pairs)
     ,@detvdl-emphasis-pairs)
   "Electric pairs most often encountered in Org-mode prose"
   :group 'detvdl-electric-group)

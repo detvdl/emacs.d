@@ -69,17 +69,17 @@
 (use-package vc
   :ensure nil
   :bind
-  (;; NOTE: I override lots of the defaults
-   :map global-map
-   ("C-x v B" . vc-annotate) ; Blame mnemonic
-   ("C-x v e" . vc-ediff)
-   ("C-x v k" . vc-delete-file) ; 'k' for kill==>delete is more common
-   ("C-x v G" . vc-log-search)  ; git log --grep
-   ("C-x v t" . vc-create-tag)
-   ("C-x v c" . vc-clone) ; Emacs 31
-   ("C-x v d" . vc-diff)
-   ("C-x v ." . vc-dir-root) ; `vc-dir-root' is from Emacs 28
-   ("C-x v <return>" . vc-dir-root)
+  (;; NOTE: superseded by transient definition
+   ;; :map global-map
+   ;; ("C-x v B" . vc-annotate) ; Blame mnemonic
+   ;; ("C-x v e" . vc-ediff)
+   ;; ("C-x v k" . vc-delete-file) ; 'k' for kill==>delete is more common
+   ;; ("C-x v G" . vc-log-search)  ; git log --grep
+   ;; ("C-x v t" . vc-create-tag)
+   ;; ("C-x v c" . vc-clone) ; Emacs 31
+   ;; ("C-x v d" . vc-diff)
+   ;; ("C-x v ." . vc-dir-root) ; `vc-dir-root' is from Emacs 28
+   ;; ("C-x v <return>" . vc-dir-root)
    :map vc-dir-mode-map
    ("t" . vc-create-tag)
    ("O" . vc-log-outgoing)
@@ -134,12 +134,12 @@
   (setq log-edit-require-final-newline t)
   (setq log-edit-setup-add-author nil)
   ;; I can see the files from the Diff with C-c C-d
-  (remove-hook 'log-edit-hook #'log-edit-show-files)
+  ;; (remove-hook 'log-edit-hook #'log-edit-show-files)
 
   (setq vc-find-revision-no-save t)
   (setq vc-annotate-display-mode 'scale) ; scale to oldest
   ;; I use a different account for git commits
-  (setq add-log-mailing-address "info@protesilaos.com")
+  (setq add-log-mailing-address "detvdl@pm.me")
   (setq add-log-keep-changes-together t)
   (setq vc-git-diff-switches '("--patch-with-stat" "--histogram"))
   (setq vc-git-log-switches '("--stat"))
@@ -224,5 +224,31 @@
 ;; Only load the diff-hl package once we actually visit a file
 ;; This hook gets added by global-diff-hl mode anyway
 (add-hook 'find-file-hook #'diff-hl-update)
+
+(require 'transient)
+
+(transient-define-prefix detvdl/vc-transient ()
+  [["Version Control"
+    ("b" "Blame/annotate"  vc-annotate) ; Blame mnemonic
+    ("e" "Ediff"  vc-ediff)
+    ("k" "Delete file"  vc-delete-file) ; 'k' for kill==>delete is more common
+    ("G" "Log search" vc-log-search)  ; git log --grep
+    ("t" "Create tag" vc-create-tag)
+    ("c" "Clone" vc-clone) ; Emacs 31
+    ("d"  "Diff" vc-diff)
+    ("."  "Dir root" vc-dir-root) ; `vc-dir-root' is from Emacs 28
+    ("<return>" "Next action"  vc-next-action)]
+   ["Diff-hl"
+    ("[" "Prev hunk" diff-hl-previous-hunk :transient t)
+    ("]" "Next hunk" diff-hl-next-hunk :transient t)
+    ("=" "Goto hunk" diff-hl-diff-goto-hunk)
+    ("r" "Revert hunk" diff-hl-revert-hunk :transient t)
+    ("*" "Show hunk" diff-hl-show-hunk)
+    ("s" "Stage hunk" diff-hl-stage-current-hunk :transient t)
+    ("u" "Unstage file" diff-hl-unstage-file :transient t)
+    ]])
+
+(define-key global-map (kbd "C-x v") #'detvdl/vc-transient)
+(define-key diff-hl-mode-map (kbd "C-x v") #'detvdl/vc-transient)
 
 (provide 'detvdl-emacs-git)

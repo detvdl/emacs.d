@@ -109,6 +109,13 @@
              (window-height . fit-window-to-buffer)
              (window-parameters . ((no-other-window . t)
                                    (mode-line-format . none))))
+            ((derived-mode . compilation-mode)
+             (display-buffer-below-selected)
+             (mode . (compilation-mode))
+             (window-height . 0.2)
+             (dedicated . t)
+             (window-parameters . ((no-other-window . t)))
+             (body-function . select-window))
             ("\\*eldoc\\*"
              (display-buffer-reuse-mode-window display-buffer-at-bottom)
              (body-function . prot-window-select-fit-size)
