@@ -6217,6 +6217,17 @@ on how I use Org.
                                (prettify-symbols-mode))))
 #+end_src
 
+*** The =detvdl-emacs-org.el= section for ~electric~ behaviour
+
+#+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-org.el"
+(use-package org
+  :ensure nil
+  :hook (org-mode . (lambda ()
+                      (setq-local electric-pair-pairs detvdl-org-mode-pairs)
+                      (electric-pair-local-mode)))
+)
+#+end_src
+
 *** The =detvdl-emacs-org.el= Org indent mode settings
 :PROPERTIES:
 :CUSTOM_ID: h:0c758fca-0a51-4095-9483-b9b0a594333a
@@ -7340,16 +7351,16 @@ of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-langs.el"
 ;;;; Keep minimal electric behaviour
+(require 'detvdl-electric)
+
 (use-package electric
   :ensure nil
+  :commands (electric-indent-local-mode electric-pair-local-mode)
   :hook
   (prog-mode . (lambda () (electric-indent-local-mode)
                  (when (derived-mode-p 'lisp-data-mode)
-                   (setq-local electric-pair-pairs 
-                               (append electric-pair-pairs '((?( . ?))
-                                                             (?[ . ?])
-                                                             (?{ . ?}))))
-                   (electric-pair-mode))))
+                   (setq-local electric-pair-pairs detvdl-prog-lisp-pairs)
+                   (electric-pair-local-mode))))
   :custom
   (electric-pair-pairs '((?" . ?")
                          (?‘ . ?’)
@@ -7821,9 +7832,8 @@ Settings for electric-mode
 (use-package python
   :ensure nil
   :hook (python-mode . (lambda ()
-                         (setq-local electric-pair-pairs))))
-
-(append electric-pair-pairs '((?" . ?")))
+                         (setq-local electric-pair-pairs detvdl-prog-c-pairs)
+                         (electric-pair-local-mode))))
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings for ~ocaml~
@@ -7933,20 +7943,15 @@ opam install tuareg dune utop ocaml-lsp-server merlin ocamlformat
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 (use-package tuareg
   :ensure t
-  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+  :mode (("\\.ocamlinit\\'" . tuareg-mode))
+  :hook
+  (tuareg-mode . (lambda ()
+                   (setq-local electric-pair-pairs detvdl-prog-ocaml-pairs)
+                   (electric-pair-local-mode))))
 
 (use-package dune
   :ensure t
   :after tuareg)
-
-;; (use-package merlin
-;;   :ensure t
-;;   :after tuareg
-;;   :hook (tuareg-mode . (lambda ()
-;;                          (merlin-mode)
-;;                          (lsp-deferred)))
-;;   :config
-;;   (setq merlin-error-after-save nil)) ;; we're using flycheck instead
 
 (use-package ocaml-eglot
   :ensure t
@@ -7960,18 +7965,6 @@ opam install tuareg dune utop ocaml-lsp-server merlin ocamlformat
   (setq ocaml-eglot-syntax-checker 'flycheck)
   :bind (:map ocaml-eglot-map
               ("C-c C-c" . compile)))
-
-;; (use-package merlin-eldoc
-;;   :ensure t
-;;   :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
-;;                          ;; expand echo area because merlin-eldoc truncates based 
-;;                          ;; on this regardless of whether doc-buffer or echo-area is displayed
-;;                          (setq-local eldoc-echo-area-use-multiline-p t)))
-;;   :custom
-;;   (merlin-eldoc-max-lines 8)
-;;   (merlin-eldoc-max-lines-doc 8)
-;;   (merlin-eldoc-max-lines-type 5)
-;;   (merlin-eldoc-max-lines-function-arguments 5))
 
 (use-package opam-switch-mode
   :ensure t
@@ -7990,6 +7983,35 @@ opam install tuareg dune utop ocaml-lsp-server merlin ocamlformat
   :custom
   (utop-command "opam exec -- utop -emacs"))
 
+(use-package ocp-indent
+  :ensure t
+  :hook (ocaml-eglot-hook . ocp-setup-indent))
+#+end_src
+
+ARCHIVED: previous setup with Merlin
+#+begin_src emacs-lisp :tangle no
+;; (use-package merlin
+;;   :ensure t
+;;   :after tuareg
+;;   :hook (tuareg-mode . (lambda ()
+;;                          (merlin-mode)
+;;                          (lsp-deferred)))
+;;   :config
+;;   (setq merlin-error-after-save nil)) ;; we're using flycheck instead
+
+;; (use-package merlin-eldoc
+;;   :ensure t
+;;   :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
+;;                          ;; expand echo area because merlin-eldoc truncates based 
+;;                          ;; on this regardless of whether doc-buffer or echo-area is displayed
+;;                          (setq-local eldoc-echo-area-use-multiline-p t)))
+;;   :custom
+;;   (merlin-eldoc-max-lines 8)
+;;   (merlin-eldoc-max-lines-doc 8)
+;;   (merlin-eldoc-max-lines-type 5)
+;;   (merlin-eldoc-max-lines-function-arguments 5))
+
+
 ;; (use-package ocamlformat
 ;;   :ensure t
 ;;   :custom
@@ -7997,10 +8019,6 @@ opam install tuareg dune utop ocaml-lsp-server merlin ocamlformat
 ;;   :hook (tuareg-mode . (lambda ()
 ;;                          (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
 ;;   )
-
-(use-package ocp-indent
-  :ensure t
-  :hook (ocaml-eglot-hook . ocp-setup-indent))
 #+end_src
 
 *** The =detvdl-emacs-langs.el= settings for ~csv-mode~
@@ -9557,6 +9575,7 @@ Also see `prot-ediff-store-layout'."
     (?‘ . ?’)
     (?“ . ?”)
     (?` . ?`))
+  "Electric pairs most often encountered in pure textual environments"
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-emphasis-pairs
@@ -9566,6 +9585,7 @@ Also see `prot-ediff-store-layout'."
     (?~ . ?~)
     (?_ . ?_)
     (?+ . ?+))
+  "Electric pairs most often encountered in markup languages"
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-bracket-pairs
@@ -9573,37 +9593,33 @@ Also see `prot-ediff-store-layout'."
     (?\[ . ?\[)
     (?\{ . ?\})
     (?\< . ?\>))
+  "Electric pairs most often encountered in programming modes"
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-prog-c-pairs
-  '(())
+  `(,@detvdl-bracket-pairs
+    ,@detvdl-text-pairs)
+  "Electric pairs most often encountered in C-like languages"
+  :group 'detvdl-electric-group)
+
+(defcustom detvdl-prog-ocaml-pairs
+  `(,@detvdl-bracket-pairs
+    ,@(assq-delete-all ?' detvdl-text-pairs))
+  "Electric pairs most often encountered in OCaml and ML-like languages (e.g. Reason)"
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-prog-lisp-pairs
-  '(())
+  `(,@detvdl-bracket-pairs
+    (?\" . ?\"))
+  "Electric pairs most often encountered in Lispy languages"
   :group 'detvdl-electric-group)
 
-(defcustom prot-pair-pairs
-  '((?'  :description "Single quotes"           :pair ?')
-    (?\" :description "Double quotes"           :pair ?\")
-    (?‘  :description "Single curly quotes"     :pair (?‘ . ?’))
-    (?“  :description "Double curly quotes"     :pair (?“ . ?”))
-    (?\> :description "Natural language quotes" :pair prot-pair-insert-natural-language-quotes)
-    (?\( :description "Parentheses"             :pair (?\( . ?\)))
-    (?{  :description "Curly brackets"          :pair (?{ . ?}))
-    (?\[ :description "Square brackets"         :pair (?\[ . ?\]))
-    (?\< :description "Angled brackets"         :pair (?\< . ?\>))
-    (?@  :description "At signs"                :pair ?@)
-    (?=  :description "Equals signs"            :pair ?=)
-    (?+  :description "Plus signs"              :pair ?+)
-    (?`  :description "Backticks"               :pair prot-pair-insert-backticks)
-    (?~  :description "Tildes"                  :pair ?~)
-    (?*  :description "Asterisks"               :pair ?*)
-    (?/  :description "Forward slashes"         :pair ?/)
-    (?_  :description "Underscores"             :pair ?_)
-    ))
-
-
+(defcustom detvdl-org-mode-pairs
+  `(,@detvdl-bracket-pairs
+    ,@detvdl-text-pairs
+    ,@detvdl-emphasis-pairs)
+  "Electric pairs most often encountered in Org-mode prose"
+  :group 'detvdl-electric-group)
 
 (provide 'detvdl-electric)
 ;;; detvdl-electric.el ends here

@@ -98,6 +98,13 @@
                                (push '("=>" . "⇒") prettify-symbols-alist)
                                (prettify-symbols-mode))))
 
+(use-package org
+  :ensure nil
+  :hook (org-mode . (lambda ()
+                      (setq-local electric-pair-pairs detvdl-org-mode-pairs)
+                      (electric-pair-local-mode)))
+)
+
 ;;;; `org-indent-mode' and related
 (use-package org
   :ensure nil

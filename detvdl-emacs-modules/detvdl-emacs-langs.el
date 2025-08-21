@@ -8,11 +8,24 @@
   (setq-default tab-width 4
                 indent-tabs-mode nil))
 
-;;;; Disable "electric" behaviour
+;;;; Keep minimal electric behaviour
+(require 'detvdl-electric)
+
 (use-package electric
   :ensure nil
+  :commands (electric-indent-local-mode electric-pair-local-mode)
   :hook
-  (prog-mode . electric-indent-local-mode)
+  (prog-mode . (lambda () (electric-indent-local-mode)
+                 (when (derived-mode-p 'lisp-data-mode)
+                   (setq-local electric-pair-pairs detvdl-prog-lisp-pairs)
+                   (electric-pair-local-mode))))
+  :custom
+  (electric-pair-pairs '((?" . ?")
+                         (?‘ . ?’)
+                         (?“ . ?”)))
+  (electric-pair-text-pairs '((?" . ?")
+                              (?‘ . ?’)
+                              (?“ . ?”)))
   :config
   ;; I don't like auto indents in Org and related.  They are okay for
   ;; programming.
@@ -243,23 +256,24 @@
   :ensure t
   :hook (python-mode . flymake-ruff-load))
 
+(use-package python
+  :ensure nil
+  :hook (python-mode . (lambda ()
+                         (setq-local electric-pair-pairs detvdl-prog-c-pairs)
+                         (electric-pair-local-mode))))
+
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 (use-package tuareg
   :ensure t
-  :mode (("\\.ocamlinit\\'" . tuareg-mode)))
+  :mode (("\\.ocamlinit\\'" . tuareg-mode))
+  :hook
+  (tuareg-mode . (lambda ()
+                   (setq-local electric-pair-pairs detvdl-prog-ocaml-pairs)
+                   (electric-pair-local-mode))))
 
 (use-package dune
   :ensure t
   :after tuareg)
-
-;; (use-package merlin
-;;   :ensure t
-;;   :after tuareg
-;;   :hook (tuareg-mode . (lambda ()
-;;                          (merlin-mode)
-;;                          (lsp-deferred)))
-;;   :config
-;;   (setq merlin-error-after-save nil)) ;; we're using flycheck instead
 
 (use-package ocaml-eglot
   :ensure t
@@ -273,18 +287,6 @@
   (setq ocaml-eglot-syntax-checker 'flycheck)
   :bind (:map ocaml-eglot-map
               ("C-c C-c" . compile)))
-
-;; (use-package merlin-eldoc
-;;   :ensure t
-;;   :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
-;;                          ;; expand echo area because merlin-eldoc truncates based 
-;;                          ;; on this regardless of whether doc-buffer or echo-area is displayed
-;;                          (setq-local eldoc-echo-area-use-multiline-p t)))
-;;   :custom
-;;   (merlin-eldoc-max-lines 8)
-;;   (merlin-eldoc-max-lines-doc 8)
-;;   (merlin-eldoc-max-lines-type 5)
-;;   (merlin-eldoc-max-lines-function-arguments 5))
 
 (use-package opam-switch-mode
   :ensure t
@@ -302,14 +304,6 @@
   :hook (tuareg-mode . utop-minor-mode)
   :custom
   (utop-command "opam exec -- utop -emacs"))
-
-;; (use-package ocamlformat
-;;   :ensure t
-;;   :custom
-;;   (ocamlformat-enable 'enable-outside-detected-project)
-;;   :hook (tuareg-mode . (lambda ()
-;;                          (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
-;;   )
 
 (use-package ocp-indent
   :ensure t
