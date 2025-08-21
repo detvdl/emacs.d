@@ -112,14 +112,26 @@
   )
 )
 
-;;;; Eglot (built-in client for the language server protocol)
-;; (use-package eglot
-;;   :ensure nil
-;;   :functions (eglot-ensure)
-;;   :commands (eglot)
-;;   :config
-;;   (setq eglot-sync-connect nil)
-;;   (setq eglot-autoshutdown t))
+;; Eglot (built-in client for the language server protocol)
+(use-package eglot
+  :ensure nil
+  :functions (eglot-ensure)
+  :commands (eglot)
+  :custom
+  (eglot-sync-connect nil)
+  (eglot-autoshutdown t)
+  (eglot-code-action-indications '(eldoc-hint mode-line))
+  (eglot-mode-line-format '(eglot-mode-line-menu 
+                            eglot-mode-line-session 
+                            eglot-mode-line-error
+                            ;; eglot-mode-line-pending-requests ;; constantly jitters the modeline
+                            eglot-mode-line-progress
+                            eglot-mode-line-action-suggestion))
+)
+
+(use-package flycheck-eglot
+  :ensure t
+  :after (flycheck eglot))
 
 (use-package cape
   :ensure t
@@ -231,10 +243,6 @@
   :ensure t
   :hook (python-mode . flymake-ruff-load))
 
-(use-package detvdl-opam
-  :ensure nil
-  :after tuareg)
-
 ;; ## end of OPAM user-setup addition for emacs / base ## keep this line
 (use-package tuareg
   :ensure t
@@ -244,26 +252,44 @@
   :ensure t
   :after tuareg)
 
-(use-package merlin
+;; (use-package merlin
+;;   :ensure t
+;;   :after tuareg
+;;   :hook (tuareg-mode . (lambda ()
+;;                          (merlin-mode)
+;;                          (lsp-deferred)))
+;;   :config
+;;   (setq merlin-error-after-save nil)) ;; we're using flycheck instead
+
+(use-package ocaml-eglot
   :ensure t
   :after tuareg
-  :hook (tuareg-mode . (lambda ()
-                         (merlin-mode)
-                         (lsp-deferred)))
+  :hook
+  (tuareg-mode . ocaml-eglot)
+  (ocaml-eglot . (lambda () (eglot-ensure)
+                   (add-hook #'before-save-hook #'eglot-format nil t)))
+  (eglot-managed-mode . (lambda () (flycheck-eglot-mode 1)))
   :config
-  (setq merlin-error-after-save nil)) ;; we're using flycheck instead
+  (setq ocaml-eglot-syntax-checker 'flycheck)
+  :bind (:map ocaml-eglot-map
+              ("C-c C-c" . compile)))
 
-(use-package merlin-eldoc
+;; (use-package merlin-eldoc
+;;   :ensure t
+;;   :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
+;;                          ;; expand echo area because merlin-eldoc truncates based 
+;;                          ;; on this regardless of whether doc-buffer or echo-area is displayed
+;;                          (setq-local eldoc-echo-area-use-multiline-p t)))
+;;   :custom
+;;   (merlin-eldoc-max-lines 8)
+;;   (merlin-eldoc-max-lines-doc 8)
+;;   (merlin-eldoc-max-lines-type 5)
+;;   (merlin-eldoc-max-lines-function-arguments 5))
+
+(use-package opam-switch-mode
   :ensure t
-  :hook (tuareg-mode . (lambda () (merlin-eldoc-setup)
-                         ;; expand echo area because merlin-eldoc truncates based 
-                         ;; on this regardless of whether doc-buffer or echo-area is displayed
-                         (setq-local eldoc-echo-area-use-multiline-p t)))
-  :custom
-  (merlin-eldoc-max-lines 8)
-  (merlin-eldoc-max-lines-doc 8)
-  (merlin-eldoc-max-lines-type 5)
-  (merlin-eldoc-max-lines-function-arguments 5))
+  :hook
+  (tuareg-mode . opam-switch-mode))
 
 (use-package flycheck-ocaml
   :ensure t
@@ -277,17 +303,17 @@
   :custom
   (utop-command "opam exec -- utop -emacs"))
 
-(use-package ocamlformat
-  :ensure t
-  :custom
-  (ocamlformat-enable 'enable-outside-detected-project)
-  :hook (tuareg-mode . (lambda ()
-                         (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
-  )
+;; (use-package ocamlformat
+;;   :ensure t
+;;   :custom
+;;   (ocamlformat-enable 'enable-outside-detected-project)
+;;   :hook (tuareg-mode . (lambda ()
+;;                          (add-hook 'before-save-hook #'ocamlformat-before-save nil 'make-it-local)))
+;;   )
 
 (use-package ocp-indent
   :ensure t
-  :hook (tuareg-mode . ocp-setup-indent))
+  :hook (ocaml-eglot-hook . ocp-setup-indent))
 
 ;;; csv-mode
 (use-package csv-mode
