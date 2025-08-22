@@ -229,31 +229,39 @@
 (require 'transient)
 
 (transient-define-prefix detvdl/vc-transient ()
-  [["Version Control"
-    ("b" "Blame/annotate"  vc-annotate) ; Blame mnemonic
-    ("e" "Ediff"  vc-ediff)
-    ("k" "Delete file"  vc-delete-file) ; 'k' for kill==>delete is more common
-    ("G" "Log search" vc-log-search)  ; git log --grep
-    ("t" "Create tag" vc-create-tag)
-    ("c" "Clone" vc-clone) ; Emacs 31
-    ("d"  "Diff" vc-diff)
-    ("."  "Dir root" vc-dir-root) ; `vc-dir-root' is from Emacs 28
-    ("<return>" "Next action"  vc-next-action)]
-   ["Diff-hl"
-    ("[" "Prev hunk" diff-hl-previous-hunk :transient t)
-    ("]" "Next hunk" diff-hl-next-hunk :transient t)
-    ("=" "Goto hunk" diff-hl-diff-goto-hunk)
-    ("r" "Revert hunk" diff-hl-revert-hunk :transient t)
-    ("*" "Show hunk" diff-hl-show-hunk)
-    ("s" "Stage hunk" diff-hl-stage-current-hunk :transient t)
-    ("u" "Unstage file" diff-hl-unstage-file :transient t)
-    ]
-   ["Ediff"
-    ("2" "Ediff 2 buffers" prot-ediff-visible-buffers-2)
-    ("3" "Ediff 3 buffers" prot-ediff-visible-buffers-3)]]
+  [:class transient-columns
+          ["VC check"
+           ("b" "Blame/annotate"  vc-annotate) ; Blame mnemonic
+           ("e" "Ediff"  vc-ediff)
+           ("G" "Log search" vc-log-search)  ; git log --grep
+           ("d"  "Diff" vc-diff)
+           ("."  "Dir root" vc-dir-root) ; `vc-dir-root' is from Emacs 28
+           ("+" "Update" vc-update)
+           ("h" "Region history" vc-region-history)]
+          ["VC act"
+           ("<return>" "Next action"  vc-next-action)
+           ("c" "Clone" vc-clone) ; Emacs 31
+           ("k" "Delete file"  vc-delete-file) ; 'k' for kill==>delete is more common
+           ("m" "Merge" vc-merge)
+           ("P" "Push" vc-push)
+           ("R" "Rename file" vc-rename-file)
+           ("t" "Create tag" vc-create-tag)
+           ("?" "Create branch" vc-create-branch)
+           ]
+          ["Diff-hl"
+           ("[" "Prev hunk" diff-hl-previous-hunk :transient t)
+           ("]" "Next hunk" diff-hl-next-hunk :transient t)
+           ("=" "Goto hunk" diff-hl-diff-goto-hunk)
+           ("r" "Revert hunk" diff-hl-revert-hunk :transient t)
+           ("*" "Show hunk" diff-hl-show-hunk)
+           ("s" "Stage hunk" diff-hl-stage-current-hunk :transient t)
+           ("u" "Unstage file" diff-hl-unstage-file :transient t)
+           ]
+          ["Ediff"
+           ("2" "Ediff 2 buffers" prot-ediff-visible-buffers-2)
+           ("3" "Ediff 3 buffers" prot-ediff-visible-buffers-3)]]
   )
 
-(define-key global-map (kbd "C-x v") #'detvdl/vc-transient)
 (define-key diff-hl-mode-map (kbd "C-x v") #'detvdl/vc-transient)
 
 (provide 'detvdl-emacs-git)
