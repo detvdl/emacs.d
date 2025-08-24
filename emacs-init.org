@@ -671,7 +671,7 @@ Source: https://github.com/purcell/exec-path-from-shell
   :demand t
   :custom
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
-                                    "PAGER" "TERM"
+                                    "PAGER" "TERM" "GPG_TTY"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
                                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
                                     "OPAM_SWITCH_PREFIX"))
@@ -5533,6 +5533,8 @@ refinements to the core Ediff functionality ([[#h:3937b784-af0f-47c0-8c89-c74d90
 
 (use-package prot-ediff
   :ensure nil
+  :functions (prot-ediff-visible-buffers-2 prot-ediff-visible-buffers-3)
+  :commands (prot-ediff-visible-buffers-2 prot-ediff-visible-buffers-3)
   ;; :bind
   ;; The C-x v prefix is for all "version control" commands that are
   ;; already built into Emacs.  It makes sense to extend it for this
@@ -5831,7 +5833,7 @@ many extras on top of ~vc~ that I use daily in my workflow
   (setq log-edit-require-final-newline t)
   (setq log-edit-setup-add-author nil)
   ;; I can see the files from the Diff with C-c C-d
-  ;; (remove-hook 'log-edit-hook #'log-edit-show-files)
+  (remove-hook 'log-edit-hook #'log-edit-show-files)
 
   (setq vc-find-revision-no-save t)
   (setq vc-annotate-display-mode 'scale) ; scale to oldest
@@ -5859,8 +5861,22 @@ many extras on top of ~vc~ that I use daily in my workflow
   ;; These two are from Emacs 29
   (setq vc-git-log-edit-summary-target-len 50)
   (setq vc-git-log-edit-summary-max-len 70))
-#+end_src
 
+;; Advice to ensure vc-do-command follows symlinked
+;; default-directories when working with relative paths
+;; FIXME: does not work, because filepaths in diff-hl-stage-current-hunk generates diff file contents
+;; based on (buffer-file-name), which does not use default-directory but maintains the symlink
+;; IDEA: advise diff-hl function(s) by expanding file-names to their truenames before continuing
+;; both the filepath of the edited file, as well as the generated temporary file for the diff
+;; (defun follow-default-directory-symlink (orig-fun &rest args)
+;;   (let ((default-directory (if (file-symlink-p (directory-file-name default-directory))
+;;                                (file-truename default-directory)
+;;                              default-directory)))
+;;     (apply orig-fun args)))
+;; (advice-add 'vc-do-command :around #'follow-default-directory-symlink)
+#+end_src
+(buffer-file-truename)
+(let ((default-directory (file-truename default-directory)))(buffer-file-name))
 *** The =detvdl-emacs-git.el= section about ~magit~ (great Git interface)
 :PROPERTIES:
 :CUSTOM_ID: h:b08af527-9ebf-4425-ac3a-24b4f371a4fd
@@ -6014,9 +6030,9 @@ hunk when it's navigated to, such as ~diff-hl-stage-current-hunk~.
   [:class transient-columns
           ["VC check"
            ("b" "Blame/annotate"  vc-annotate) ; Blame mnemonic
+           ("d"  "Diff" vc-diff)
            ("e" "Ediff"  vc-ediff)
            ("G" "Log search" vc-log-search)  ; git log --grep
-           ("d"  "Diff" vc-diff)
            ("."  "Dir root" vc-dir-root) ; `vc-dir-root' is from Emacs 28
            ("+" "Update" vc-update)
            ("h" "Region history" vc-region-history)]
@@ -7419,10 +7435,10 @@ of characters, I use my ~prot-pair-insert~ command ([[#h:48d2bab5-241f-49dd-9554
                    (setq-local electric-pair-pairs detvdl-prog-lisp-pairs)
                    (electric-pair-local-mode))))
   :custom
-  (electric-pair-pairs '((?" . ?")
+  (electric-pair-pairs '((?\" . ?\")
                          (?‘ . ?’)
                          (?“ . ?”)))
-  (electric-pair-text-pairs '((?" . ?")
+  (electric-pair-text-pairs '((?\" . ?\")
                               (?‘ . ?’)
                               (?“ . ?”)))
   :config

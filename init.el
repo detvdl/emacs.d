@@ -151,7 +151,7 @@ before all other modules of my setup."
   :demand t
   :custom
   (exec-path-from-shell-variables '("HOME" "PATH" "MANPATH"
-                                    "PAGER" "TERM"
+                                    "PAGER" "TERM" "GPG_TTY"
                                     "SSH_AUTH_SOCK" "SSH_AGENT_PID" "GPG_AGENT_INFO"
                                     "LANGUAGE" "LANG" "LC_CTYPE" "LC_ALL"
                                     "OPAM_SWITCH_PREFIX"))

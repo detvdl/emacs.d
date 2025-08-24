@@ -13,6 +13,8 @@
 
 (use-package prot-ediff
   :ensure nil
+  :functions (prot-ediff-visible-buffers-2 prot-ediff-visible-buffers-3)
+  :commands (prot-ediff-visible-buffers-2 prot-ediff-visible-buffers-3)
   ;; :bind
   ;; The C-x v prefix is for all "version control" commands that are
   ;; already built into Emacs.  It makes sense to extend it for this
@@ -135,7 +137,7 @@
   (setq log-edit-require-final-newline t)
   (setq log-edit-setup-add-author nil)
   ;; I can see the files from the Diff with C-c C-d
-  ;; (remove-hook 'log-edit-hook #'log-edit-show-files)
+  (remove-hook 'log-edit-hook #'log-edit-show-files)
 
   (setq vc-find-revision-no-save t)
   (setq vc-annotate-display-mode 'scale) ; scale to oldest
@@ -163,6 +165,19 @@
   ;; These two are from Emacs 29
   (setq vc-git-log-edit-summary-target-len 50)
   (setq vc-git-log-edit-summary-max-len 70))
+
+;; Advice to ensure vc-do-command follows symlinked
+;; default-directories when working with relative paths
+;; FIXME: does not work, because filepaths in diff-hl-stage-current-hunk generates diff file contents
+;; based on (buffer-file-name), which does not use default-directory but maintains the symlink
+;; IDEA: advise diff-hl function(s) by expanding file-names to their truenames before continuing
+;; both the filepath of the edited file, as well as the generated temporary file for the diff
+;; (defun follow-default-directory-symlink (orig-fun &rest args)
+;;   (let ((default-directory (if (file-symlink-p (directory-file-name default-directory))
+;;                                (file-truename default-directory)
+;;                              default-directory)))
+;;     (apply orig-fun args)))
+;; (advice-add 'vc-do-command :around #'follow-default-directory-symlink)
 
 ;;; Interactive and powerful git front-end (Magit)
 (use-package transient
@@ -232,9 +247,9 @@
   [:class transient-columns
           ["VC check"
            ("b" "Blame/annotate"  vc-annotate) ; Blame mnemonic
+           ("d"  "Diff" vc-diff)
            ("e" "Ediff"  vc-ediff)
            ("G" "Log search" vc-log-search)  ; git log --grep
-           ("d"  "Diff" vc-diff)
            ("."  "Dir root" vc-dir-root) ; `vc-dir-root' is from Emacs 28
            ("+" "Update" vc-update)
            ("h" "Region history" vc-region-history)]

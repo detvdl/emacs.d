@@ -20,10 +20,10 @@
                    (setq-local electric-pair-pairs detvdl-prog-lisp-pairs)
                    (electric-pair-local-mode))))
   :custom
-  (electric-pair-pairs '((?" . ?")
+  (electric-pair-pairs '((?\" . ?\")
                          (?‘ . ?’)
                          (?“ . ?”)))
-  (electric-pair-text-pairs '((?" . ?")
+  (electric-pair-text-pairs '((?\" . ?\")
                               (?‘ . ?’)
                               (?“ . ?”)))
   :config
