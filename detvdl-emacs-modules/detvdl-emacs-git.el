@@ -68,7 +68,7 @@
   (setq diff-font-lock-prettify t) ; I think nil is better for patches, but let me try this for a while
   (setq diff-font-lock-syntax nil))
 
-  ;;; Version control framework (vc.el, vc-git.el, and more)
+;;; Version control framework (vc.el, vc-git.el, and more)
 (use-package vc
   :ensure nil
   :bind
@@ -221,6 +221,7 @@
 
 (use-package diff-hl
   :ensure t
+  :defines (diff-hl-mode-map)
   :functions (diff-hl-update)
   :config
   (let ((font-height (face-attribute 'default :height)))

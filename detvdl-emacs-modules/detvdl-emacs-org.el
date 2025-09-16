@@ -21,82 +21,82 @@
   (setq calendar-standard-time-zone-name "+0200")
   (setq calendar-daylight-time-zone-name "+0300"))
 
-  ;;; Org-mode (personal information manager)
-  (use-package org
-    :ensure nil
-    :init
-    (setq org-directory (expand-file-name "~/Documents/org/"))
-    (setq org-imenu-depth 7)
+;;; Org-mode (personal information manager)
+(use-package org
+  :ensure nil
+  :init
+  (setq org-directory (expand-file-name "~/Documents/org/"))
+  (setq org-imenu-depth 7)
 
-    (add-to-list 'safe-local-variable-values '(org-hide-leading-stars . t))
-    (add-to-list 'safe-local-variable-values '(org-hide-macro-markers . t))
-    :bind
-    ( :map global-map
-      ("C-c l" . org-store-link)
-      ("C-c o" . org-open-at-point-global)
-      :map org-mode-map
-      ;; I don't like that Org binds one zillion keys, so if I want one
-      ;; for something more important, I disable it from here.
-      ("C-a" . nil)
-      ("C-d" . nil)
-      ("C-S-d" . nil)
-      ("C-'" . nil)
-      ("C-," . nil)
-      ("M-;" . nil)
-      ("<C-return>" . nil)
-      ("<C-S-return>" . nil)
-      ("C-M-S-<right>" . nil)
-      ("C-M-S-<left>" . nil)
-      ("C-c ;" . nil)
-      ("C-c M-l" . org-insert-last-stored-link)
-      ("C-c C-M-l" . org-toggle-link-display)
-      ("M-." . org-edit-special) ; alias for C-c ' (mnenomic is global M-. that goes to source)
-      :map org-src-mode-map
-      ("M-," . org-edit-src-exit) ; see M-. above
-      :map narrow-map
-      ("b" . org-narrow-to-block)
-      ("e" . org-narrow-to-element)
-      ("s" . org-narrow-to-subtree))
-    :config
-    ;;;; general settings
-    (setq org-ellipsis "…")
-    (setq org-special-ctrl-a/e nil)
-    (setq org-special-ctrl-k nil)
-    (setq org-M-RET-may-split-line '((default . nil)))
-    (setq org-hide-emphasis-markers nil)
-    (setq org-hide-leading-stars t)
-    (setq org-hide-macro-markers nil)
-    (setq org-cycle-separator-lines 0)
-    (setopt org-modules '(ol-info org-tempo))
-    (setq org-structure-template-alist
-  	'(("s" . "src")
-            ("e" . "src emacs-lisp")
-            ("E" . "src emacs-lisp :results value code :lexical t")
-            ("t" . "src emacs-lisp :tangle FILENAME")
-            ("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
-            ("x" . "example")
-            ("X" . "export")
-            ("q" . "quote")))
-    (setq org-fold-catch-invisible-edits 'show)
-    (setq org-return-follows-link nil)
-    (setq org-loop-over-headlines-in-active-region 'start-level)
-    (setq org-use-sub-superscripts '{})
-    (setq org-insert-heading-respect-content t)
-    (setq org-read-date-prefer-future 'time)
-    (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
-    (setq org-fontify-quote-and-verse-blocks t)
-    (setq org-fontify-whole-block-delimiter-line t)
-    (setq org-track-ordered-property-with-tag t)
-    (setq org-highest-priority ?A)
-    (setq org-lowest-priority ?C)
-    (setq org-default-priority ?A)
-    (setq org-priority-faces nil)
-    (add-hook 'org-mode-hook (lambda ()
-                               (push '("--" . "—") prettify-symbols-alist)
-                               (push '("-->" . "⟶") prettify-symbols-alist)
-                               (push '("<--" . "⟵") prettify-symbols-alist)
-                               (push '("=>" . "⇒") prettify-symbols-alist)
-                               (prettify-symbols-mode))))
+  (add-to-list 'safe-local-variable-values '(org-hide-leading-stars . t))
+  (add-to-list 'safe-local-variable-values '(org-hide-macro-markers . t))
+  :bind
+  ( :map global-map
+    ("C-c l" . org-store-link)
+    ("C-c o" . org-open-at-point-global)
+    :map org-mode-map
+    ;; I don't like that Org binds one zillion keys, so if I want one
+    ;; for something more important, I disable it from here.
+    ("C-a" . nil)
+    ("C-d" . nil)
+    ("C-S-d" . nil)
+    ("C-'" . nil)
+    ("C-," . nil)
+    ("M-;" . nil)
+    ("<C-return>" . nil)
+    ("<C-S-return>" . nil)
+    ("C-M-S-<right>" . nil)
+    ("C-M-S-<left>" . nil)
+    ("C-c ;" . nil)
+    ("C-c M-l" . org-insert-last-stored-link)
+    ("C-c C-M-l" . org-toggle-link-display)
+    ("M-." . org-edit-special) ; alias for C-c ' (mnenomic is global M-. that goes to source)
+    :map org-src-mode-map
+    ("M-," . org-edit-src-exit) ; see M-. above
+    :map narrow-map
+    ("b" . org-narrow-to-block)
+    ("e" . org-narrow-to-element)
+    ("s" . org-narrow-to-subtree))
+  :config
+  ;;;; general settings
+  (setq org-ellipsis "…")
+  (setq org-special-ctrl-a/e nil)
+  (setq org-special-ctrl-k nil)
+  (setq org-M-RET-may-split-line '((default . nil)))
+  (setq org-hide-emphasis-markers nil)
+  (setq org-hide-leading-stars t)
+  (setq org-hide-macro-markers nil)
+  (setq org-cycle-separator-lines 0)
+  (setopt org-modules '(ol-info org-tempo))
+  (setq org-structure-template-alist
+	'(("s" . "src")
+          ("e" . "src emacs-lisp")
+          ("E" . "src emacs-lisp :results value code :lexical t")
+          ("t" . "src emacs-lisp :tangle FILENAME")
+          ("T" . "src emacs-lisp :tangle FILENAME :mkdirp yes")
+          ("x" . "example")
+          ("X" . "export")
+          ("q" . "quote")))
+  (setq org-fold-catch-invisible-edits 'show)
+  (setq org-return-follows-link nil)
+  (setq org-loop-over-headlines-in-active-region 'start-level)
+  (setq org-use-sub-superscripts '{})
+  (setq org-insert-heading-respect-content t)
+  (setq org-read-date-prefer-future 'time)
+  (setq org-highlight-latex-and-related nil) ; other options affect elisp regexp in src blocks
+  (setq org-fontify-quote-and-verse-blocks t)
+  (setq org-fontify-whole-block-delimiter-line t)
+  (setq org-track-ordered-property-with-tag t)
+  (setq org-highest-priority ?A)
+  (setq org-lowest-priority ?C)
+  (setq org-default-priority ?A)
+  (setq org-priority-faces nil)
+  (add-hook 'org-mode-hook (lambda ()
+                             (push '("--" . "—") prettify-symbols-alist)
+                             (push '("-->" . "⟶") prettify-symbols-alist)
+                             (push '("<--" . "⟵") prettify-symbols-alist)
+                             (push '("=>" . "⇒") prettify-symbols-alist)
+                             (prettify-symbols-mode))))
 
 (use-package org
   :ensure nil

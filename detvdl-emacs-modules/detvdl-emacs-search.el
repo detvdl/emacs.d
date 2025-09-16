@@ -91,49 +91,49 @@
     (add-hook 'prot-search-outline-hook #'pulsar-recenter-center)
     (add-hook 'prot-search-outline-hook #'pulsar-reveal-entry)))
 
-  (defvar prot/ripgrep (or (executable-find "rg") (executable-find "ripgrep"))
-    "Store path to ripgrep executable, else nil.")
-  ;;; deadgrep and xref
-  (use-package deadgrep
-    :ensure t
-    :commands (deadgrep)
-    :bind (("C-c k" . deadgrep)
-           :map deadgrep-mode-map
-           ("e" . deadgrep-edit-mode)
-           :map deadgrep-edit-mode-map
-           ("C-c C-c" . deadgrep-mode))
-    :config
-    (add-to-list 'deadgrep-extra-arguments "--no-ignore-vcs"))
+(defvar prot/ripgrep (or (executable-find "rg") (executable-find "ripgrep"))
+  "Store path to ripgrep executable, else nil.")
+;;; deadgrep and xref
+(use-package deadgrep
+  :ensure t
+  :commands (deadgrep)
+  :bind (("C-c k" . deadgrep)
+         :map deadgrep-mode-map
+         ("e" . deadgrep-edit-mode)
+         :map deadgrep-edit-mode-map
+         ("C-c C-c" . deadgrep-mode))
+  :config
+  (add-to-list 'deadgrep-extra-arguments "--no-ignore-vcs"))
 
-  (use-package re-builder
-    :ensure nil
-    :commands (re-builder regexp-builder)
-    :config
-    (setq reb-re-syntax 'read))
+(use-package re-builder
+  :ensure nil
+  :commands (re-builder regexp-builder)
+  :config
+  (setq reb-re-syntax 'read))
 
-  (use-package xref
-    :ensure nil
-    :commands (xref-find-definitions xref-go-back)
-    :config
-    ;; All those have been changed for Emacs 28
-    (setq xref-show-definitions-function #'xref-show-definitions-completing-read) ; for M-.
-    (setq xref-show-xrefs-function #'xref-show-definitions-buffer) ; for grep and the like
-    (setq xref-file-name-display 'project-relative)
-    (setq xref-search-program (if prot/ripgrep 'ripgrep 'grep)))
+(use-package xref
+  :ensure nil
+  :commands (xref-find-definitions xref-go-back)
+  :config
+  ;; All those have been changed for Emacs 28
+  (setq xref-show-definitions-function #'xref-show-definitions-completing-read) ; for M-.
+  (setq xref-show-xrefs-function #'xref-show-definitions-buffer) ; for grep and the like
+  (setq xref-file-name-display 'project-relative)
+  (setq xref-search-program (if prot/ripgrep 'ripgrep 'grep)))
 
-  (use-package grep
-    :ensure nil
-    :commands (grep lgrep rgrep)
-    :hook (grep-mode . prot-common-truncate-lines-silently)
-    :config
-    (setq grep-save-buffers nil)
-    (setq grep-use-headings t) ; Emacs 30
+(use-package grep
+  :ensure nil
+  :commands (grep lgrep rgrep)
+  :hook (grep-mode . prot-common-truncate-lines-silently)
+  :config
+  (setq grep-save-buffers nil)
+  (setq grep-use-headings t) ; Emacs 30
 
-    (setq grep-program (or prot/ripgrep (executable-find "grep")))
-    (setq grep-template
-          (if prot/ripgrep
-              "/usr/bin/rg -nH --null -e <R> <F>"
-            "/usr/bin/grep <X> <C> -nH --null -e <R> <F>")))
+  (setq grep-program (or prot/ripgrep (executable-find "grep")))
+  (setq grep-template
+        (if prot/ripgrep
+            "/usr/bin/rg -nH --null -e <R> <F>"
+          "/usr/bin/grep <X> <C> -nH --null -e <R> <F>")))
 
 ;;; wgrep (writable grep)
 ;; See the `grep-edit-mode' for the new built-in feature.

@@ -158,14 +158,14 @@
              (window-height . fit-window-to-buffer))
             ;; same window
 
-            ;; NOTE 2023-02-17: `man' does not fully obey the
-            ;; `display-buffer-alist'.  It works for new frames and for
-            ;; `display-buffer-below-selected', but otherwise is
-            ;; unpredictable.  See `Man-notify-method'.
-            ((or . ((derived-mode . Man-mode)
-                    (derived-mode . woman-mode)
-                    "\\*\\(Man\\|woman\\).*"))
-             (display-buffer-same-window)))))
+          ;; NOTE 2023-02-17: `man' does not fully obey the
+          ;; `display-buffer-alist'.  It works for new frames and for
+          ;; `display-buffer-below-selected', but otherwise is
+          ;; unpredictable.  See `Man-notify-method'.
+          ((or . ((derived-mode . Man-mode)
+                  (derived-mode . woman-mode)
+                  "\\*\\(Man\\|woman\\).*"))
+           (display-buffer-same-window)))))
 
 (use-package prot-window
   :ensure nil

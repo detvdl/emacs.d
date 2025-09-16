@@ -3817,11 +3817,12 @@ ecosystem.
 Source: https://github.com/manzaltu/claude-code-ide.el
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-completion.el"
-(use-package claude-code-ide
-  :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
-  :bind ("C-c C-'" . claude-code-ide-menu)
-  :config
-  (claude-code-ide-emacs-tools-setup))
+  (with-eval-after-load 'vc
+    (use-package claude-code-ide
+      :vc (:url "https://github.com/manzaltu/claude-code-ide.el" :rev :newest)
+      :bind ("C-c C-'" . claude-code-ide-menu)
+      :config
+      (claude-code-ide-emacs-tools-setup)))
 #+end_src
 
 ** The =detvdl-emacs-search.el= module
@@ -5991,27 +5992,28 @@ cases, a combination of =vc= and the command-line will suffice
 See https://github.com/dgutov/diff-hl
 
 #+begin_src emacs-lisp :tangle "detvdl-emacs-modules/detvdl-emacs-git.el"
-(use-package diff-hl
-  :ensure t
-  :functions (diff-hl-update)
-  :config
-  (let ((font-height (face-attribute 'default :height)))
-    (set-face-attribute 'diff-hl-change nil :height font-height)
-    (set-face-attribute 'diff-hl-delete nil :height font-height)
-    (set-face-attribute 'diff-hl-insert nil :height font-height))
-  (global-diff-hl-mode +1)
-  (diff-hl-flydiff-mode +1)
-  (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
-  (let* ((height (frame-char-height))
-         (width 2)
-         (ones (1- (expt 2 width)))
-         (bits (make-vector height ones)))
-    (define-fringe-bitmap 'my-diff-hl-bitmap bits height width))
-  (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my-diff-hl-bitmap)))
+  (use-package diff-hl
+    :ensure t
+    :defines (diff-hl-mode-map)
+    :functions (diff-hl-update)
+    :config
+    (let ((font-height (face-attribute 'default :height)))
+      (set-face-attribute 'diff-hl-change nil :height font-height)
+      (set-face-attribute 'diff-hl-delete nil :height font-height)
+      (set-face-attribute 'diff-hl-insert nil :height font-height))
+    (global-diff-hl-mode +1)
+    (diff-hl-flydiff-mode +1)
+    (add-hook 'magit-post-refresh-hook 'diff-hl-magit-post-refresh)
+    (let* ((height (frame-char-height))
+           (width 2)
+           (ones (1- (expt 2 width)))
+           (bits (make-vector height ones)))
+      (define-fringe-bitmap 'my-diff-hl-bitmap bits height width))
+    (setq diff-hl-fringe-bmp-function (lambda (type pos) 'my-diff-hl-bitmap)))
 
-;; Only load the diff-hl package once we actually visit a file
-;; This hook gets added by global-diff-hl mode anyway
-(add-hook 'find-file-hook #'diff-hl-update)
+  ;; Only load the diff-hl package once we actually visit a file
+  ;; This hook gets added by global-diff-hl mode anyway
+  (add-hook 'find-file-hook #'diff-hl-update)
 #+end_src
 
 *** The =detvdl-emacs-git.el= setup for ~transient~ navigation
