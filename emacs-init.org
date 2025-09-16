@@ -5138,7 +5138,7 @@ to a certain height.
              (slot . 1)
              (body-function . select-window)
              ;; (preserve-size . (t . t))
-             (window-width . 0.33))
+             (window-width . 0.5))
             ;; bottom side window
             ("\\*\\(Org \\(Select\\|Note\\)\\|Agenda Commands\\)\\*" ; the `org-capture' key selection and `org-add-log-note'
              (display-buffer-in-side-window)
@@ -9676,7 +9676,7 @@ Also see `prot-ediff-store-layout'."
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-prog-ocaml-pairs
-  `(,@detvdl-bracket-pairs
+  `(,@(assq-delete-all ?\< detvdl-bracket-pairs)
     ,@(assq-delete-all ?' detvdl-text-pairs))
   "Electric pairs most often encountered in OCaml and ML-like languages (e.g. Reason)"
   :group 'detvdl-electric-group)
@@ -9688,9 +9688,8 @@ Also see `prot-ediff-store-layout'."
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-org-mode-pairs
-  `(,@detvdl-bracket-pairs
-    ,@(assq-delete-all ?' detvdl-text-pairs)
-    ,@detvdl-emphasis-pairs)
+  `(,@(assq-delete-all ?\< detvdl-bracket-pairs)
+    ,@(assq-delete-all ?' detvdl-text-pairs))
   "Electric pairs most often encountered in Org-mode prose"
   :group 'detvdl-electric-group)
 

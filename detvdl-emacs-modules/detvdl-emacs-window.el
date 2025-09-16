@@ -84,7 +84,7 @@
              (slot . 1)
              (body-function . select-window)
              ;; (preserve-size . (t . t))
-             (window-width . 0.33))
+             (window-width . 0.5))
             ;; bottom side window
             ("\\*\\(Org \\(Select\\|Note\\)\\|Agenda Commands\\)\\*" ; the `org-capture' key selection and `org-add-log-note'
              (display-buffer-in-side-window)

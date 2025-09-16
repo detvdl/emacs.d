@@ -64,7 +64,7 @@
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-prog-ocaml-pairs
-  `(,@detvdl-bracket-pairs
+  `(,@(assq-delete-all ?\< detvdl-bracket-pairs)
     ,@(assq-delete-all ?' detvdl-text-pairs))
   "Electric pairs most often encountered in OCaml and ML-like languages (e.g. Reason)"
   :group 'detvdl-electric-group)
@@ -76,9 +76,8 @@
   :group 'detvdl-electric-group)
 
 (defcustom detvdl-org-mode-pairs
-  `(,@detvdl-bracket-pairs
-    ,@(assq-delete-all ?' detvdl-text-pairs)
-    ,@detvdl-emphasis-pairs)
+  `(,@(assq-delete-all ?\< detvdl-bracket-pairs)
+    ,@(assq-delete-all ?' detvdl-text-pairs))
   "Electric pairs most often encountered in Org-mode prose"
   :group 'detvdl-electric-group)
 
