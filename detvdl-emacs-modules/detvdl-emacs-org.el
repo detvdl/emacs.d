@@ -101,7 +101,9 @@
 (use-package org
   :ensure nil
   :hook (org-mode . (lambda ()
-                      (setq-local electric-pair-pairs detvdl-org-mode-pairs)
+                      (setq-local electric-pair-pairs detvdl-org-mode-pairs
+                                  electric-pair-inhibit-predicate
+                                  `(lambda (c) (if (char-equal c ?\<) t (,electric-pair-inhibit-predicate c))))
                       (electric-pair-local-mode)))
 )
 

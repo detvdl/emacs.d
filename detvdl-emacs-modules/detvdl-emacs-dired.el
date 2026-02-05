@@ -131,7 +131,7 @@
   ;;                       (when (string-match-p "Pictures" default-directory)
   ;;                         (dired-preview-mode 1))))
   :defer 1
-  :hook (after-init . dired-preview-global-mode)
+  ;; :hook (after-init . dired-preview-global-mode) ;; enable to always preview files
   :bind
   ( :map dired-mode-map
     ("V" . dired-preview-mode))
